@@ -14,6 +14,7 @@ import { Dropdown } from "react-native-element-dropdown";
 import { base_url } from "../constant/api";
 import axios from "axios";
 import { Checkbox, TextInput } from "react-native-paper";
+import { StatusBar } from "expo-status-bar";
 
 const RegisterScreen = () => {
   const navigation = useNavigation();
@@ -52,6 +53,7 @@ const RegisterScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FFF" }}>
+      <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
       <Image
         source={BG}
         style={{

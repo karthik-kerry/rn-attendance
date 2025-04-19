@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Attendance App",
-    "slug": "Attendance App",
+    "slug": "rn-attendance",
     "version": "1.0.1",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",

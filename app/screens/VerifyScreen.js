@@ -13,6 +13,7 @@ import axios from "axios";
 import Logo from "../../assets/images/logo.png";
 import BG from "../../assets/images/bg.png";
 import { base_url } from "../constant/api";
+import { StatusBar } from "expo-status-bar";
 
 const VerifyScreen = () => {
   const route = useRoute();
@@ -72,6 +73,7 @@ const VerifyScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FFF" }}>
+      <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
       <Image
         source={BG}
         style={{

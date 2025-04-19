@@ -15,6 +15,7 @@ import { base_url } from "../constant/api";
 import axios from "axios";
 import { TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { StatusBar } from "expo-status-bar";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -61,6 +62,7 @@ const LoginScreen = () => {
 
   return (
     <View style={{ flex: 1, backgroundColor: "#FFF" }}>
+      <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
       <Image
         source={BG}
         style={{
