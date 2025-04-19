@@ -15,7 +15,8 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.kerryindev.attendance"
     },
     "web": {
       "bundler": "metro",
@@ -33,15 +34,18 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      [
-        "expo-font",
-        {
-          "fonts": ["path/to/file.ttf"]
-        }
-      ]
+      ["expo-font"]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "4e7e0857-4479-4b15-bf31-698350bef4f6"
+      }
     }
   }
 }
