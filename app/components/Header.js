@@ -1,8 +1,11 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
 import { FontAwesome, Fontisto } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const Header = ({ title, navigate }) => {
+  const navigation = useNavigation();
+
   return (
     <View
       style={{
@@ -48,7 +51,7 @@ const Header = ({ title, navigate }) => {
           justifyContent: "center",
           borderRadius: 8,
         }}
-        onPress={() => {}}
+        onPress={() => navigation.navigate("notifications")}
       >
         <View
           style={{

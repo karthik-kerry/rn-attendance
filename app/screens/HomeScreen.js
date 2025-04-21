@@ -157,7 +157,7 @@ const HomeScreen = () => {
           </View>
         </View>
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={() => navigation.navigate("notifications")}
           style={{
             backgroundColor: "#FFFFFF29",
             height: 44,
