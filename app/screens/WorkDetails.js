@@ -52,7 +52,7 @@ const WorkDetails = () => {
             style={{
               backgroundColor: "#64748B1F",
               height: 26,
-              width: 51,
+              paddingHorizontal: 15,
               borderRadius: 30,
               alignItems: "center",
               justifyContent: "center",

@@ -18,7 +18,9 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CustomModal from "../components/CustomModal";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { base_url } from "../constant/api";
+import axios from "axios";
+import getAddressFromCoordinates from "../utils/getAddressFromCoordinates";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -37,6 +39,25 @@ const HomeScreen = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [isCheckIn, setIsCheckIn] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
+  const [jobs, setJobs] = useState(null);
+  const [jobAddresses, setJobAddresses] = useState({});
+
+  useEffect(() => {
+    if (jobs && jobs.distances) {
+      jobs.distances.forEach(async (job) => {
+        if (job.coordinates?.latitude && job.coordinates?.longitude) {
+          const address = await getAddressFromCoordinates(
+            job.coordinates.latitude,
+            job.coordinates.longitude
+          );
+          setJobAddresses((prev) => ({
+            ...prev,
+            [job.workId || `Job-${job.id}`]: address,
+          }));
+        }
+      });
+    }
+  }, [jobs]);
 
   useEffect(() => {
     const updateTime = () => {
@@ -97,6 +118,26 @@ const HomeScreen = () => {
     fetchUserData();
     getLocation();
   }, []);
+
+  useEffect(() => {
+    const fetchNearbyJobs = async () => {
+      try {
+        const endPoint = `${base_url}hrm/latitude_longitude/14/`; //userData?.user_id
+        const payload = {
+          user_latitude: 14.0827, //currentLocation.coords.latitude
+          user_longitude: 80.2707, //currentLocation.coords.longitude
+        };
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.post(endPoint, payload, { headers });
+        setJobs(res.data);
+      } catch (error) {
+        console.log("Error fetching nearby jobs:", error.message);
+      }
+    };
+    fetchNearbyJobs();
+  }, [userData]);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
@@ -454,202 +495,233 @@ const HomeScreen = () => {
       >
         {activeTab === "office" && (
           <>
-            <TouchableOpacity
-              onPress={() =>
-                navigation.navigate("details", {
-                  data: {
-                    workId: "CHE - 001",
-                    distance: "100m",
-                    cmpName: "Kerry Indev Corporate Office",
-                    isCheckIn: isCheckIn,
-                    setIsCheckIn: setIsCheckIn,
-                    address: address,
-                  },
-                })
-              }
-              style={{
-                alignItems: "center",
-                alignSelf: "center",
-                justifyContent: "center",
-                height: 200,
-                width: "90%",
-                borderRadius: 16,
-                padding: 16,
-                backgroundColor: "white",
-                elevation: 1,
-                marginBottom: 20,
-              }}
-            >
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <Text
-                  style={{
-                    fontFamily: "Inter-SemiBold",
-                    color: "#2563EB",
-                    fontSize: 16,
-                  }}
-                >
-                  CHE - 001
-                </Text>
-                <View
-                  style={{
-                    backgroundColor: "#64748B1F",
-                    height: 26,
-                    width: 51,
-                    borderRadius: 30,
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <Text
-                    style={{
-                      fontFamily: "Inter-Regular",
-                      color: "#64748B",
-                      fontSize: 11,
-                    }}
-                  >
-                    100 m
-                  </Text>
-                </View>
-              </View>
-              <View style={{ alignSelf: "left", marginVertical: 10 }}>
-                <Text
-                  style={{
-                    fontFamily: "Inter-Bold",
-                    color: "#1b1b1b",
-                    fontSize: 16,
-                  }}
-                >
-                  Kerry Indev Corporate Office
-                </Text>
-              </View>
-              <View
-                style={{
-                  flexDirection: "row",
-                  alignItems: "center",
-                  justifyContent: "space-between",
-                  width: "100%",
-                }}
-              >
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    gap: 10,
-                  }}
-                >
-                  <FontAwesome6 name="location-dot" size={16} color="#64748B" />
-                  <Text
-                    style={{ fontFamily: "Inter-Regular", color: "#1B1B1B99" }}
-                  >
-                    {address}
-                  </Text>
-                </View>
+            {jobs &&
+              jobs.distances &&
+              jobs.distances.map((job, i) => (
                 <TouchableOpacity
+                  key={i}
+                  onPress={() =>
+                    navigation.navigate("details", {
+                      data: {
+                        workId: job.workId || `CHE-${i + 1}`,
+                        distance: `${job.distance_km} KM`,
+                        cmpName: job.location || "Unknown Location",
+                        isCheckIn: job.isCheckIn || false,
+                        setIsCheckIn: (value) => {
+                          const updatedJobs = [...jobs.distances];
+                          updatedJobs[i].isCheckIn = value;
+                          setJobs({ ...jobs, distances: updatedJobs });
+                        },
+                        address:
+                          jobAddresses[job.workId || `CHE-${job.id}`] ||
+                          "Fetching address...",
+                      },
+                    })
+                  }
                   style={{
-                    backgroundColor: "#2563EB1F",
-                    height: 36,
-                    width: 36,
-                    borderRadius: 30,
                     alignItems: "center",
+                    alignSelf: "center",
                     justifyContent: "center",
-                  }}
-                  onPress={() => {}}
-                >
-                  <Fontisto name="share" size={16} color="#2563EB" />
-                </TouchableOpacity>
-              </View>
-              {isCheckIn ? (
-                <View
-                  style={{
-                    flexDirection: "row",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    width: "100%",
+                    height: 200,
+                    width: "90%",
+                    borderRadius: 16,
+                    padding: 16,
+                    backgroundColor: "white",
+                    elevation: 1,
+                    marginBottom: 20,
                   }}
                 >
-                  <TouchableOpacity
+                  <View
                     style={{
-                      height: 40,
-                      width: "48%",
-                      borderRadius: 47,
-                      borderWidth: 1,
-                      borderStyle: "solid",
-                      borderColor: "#2563EB",
+                      flexDirection: "row",
                       alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 20,
+                      justifyContent: "space-between",
+                      width: "100%",
                     }}
-                    onPress={() => setModalVisible(true)}
                   >
                     <Text
                       style={{
                         fontFamily: "Inter-SemiBold",
-                        fontSize: 16,
                         color: "#2563EB",
-                        textTransform: "capitalize",
+                        fontSize: 16,
                       }}
                     >
-                      Break
+                      {job.workId || `CHE-${i + 1}`}
                     </Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity
-                    style={{
-                      height: 40,
-                      width: "48%",
-                      borderRadius: 47,
-                      backgroundColor: "#DD1701",
-                      alignItems: "center",
-                      justifyContent: "center",
-                      marginTop: 20,
-                    }}
-                    onPress={() => setIsCheckIn((prev) => !prev)}
-                  >
+                    <View
+                      style={{
+                        backgroundColor: "#64748B1F",
+                        height: 26,
+                        paddingHorizontal: 15,
+                        borderRadius: 30,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Inter-Regular",
+                          color: "#64748B",
+                          fontSize: 11,
+                        }}
+                      >
+                        {job.distance_km} KM
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignSelf: "left", marginVertical: 10 }}>
                     <Text
                       style={{
-                        fontFamily: "Inter-SemiBold",
+                        fontFamily: "Inter-Bold",
+                        color: "#1b1b1b",
                         fontSize: 16,
-                        color: "white",
-                        textTransform: "capitalize",
                       }}
                     >
-                      Check Out
+                      {job.location}
                     </Text>
-                  </TouchableOpacity>
-                </View>
-              ) : (
-                <TouchableOpacity
-                  style={{
-                    height: 40,
-                    width: "100%",
-                    borderRadius: 47,
-                    backgroundColor: "#2563EB",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    marginTop: 20,
-                  }}
-                  onPress={() => setIsCheckIn((prev) => !prev)}
-                >
-                  <Text
+                  </View>
+                  <View
                     style={{
-                      fontFamily: "Inter-SemiBold",
-                      fontSize: 16,
-                      color: "white",
-                      textTransform: "capitalize",
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      width: "100%",
                     }}
                   >
-                    Check In
-                  </Text>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        gap: 10,
+                      }}
+                    >
+                      <FontAwesome6
+                        name="location-dot"
+                        size={16}
+                        color="#64748B"
+                      />
+                      <Text
+                        style={{
+                          fontFamily: "Inter-Regular",
+                          color: "#1B1B1B99",
+                        }}
+                      >
+                        {jobAddresses[job.workId || `CHE-${job.id}`] ||
+                          "Fetching address..."}
+                      </Text>
+                    </View>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#2563EB1F",
+                        height: 36,
+                        width: 36,
+                        borderRadius: 30,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onPress={() => {
+                        // Share functionality or other actions
+                      }}
+                    >
+                      <Fontisto name="share" size={16} color="#2563EB" />
+                    </TouchableOpacity>
+                  </View>
+                  {job.isCheckIn ? (
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        width: "100%",
+                      }}
+                    >
+                      <TouchableOpacity
+                        style={{
+                          height: 40,
+                          width: "48%",
+                          borderRadius: 47,
+                          borderWidth: 1,
+                          borderStyle: "solid",
+                          borderColor: "#2563EB",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginTop: 20,
+                        }}
+                        onPress={() => {
+                          setModalVisible(true);
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: "Inter-SemiBold",
+                            fontSize: 16,
+                            color: "#2563EB",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          Break
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          height: 40,
+                          width: "48%",
+                          borderRadius: 47,
+                          backgroundColor: "#DD1701",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginTop: 20,
+                        }}
+                        onPress={() => {
+                          const updatedJobs = [...jobs.distances];
+                          updatedJobs[i].isCheckIn = false;
+                          setJobs({ ...jobs, distances: updatedJobs });
+                        }}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: "Inter-SemiBold",
+                            fontSize: 16,
+                            color: "white",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          Check Out
+                        </Text>
+                      </TouchableOpacity>
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      style={{
+                        height: 40,
+                        width: "100%",
+                        borderRadius: 47,
+                        backgroundColor: "#2563EB",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginTop: 20,
+                      }}
+                      onPress={() => {
+                        const updatedJobs = [...jobs.distances];
+                        updatedJobs[i].isCheckIn = true;
+                        setJobs({ ...jobs, distances: updatedJobs });
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Inter-SemiBold",
+                          fontSize: 16,
+                          color: "white",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        Check In
+                      </Text>
+                    </TouchableOpacity>
+                  )}
                 </TouchableOpacity>
-              )}
-            </TouchableOpacity>
+              ))}
           </>
         )}
         <View
