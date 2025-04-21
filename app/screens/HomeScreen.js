@@ -124,8 +124,8 @@ const HomeScreen = () => {
       try {
         const endPoint = `${base_url}hrm/latitude_longitude/14/`; //userData?.user_id
         const payload = {
-          user_latitude: 14.0827, //currentLocation.coords.latitude
-          user_longitude: 80.2707, //currentLocation.coords.longitude
+          user_latitude: 14.0827, //location.coords.latitude
+          user_longitude: 80.2707, //location.coords.longitude
         };
         const headers = {
           Authorization: `Token ${userData?.token}`,
@@ -145,6 +145,7 @@ const HomeScreen = () => {
       <View
         style={{ backgroundColor: "#2563EB", width: width, height: "26%" }}
       />
+      {/* Section Header */}
       <View
         style={{
           flexDirection: "row",
@@ -223,6 +224,7 @@ const HomeScreen = () => {
           <Fontisto name="bell-alt" size={22} color="white" />
         </TouchableOpacity>
       </View>
+      {/* Username */}
       <Text
         style={{
           position: "absolute",
@@ -236,6 +238,7 @@ const HomeScreen = () => {
       >
         Welcome, {userData?.username}
       </Text>
+      {/* Duty Card */}
       <View
         style={{
           backgroundColor: "#FFFFFF",
@@ -478,6 +481,7 @@ const HomeScreen = () => {
           </View>
         </View>
       </View>
+      {/* Break Modal */}
       <CustomModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
