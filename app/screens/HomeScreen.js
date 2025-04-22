@@ -40,7 +40,7 @@ const HomeScreen = () => {
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [isCheckIn, setIsCheckIn] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
-  const [jobs, setJobs] = useState([]);
+  const [jobs, setJobs] = useState(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -140,7 +140,7 @@ const HomeScreen = () => {
         - Name: ${job.name}
         - Branch: ${job.code}
         - Location: ${job.address}
-        - Distance: ${job.distance_km} KM
+        - Distance: ${job.geo_tolerance_radius_mtr} m
         - Address: ${job.address}
         - Google Maps Link: ${createGoogleMapsLink(job.latitude, job.longitude)}
       `;
@@ -343,7 +343,8 @@ const HomeScreen = () => {
             backgroundColor: "#13950F1F",
             borderRadius: 30,
             height: 27,
-            width: 120,
+            width: "auto",
+            paddingHorizontal: 15,
           }}
         >
           <Text
@@ -354,7 +355,7 @@ const HomeScreen = () => {
               textTransform: "uppercase",
             }}
           >
-            General Shift
+            {jobs?.shift_group?.name} - {jobs?.user_shift?.name} Shift
           </Text>
         </View>
         {activeTab === "home" && (
@@ -442,57 +443,118 @@ const HomeScreen = () => {
             paddingHorizontal: 20,
           }}
         >
-          <View
-            style={{ alignItems: "center", justifyContent: "center", gap: 2 }}
-          >
-            <MaterialIcons name="timer" size={24} color="#2563EB" />
-            <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-              10:00 AM
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Inter-Regular",
-                fontSize: 12,
-                color: "#64748B",
-              }}
-            >
-              Check In
-            </Text>
-          </View>
-          <View
-            style={{ alignItems: "center", justifyContent: "center", gap: 2 }}
-          >
-            <MaterialIcons name="timer" size={24} color="#2563EB" />
-            <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-              6:30 PM
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Inter-Regular",
-                fontSize: 12,
-                color: "#64748B",
-              }}
-            >
-              Check Out
-            </Text>
-          </View>
-          <View
-            style={{ alignItems: "center", justifyContent: "center", gap: 2 }}
-          >
-            <MaterialIcons name="timer" size={24} color="#2563EB" />
-            <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-              00:00:00
-            </Text>
-            <Text
-              style={{
-                fontFamily: "Inter-Regular",
-                fontSize: 12,
-                color: "#64748B",
-              }}
-            >
-              Working Hrs
-            </Text>
-          </View>
+          {jobs?.shift_group && jobs?.shift_group?.name === "Flexible" ? (
+            <>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <MaterialIcons name="timer" size={24} color="#2563EB" />
+                <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
+                  10:00 AM
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter-Regular",
+                    fontSize: 12,
+                    color: "#64748B",
+                  }}
+                >
+                  Flexible HR's
+                </Text>
+              </View>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <MaterialIcons name="timer" size={24} color="#2563EB" />
+                <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
+                  00:00:00
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter-Regular",
+                    fontSize: 12,
+                    color: "#64748B",
+                  }}
+                >
+                  Working Hrs
+                </Text>
+              </View>
+            </>
+          ) : (
+            <>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <MaterialIcons name="timer" size={24} color="#2563EB" />
+                <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
+                  10:00 AM
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter-Regular",
+                    fontSize: 12,
+                    color: "#64748B",
+                  }}
+                >
+                  Check In
+                </Text>
+              </View>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <MaterialIcons name="timer" size={24} color="#2563EB" />
+                <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
+                  6:30 PM
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter-Regular",
+                    fontSize: 12,
+                    color: "#64748B",
+                  }}
+                >
+                  Check Out
+                </Text>
+              </View>
+              <View
+                style={{
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 2,
+                }}
+              >
+                <MaterialIcons name="timer" size={24} color="#2563EB" />
+                <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
+                  00:00:00
+                </Text>
+                <Text
+                  style={{
+                    fontFamily: "Inter-Regular",
+                    fontSize: 12,
+                    color: "#64748B",
+                  }}
+                >
+                  Working Hrs
+                </Text>
+              </View>
+            </>
+          )}
         </View>
       </View>
       {/* Break Modal */}
@@ -514,7 +576,8 @@ const HomeScreen = () => {
         {activeTab === "office" && (
           <>
             {jobs &&
-              jobs
+              jobs.locations &&
+              jobs.locations
                 .filter((job) => {
                   if (!location || !job.latitude || !job.longitude)
                     return false;

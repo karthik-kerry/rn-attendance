@@ -1704,6 +1704,15 @@
   dependencies:
     color "^4.2.3"
 
+"@react-navigation/material-top-tabs@^7.2.10":
+  version "7.2.10"
+  resolved "https://registry.yarnpkg.com/@react-navigation/material-top-tabs/-/material-top-tabs-7.2.10.tgz#b1fd6a5350b5dcf236ffff4c4651570ebe9674a8"
+  integrity sha512-cMdCH4PZUK+HaLYrTjRJ5Ax9NO/QqXaxo9xEJBKvv6t8t2J0QSciJhmCRjSrEi8+NA9roXv42Z59mmdXtgqLww==
+  dependencies:
+    "@react-navigation/elements" "^2.3.8"
+    color "^4.2.3"
+    react-native-tab-view "^4.0.10"
+
 "@react-navigation/native-stack@^7.2.0":
   version "7.3.10"
   resolved "https://registry.npmjs.org/@react-navigation/native-stack/-/native-stack-7.3.10.tgz"
@@ -6081,6 +6090,11 @@ react-native-month-year-picker@^1.9.0:
     invariant "^2.2.4"
     moment "^2.29.4"
 
+react-native-pager-view@6.5.1:
+  version "6.5.1"
+  resolved "https://registry.yarnpkg.com/react-native-pager-view/-/react-native-pager-view-6.5.1.tgz#e639e8c975f4c749aae1c3120dc4208265fce4cc"
+  integrity sha512-YdX7bP+rPYvATMU7HzlMq9JaG3ui/+cVRbFZFGW+QshDULANFg9ECR1BA7H7JTIcO/ZgWCwF+1aVmYG5yBA9Og==
+
 react-native-paper@^5.13.1:
   version "5.13.1"
   resolved "https://registry.npmjs.org/react-native-paper/-/react-native-paper-5.13.1.tgz"
@@ -6138,6 +6152,13 @@ react-native-swipe-gestures@^1.0.5:
   version "1.0.5"
   resolved "https://registry.yarnpkg.com/react-native-swipe-gestures/-/react-native-swipe-gestures-1.0.5.tgz#a172cb0f3e7478ccd681fd36b8bfbcdd098bde7c"
   integrity sha512-Ns7Bn9H/Tyw278+5SQx9oAblDZ7JixyzeOczcBK8dipQk2pD7Djkcfnf1nB/8RErAmMLL9iXgW0QHqiII8AhKw==
+
+react-native-tab-view@^4.0.10:
+  version "4.0.10"
+  resolved "https://registry.yarnpkg.com/react-native-tab-view/-/react-native-tab-view-4.0.10.tgz#5e11e4dd1a343cc17b17bc4d74c92d97367746cb"
+  integrity sha512-KU1ovavUURfKffqNn7F2jwgQ0tUSa2WosnHSztVYArCr22HP2nR7xHrd8DddFL4uenaT9KGXlNgx1IUPGUdZSw==
+  dependencies:
+    use-latest-callback "^0.2.1"
 
 react-native-web@~0.19.13:
   version "0.19.13"

@@ -6,6 +6,7 @@ import Ionicons from "@expo/vector-icons/Ionicons";
 import ReportCard from "../components/ReportCard";
 import {
   Entypo,
+  FontAwesome,
   FontAwesome5,
   FontAwesome6,
   MaterialIcons,
@@ -13,6 +14,8 @@ import {
 
 const Reports = () => {
   const navigation = useNavigation();
+
+  const master = false;
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
@@ -23,6 +26,13 @@ const Reports = () => {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ gap: 20 }}
       >
+        {master && (
+          <ReportCard
+            name="Employees"
+            icon={<FontAwesome name="users" size={24} color="#2563EB" />}
+            onPress={() => navigation.navigate("employees")}
+          />
+        )}
         <ReportCard
           name="Leaves"
           icon={<Ionicons name="calendar" size={24} color="#2563EB" />}

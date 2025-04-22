@@ -13,6 +13,8 @@ import AttendanceDetails from "./screens/AttendanceDetails";
 import CalendarScreen from "./screens/CalendarScreen";
 import LeaveScreen from "./screens/LeaveScreen";
 import NotificationScreen from "./screens/NotificationScreen";
+import Employees from "./screens/Employees";
+import NotifyTopTabs from "./navigation/NotifyTopTabs";
 
 const Stack = createNativeStackNavigator();
 
@@ -54,6 +56,7 @@ export default function Index() {
       <Stack.Screen name="calendar" component={CalendarScreen} />
       <Stack.Screen name="leave" component={LeaveScreen} />
       <Stack.Screen name="notifications" component={NotificationScreen} />
+      <Stack.Screen name="employees" component={Employees} />
     </Stack.Navigator>
     // </NavigationContainer>
   );
