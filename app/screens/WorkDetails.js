@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, ScrollView } from "react-native";
+import { View, Text, TouchableOpacity, ScrollView, Share } from "react-native";
 import React, { useState } from "react";
 import { useNavigation, useRoute } from "@react-navigation/native";
 import Fontisto from "@expo/vector-icons/Fontisto";
@@ -14,6 +14,33 @@ const WorkDetails = () => {
   const [isCheckIn, setIsCheckIn] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
 
+  const createGoogleMapsLink = (latitude, longitude) => {
+    return `https://www.google.com/maps?q=${latitude},${longitude}`;
+  };
+
+  const shareJobDetails = async (data) => {
+    try {
+      const message = `
+          Share Details:
+          - Name: ${data.cmpName}
+          - Branch: ${data.code}
+          - Location: ${data.address}
+          - Distance: ${data.distance}
+          - Address: ${data.address}
+          - Google Maps Link: ${createGoogleMapsLink(
+            data.latitude,
+            data.longitude
+          )}
+        `;
+
+      await Share.share({
+        message,
+      });
+    } catch (error) {
+      console.error("Error sharing job details:", error);
+    }
+  };
+
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <Header title="Shift Details" navigate={() => navigation.goBack()} />
@@ -22,7 +49,7 @@ const WorkDetails = () => {
           alignItems: "center",
           alignSelf: "center",
           justifyContent: "center",
-          height: 320,
+          height: "auto",
           width: "100%",
           borderRadius: 16,
           padding: 16,
@@ -46,7 +73,7 @@ const WorkDetails = () => {
               fontSize: 16,
             }}
           >
-            {data.workId}
+            {data.code}
           </Text>
           <View
             style={{
@@ -91,13 +118,19 @@ const WorkDetails = () => {
           <View
             style={{
               flexDirection: "row",
-              alignItems: "center",
+              alignItems: "flex-start",
               justifyContent: "center",
               gap: 10,
             }}
           >
             <FontAwesome6 name="location-dot" size={16} color="#64748B" />
-            <Text style={{ fontFamily: "Inter-Regular", color: "#1B1B1B99" }}>
+            <Text
+              style={{
+                fontFamily: "Inter-Regular",
+                color: "#1B1B1B99",
+                width: "83%",
+              }}
+            >
               {data.address}
             </Text>
           </View>
@@ -110,7 +143,7 @@ const WorkDetails = () => {
               alignItems: "center",
               justifyContent: "center",
             }}
-            onPress={() => {}}
+            onPress={() => shareJobDetails(data)}
           >
             <Fontisto name="share" size={16} color="#2563EB" />
           </TouchableOpacity>

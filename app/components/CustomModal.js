@@ -1,3 +1,4 @@
+import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Modal,
@@ -6,12 +7,18 @@ import {
   TextInput,
   Dimensions,
   TouchableOpacity,
+  Platform,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
+import DateTimePicker from "@react-native-community/datetimepicker";
 
 const CustomModal = ({ visible, onClose, onSubmit }) => {
   const [selectedValue, setSelectedValue] = useState(null);
   const [text, setText] = useState("");
+  const [startTime, setStartTime] = useState(new Date());
+  const [endTime, setEndTime] = useState(new Date());
+  const [showStartPicker, setShowStartPicker] = useState(false);
+  const [showEndPicker, setShowEndPicker] = useState(false);
 
   const { width } = Dimensions.get("window");
 
@@ -32,7 +39,7 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
       >
         <View
           style={{
-            height: 400,
+            height: "auto",
             width: width - 40,
             marginHorizontal: 20,
             backgroundColor: "white",
@@ -53,6 +60,7 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
             Break
           </Text>
 
+          {/* Reason Dropdown */}
           <Text
             style={{
               fontSize: 14,
@@ -84,6 +92,92 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
             onChange={(item) => setSelectedValue(item.value)}
           />
 
+          {/* Start & End Time */}
+          <Text
+            style={{
+              fontSize: 14,
+              marginBottom: 5,
+              color: "#64748B",
+              fontFamily: "Inter-Regular",
+            }}
+          >
+            Break Time
+          </Text>
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: 20,
+            }}
+          >
+            <TouchableOpacity
+              style={{
+                height: 44,
+                width: 150,
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexDirection: "row",
+                padding: 5,
+              }}
+              onPress={() => setShowStartPicker(true)}
+            >
+              <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                {startTime ? startTime.toLocaleTimeString() : "Start Time"}
+              </Text>
+              <Ionicons name="time-outline" size={22} color="#64748B" />
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                height: 44,
+                width: 150,
+                borderWidth: 1,
+                borderColor: "#E2E8F0",
+                borderRadius: 8,
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexDirection: "row",
+                padding: 5,
+              }}
+              onPress={() => setShowEndPicker(true)}
+            >
+              <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                {endTime ? endTime.toLocaleTimeString() : "End Time"}
+              </Text>
+              <Ionicons name="time-outline" size={22} color="#64748B" />
+            </TouchableOpacity>
+          </View>
+
+          {showStartPicker && (
+            <DateTimePicker
+              value={startTime}
+              mode="time"
+              is24Hour={false}
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowStartPicker(Platform.OS === "ios");
+                if (selectedDate) setStartTime(selectedDate);
+              }}
+            />
+          )}
+
+          {showEndPicker && (
+            <DateTimePicker
+              value={endTime}
+              mode="time"
+              is24Hour={false}
+              display="default"
+              onChange={(event, selectedDate) => {
+                setShowEndPicker(Platform.OS === "ios");
+                if (selectedDate) setEndTime(selectedDate);
+              }}
+            />
+          )}
+
+          {/* Note Textarea */}
           <Text
             style={{
               fontSize: 14,
@@ -110,6 +204,8 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
             value={text}
             onChangeText={setText}
           />
+
+          {/* Cancel & Submit Btn */}
           <View
             style={{
               flexDirection: "row",
