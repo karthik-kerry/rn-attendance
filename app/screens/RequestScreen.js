@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { Text, ScrollView } from "react-native";
 import React from "react";
 import RequestCard from "../components/RequestCard";
 
@@ -26,11 +26,9 @@ const RequestScreen = () => {
         btnText1="Attendance"
         btnPrimary1="#13950F"
         btnSecondary1="#13950F14"
-        btnOnPress1={() => {}}
         btnText2="Send Notification"
         btnPrimary2="#2563EB"
         btnSecondary2="#2563EB1F"
-        btnOnPress2={() => {}}
         isApproved={false}
         isNotificationSend={false}
       />
@@ -44,11 +42,9 @@ const RequestScreen = () => {
         btnText1="Denied"
         btnPrimary1="#DD1701"
         btnSecondary1="#DD17011F"
-        btnOnPress1={() => {}}
         btnText2="Approve"
         btnPrimary2="#13950F"
         btnSecondary2="#13950F14"
-        btnOnPress2={() => {}}
         isApproved={false}
         isNotificationSend={false}
       />
