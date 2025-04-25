@@ -477,7 +477,7 @@ const HomeScreen = () => {
               >
                 <MaterialIcons name="timer" size={24} color="#2563EB" />
                 <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-                  10:00 AM
+                  {shiftData?.shift_start_time}
                 </Text>
                 <Text
                   style={{
@@ -522,7 +522,7 @@ const HomeScreen = () => {
               >
                 <MaterialIcons name="timer" size={24} color="#2563EB" />
                 <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-                  10:00 AM
+                  {shiftData?.shift_start_time}
                 </Text>
                 <Text
                   style={{
@@ -606,8 +606,8 @@ const HomeScreen = () => {
                     return false;
 
                   const userCoords = {
-                    latitude: location.coords.latitude,
-                    longitude: location.coords.longitude,
+                    latitude: 13.043784235701205, //location.coords.latitude,
+                    longitude: 80.269433297331, //location.coords.longitude,
                   };
                   const jobCoords = {
                     latitude: job.latitude,
@@ -624,7 +624,7 @@ const HomeScreen = () => {
                       navigation.navigate("details", {
                         data: {
                           code: job.code,
-                          distance: `${job.geo_tolerance_radius_mtr}m`,
+                          distance: `${job.geo_tolerance_radius_mtr} m`,
                           cmpName: job.name || "Unknown Location",
                           isCheckIn: isCheckIn,
                           setIsCheckIn: setIsCheckIn,
@@ -681,7 +681,7 @@ const HomeScreen = () => {
                             fontSize: 11,
                           }}
                         >
-                          {job.geo_tolerance_radius_mtr}m
+                          {job.geo_tolerance_radius_mtr} m
                         </Text>
                       </View>
                     </View>
