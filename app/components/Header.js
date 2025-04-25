@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
-import { FontAwesome, Fontisto } from "@expo/vector-icons";
+import { AntDesign, FontAwesome, Fontisto } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 
 const Header = ({ title, navigate }) => {
@@ -34,7 +34,7 @@ const Header = ({ title, navigate }) => {
           }}
           onPress={navigate}
         >
-          <FontAwesome name="angle-left" size={24} color="#64748B" />
+          <AntDesign name="left" size={20} color="#64748B" />
         </TouchableOpacity>
         <Text
           style={{ fontFamily: "Inter-Bold", fontSize: 18, color: "#1b1b1b" }}

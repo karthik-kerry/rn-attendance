@@ -41,6 +41,7 @@ const HomeScreen = () => {
   const [isCheckIn, setIsCheckIn] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [jobs, setJobs] = useState(null);
+  const [shiftData, setShiftData] = useState(null);
 
   useEffect(() => {
     const updateTime = () => {
@@ -116,9 +117,9 @@ const HomeScreen = () => {
         return;
       }
       try {
-        const endPoint = `${base_url}hrm/user_company_details/14/78/`; //userData.user_id
+        const endPoint = `${base_url}hrm/user_company_details/14/78/`; //${userData?.user_id}
         const headers = {
-          Authorization: `Token ${userData.token}`, //userData.token
+          Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
         };
         const res = await axios.get(endPoint, { headers });
         setJobs(res.data);
@@ -152,6 +153,22 @@ const HomeScreen = () => {
       console.error("Error sharing job details:", error);
     }
   };
+
+  useEffect(() => {
+    const fetchShiftDetails = async () => {
+      try {
+        const endPoint = `${base_url}hrm/attendance/12/76/`;
+        const headers = {
+          Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
+        };
+        const res = await axios.get(endPoint, { headers });
+        setShiftData(res.data);
+      } catch (error) {
+        console.log("Error fetching shift details:", error);
+      }
+    };
+    fetchShiftDetails();
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
@@ -307,7 +324,13 @@ const HomeScreen = () => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            onPress={() => setActiveTab("home")}
+            onPress={() => {
+              if (shiftData?.now_user_come_to_office_days === 1) {
+                alert(shiftData?.office_work_status_message);
+              } else {
+                setActiveTab("home");
+              }
+            }}
             style={{
               flexDirection: "row",
               alignItems: "center",
