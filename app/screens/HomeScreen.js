@@ -7,6 +7,7 @@ import {
   ScrollView,
   Share,
   Modal,
+  TextInput,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -23,6 +24,7 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { base_url } from "../constant/api";
 import axios from "axios";
 import haversine from "haversine-distance";
+import { Dropdown } from "react-native-element-dropdown";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -44,6 +46,13 @@ const HomeScreen = () => {
   const [jobs, setJobs] = useState(null);
   const [shiftData, setShiftData] = useState(null);
   const [officeAlert, setOfficeAlert] = useState(false);
+  const [note, setNote] = useState("");
+  const [selectedValue, setSelectedValue] = useState(null);
+
+  const dropdownData = [
+    { label: "Option 1", value: "option1" },
+    { label: "Option 2", value: "option2" },
+  ];
 
   useEffect(() => {
     const updateTime = () => {
@@ -1057,6 +1066,62 @@ const HomeScreen = () => {
             >
               {shiftData?.office_work_status_message}
             </Text>
+            <Text
+              style={{
+                fontSize: 14,
+                marginTop: 20,
+                color: "#64748B",
+                fontFamily: "Inter-Regular",
+              }}
+            >
+              Reason
+            </Text>
+            <Dropdown
+              style={{
+                backgroundColor: "white",
+                borderRadius: 8,
+                paddingHorizontal: 10,
+                height: 50,
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#E2E8F0",
+              }}
+              placeholderStyle={{ color: "#64748B" }}
+              selectedTextStyle={{ color: "#111827" }}
+              data={dropdownData}
+              labelField="label"
+              valueField="value"
+              placeholder="Select"
+              value={selectedValue}
+              onChange={(item) => setSelectedValue(item.value)}
+            />
+            <Text
+              style={{
+                fontSize: 14,
+                marginBottom: 5,
+                color: "#64748B",
+                fontFamily: "Inter-Regular",
+                marginTop: 10,
+              }}
+            >
+              Note
+            </Text>
+            <TextInput
+              style={{
+                backgroundColor: "white",
+                borderRadius: 8,
+                height: 120,
+                padding: 10,
+                textAlignVertical: "top",
+                borderWidth: 1,
+                borderStyle: "solid",
+                borderColor: "#E2E8F0",
+              }}
+              multiline
+              numberOfLines={4}
+              value={note}
+              onChangeText={setNote}
+            />
             {/* Cancel & Submit Btn */}
             <View
               style={{
@@ -1070,7 +1135,26 @@ const HomeScreen = () => {
                 onPress={() => setOfficeAlert(false)}
                 style={{
                   height: 44,
-                  width: "100%",
+                  width: "48%",
+                  borderRadius: 47,
+                  borderWidth: 1,
+                  borderStyle: "solid",
+                  borderColor: "#64748B",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text
+                  style={{ fontFamily: "Inter-SemiBold", color: "#64748B" }}
+                >
+                  Close
+                </Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => {}}
+                style={{
+                  height: 44,
+                  width: "48%",
                   borderRadius: 47,
                   backgroundColor: "#2563EB",
                   alignItems: "center",
@@ -1078,7 +1162,7 @@ const HomeScreen = () => {
                 }}
               >
                 <Text style={{ fontFamily: "Inter-SemiBold", color: "#fff" }}>
-                  Close
+                  Submit
                 </Text>
               </TouchableOpacity>
             </View>
