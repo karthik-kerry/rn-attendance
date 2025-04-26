@@ -157,7 +157,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchShiftDetails = async () => {
       try {
-        const endPoint = `${base_url}hrm/attendance/12/76/`;
+        const endPoint = `${base_url}hrm/attendance/14/78/`;
         const headers = {
           Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
         };
@@ -325,7 +325,7 @@ const HomeScreen = () => {
 
           <TouchableOpacity
             onPress={() => {
-              if (shiftData?.now_user_come_to_office_days === 1) {
+              if (shiftData?.workfromeoffice === true) {
                 alert(shiftData?.office_work_status_message);
               } else {
                 setActiveTab("home");
@@ -477,7 +477,9 @@ const HomeScreen = () => {
               >
                 <MaterialIcons name="timer" size={24} color="#2563EB" />
                 <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-                  {shiftData?.shift_start_time}
+                  {shiftData?.shift_start_time === null
+                    ? "00:00:00"
+                    : shiftData?.shift_start_time}
                 </Text>
                 <Text
                   style={{
