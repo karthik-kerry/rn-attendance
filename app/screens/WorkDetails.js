@@ -348,6 +348,7 @@ const WorkDetails = () => {
         </TouchableOpacity>
       </View>
       <ScrollView
+        showsVerticalScrollIndicator={false}
         style={{
           flex: 1,
           backgroundColor: "white",
