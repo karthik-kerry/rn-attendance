@@ -1077,7 +1077,7 @@ const HomeScreen = () => {
                   justifyContent: "center",
                 }}
               >
-                <Text style={{ fontFamily: "Inter-Regular", color: "#fff" }}>
+                <Text style={{ fontFamily: "Inter-SemiBold", color: "#fff" }}>
                   Close
                 </Text>
               </TouchableOpacity>
