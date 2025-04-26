@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Share,
+  Modal,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -42,6 +43,7 @@ const HomeScreen = () => {
   const [modalVisible, setModalVisible] = useState(false);
   const [jobs, setJobs] = useState(null);
   const [shiftData, setShiftData] = useState(null);
+  const [officeAlert, setOfficeAlert] = useState(false);
 
   useEffect(() => {
     const updateTime = () => {
@@ -326,7 +328,7 @@ const HomeScreen = () => {
           <TouchableOpacity
             onPress={() => {
               if (shiftData?.workfromeoffice === true) {
-                alert(shiftData?.office_work_status_message);
+                setOfficeAlert(true);
               } else {
                 setActiveTab("home");
               }
@@ -1014,6 +1016,75 @@ const HomeScreen = () => {
           />
         )}
       </ScrollView>
+      {/* Work from office alert */}
+      <Modal animationType="slide" transparent={true} visible={officeAlert}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#00000060",
+          }}
+        >
+          <View
+            style={{
+              height: "auto",
+              width: width - 40,
+              marginHorizontal: 20,
+              backgroundColor: "white",
+              borderRadius: 20,
+              padding: 20,
+              elevation: 5,
+              justifyContent: "flex-start",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Inter-Bold",
+                textAlign: "center",
+                fontSize: 22,
+                color: "#1b1b1b",
+              }}
+            >
+              Alert
+            </Text>
+            <Text
+              style={{
+                color: "#1b1b1b",
+                fontFamily: "Inter-Regular",
+                marginTop: 10,
+              }}
+            >
+              {shiftData?.office_work_status_message}
+            </Text>
+            {/* Cancel & Submit Btn */}
+            <View
+              style={{
+                flexDirection: "row",
+                justifyContent: "space-between",
+                width: "100%",
+                marginTop: "10%",
+              }}
+            >
+              <TouchableOpacity
+                onPress={() => setOfficeAlert(false)}
+                style={{
+                  height: 44,
+                  width: "100%",
+                  borderRadius: 47,
+                  backgroundColor: "#2563EB",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <Text style={{ fontFamily: "Inter-Regular", color: "#fff" }}>
+                  Close
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 };
