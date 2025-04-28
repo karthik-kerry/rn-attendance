@@ -8,6 +8,7 @@ import {
   Share,
   Modal,
   TextInput,
+  Alert,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -23,7 +24,6 @@ import CustomModal from "../components/CustomModal";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { base_url } from "../constant/api";
 import axios from "axios";
-import haversine from "haversine-distance";
 import { Dropdown } from "react-native-element-dropdown";
 
 const HomeScreen = () => {
@@ -42,8 +42,9 @@ const HomeScreen = () => {
   );
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [isCheckIn, setIsCheckIn] = useState(false);
+  const [checkInStatus, setCheckInStatus] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
-  const [jobs, setJobs] = useState(null);
+  const [jobs, setJobs] = useState([]);
   const [shiftData, setShiftData] = useState(null);
   const [officeAlert, setOfficeAlert] = useState(false);
   const [note, setNote] = useState("");
@@ -128,11 +129,15 @@ const HomeScreen = () => {
         return;
       }
       try {
-        const endPoint = `${base_url}hrm/user_company_details/14/78/`; //${userData?.user_id}
+        const endPoint = `${base_url}hrm/hrm_mas_location/14/78/`; //${userData?.user_id}
         const headers = {
           Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
         };
-        const res = await axios.get(endPoint, { headers });
+        const payload = {
+          user_latitude: 13.09997989105245, //location.coords.latitude
+          user_longitude: 80.29011704834728, //location.coords.longitude
+        };
+        const res = await axios.post(endPoint, payload, { headers });
         setJobs(res.data);
       } catch (error) {
         console.log("Error fetching nearby jobs:", error.message);
@@ -168,7 +173,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchShiftDetails = async () => {
       try {
-        const endPoint = `${base_url}hrm/attendance/14/78/`;
+        const endPoint = `${base_url}hrm/attendance/12/76/`;
         const headers = {
           Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
         };
@@ -180,6 +185,25 @@ const HomeScreen = () => {
     };
     fetchShiftDetails();
   }, []);
+
+  const handleCheckIn = (job) => {
+    const distanceDifference =
+      job.distance_meters - job.geo_tolerance_radius_mtr;
+
+    if (job.checkin === false) {
+      Alert.alert(
+        "Check-In Alert",
+        `Please move closer by ${Math.round(
+          distanceDifference
+        )} meters to check in.`
+      );
+    } else {
+      setCheckInStatus((prevStatus) => ({
+        ...prevStatus,
+        [job.id]: !prevStatus[job.id],
+      }));
+    }
+  };
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
@@ -612,54 +636,141 @@ const HomeScreen = () => {
         {activeTab === "office" && (
           <>
             {jobs &&
-              jobs.locations &&
-              jobs.locations
-                .filter((job) => {
-                  if (!location || !job.latitude || !job.longitude)
-                    return false;
-
-                  const userCoords = {
-                    latitude: 13.043784235701205, //location.coords.latitude,
-                    longitude: 80.269433297331, //location.coords.longitude,
-                  };
-                  const jobCoords = {
-                    latitude: job.latitude,
-                    longitude: job.longitude,
-                  };
-                  const distance = haversine(userCoords, jobCoords);
-
-                  return distance <= job.geo_tolerance_radius_mtr;
-                })
-                .map((job, i) => (
-                  <TouchableOpacity
-                    key={i}
-                    onPress={() =>
-                      navigation.navigate("details", {
-                        data: {
-                          code: job.code,
-                          distance: `${job.geo_tolerance_radius_mtr} m`,
-                          cmpName: job.name || "Unknown Location",
-                          isCheckIn: isCheckIn,
-                          setIsCheckIn: setIsCheckIn,
-                          address: job.address,
-                          latitude: job.latitude,
-                          longitude: job.longitude,
-                        },
-                      })
-                    }
+              jobs.datas &&
+              jobs.datas.map((job, i) => (
+                <TouchableOpacity
+                  disabled={job.checkin === false}
+                  key={i}
+                  onPress={() =>
+                    navigation.navigate("details", {
+                      data: {
+                        code: job.code,
+                        distance: `${job.geo_tolerance_radius_mtr} m`,
+                        cmpName: job.name || "Unknown Location",
+                        isCheckIn: isCheckIn,
+                        setIsCheckIn: setIsCheckIn,
+                        address: job.address,
+                        latitude: job.latitude,
+                        longitude: job.longitude,
+                      },
+                    })
+                  }
+                  style={{
+                    alignItems: "center",
+                    alignSelf: "center",
+                    justifyContent: "center",
+                    height: "auto",
+                    width: "90%",
+                    borderRadius: 16,
+                    padding: 16,
+                    backgroundColor: "white",
+                    elevation: 1,
+                    marginBottom: 20,
+                  }}
+                >
+                  <View
                     style={{
+                      flexDirection: "row",
                       alignItems: "center",
-                      alignSelf: "center",
-                      justifyContent: "center",
-                      height: "auto",
-                      width: "90%",
-                      borderRadius: 16,
-                      padding: 16,
-                      backgroundColor: "white",
-                      elevation: 1,
-                      marginBottom: 20,
+                      justifyContent: "space-between",
+                      width: "100%",
                     }}
                   >
+                    <Text
+                      style={{
+                        fontFamily: "Inter-SemiBold",
+                        color: "#2563EB",
+                        fontSize: 16,
+                      }}
+                    >
+                      {job.code}
+                    </Text>
+                    <View
+                      style={{
+                        backgroundColor: "#64748B1F",
+                        height: 26,
+                        paddingHorizontal: 15,
+                        borderRadius: 30,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Inter-Regular",
+                          color: "#64748B",
+                          fontSize: 11,
+                        }}
+                      >
+                        {job.geo_tolerance_radius_mtr} m
+                      </Text>
+                    </View>
+                  </View>
+                  <View style={{ alignSelf: "left", marginVertical: 10 }}>
+                    <Text
+                      style={{
+                        fontFamily: "Inter-Bold",
+                        color: "#1b1b1b",
+                        fontSize: 16,
+                      }}
+                    >
+                      {job.name}
+                    </Text>
+                  </View>
+                  <View
+                    style={{
+                      flexDirection: "row",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                    }}
+                  >
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        alignItems: "center",
+                        justifyContent: "space-between",
+                        width: "85%",
+                      }}
+                    >
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          alignItems: "start",
+                          justifyContent: "center",
+                          gap: 10,
+                        }}
+                      >
+                        <FontAwesome6
+                          name="location-dot"
+                          size={16}
+                          color="#64748B"
+                        />
+                        <Text
+                          style={{
+                            fontFamily: "Inter-Regular",
+                            color: "#1B1B1B99",
+                            width: "96%",
+                          }}
+                        >
+                          {job.address}
+                        </Text>
+                      </View>
+                    </View>
+                    <TouchableOpacity
+                      style={{
+                        backgroundColor: "#2563EB1F",
+                        height: 36,
+                        width: 36,
+                        borderRadius: 30,
+                        alignItems: "center",
+                        justifyContent: "center",
+                      }}
+                      onPress={() => shareJobDetails(job)}
+                    >
+                      <Fontisto name="share" size={16} color="#2563EB" />
+                    </TouchableOpacity>
+                  </View>
+                  {checkInStatus[job.id] ? (
                     <View
                       style={{
                         flexDirection: "row",
@@ -668,170 +779,42 @@ const HomeScreen = () => {
                         width: "100%",
                       }}
                     >
-                      <Text
-                        style={{
-                          fontFamily: "Inter-SemiBold",
-                          color: "#2563EB",
-                          fontSize: 16,
-                        }}
-                      >
-                        {job.code}
-                      </Text>
-                      <View
-                        style={{
-                          backgroundColor: "#64748B1F",
-                          height: 26,
-                          paddingHorizontal: 15,
-                          borderRadius: 30,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <Text
-                          style={{
-                            fontFamily: "Inter-Regular",
-                            color: "#64748B",
-                            fontSize: 11,
-                          }}
-                        >
-                          {job.geo_tolerance_radius_mtr} m
-                        </Text>
-                      </View>
-                    </View>
-                    <View style={{ alignSelf: "left", marginVertical: 10 }}>
-                      <Text
-                        style={{
-                          fontFamily: "Inter-Bold",
-                          color: "#1b1b1b",
-                          fontSize: 16,
-                        }}
-                      >
-                        {job.name}
-                      </Text>
-                    </View>
-                    <View
-                      style={{
-                        flexDirection: "row",
-                        alignItems: "center",
-                        justifyContent: "space-between",
-                      }}
-                    >
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          width: "85%",
-                        }}
-                      >
-                        <View
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "start",
-                            justifyContent: "center",
-                            gap: 10,
-                          }}
-                        >
-                          <FontAwesome6
-                            name="location-dot"
-                            size={16}
-                            color="#64748B"
-                          />
-                          <Text
-                            style={{
-                              fontFamily: "Inter-Regular",
-                              color: "#1B1B1B99",
-                              width: "96%",
-                            }}
-                          >
-                            {job.address}
-                          </Text>
-                        </View>
-                      </View>
-                      <TouchableOpacity
-                        style={{
-                          backgroundColor: "#2563EB1F",
-                          height: 36,
-                          width: 36,
-                          borderRadius: 30,
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                        onPress={() => shareJobDetails(job)}
-                      >
-                        <Fontisto name="share" size={16} color="#2563EB" />
-                      </TouchableOpacity>
-                    </View>
-                    {isCheckIn ? (
-                      <View
-                        style={{
-                          flexDirection: "row",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          width: "100%",
-                        }}
-                      >
-                        <TouchableOpacity
-                          style={{
-                            height: 40,
-                            width: "48%",
-                            borderRadius: 47,
-                            borderWidth: 1,
-                            borderStyle: "solid",
-                            borderColor: "#2563EB",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginTop: 20,
-                          }}
-                          onPress={() => setModalVisible(true)}
-                        >
-                          <Text
-                            style={{
-                              fontFamily: "Inter-SemiBold",
-                              fontSize: 16,
-                              color: "#2563EB",
-                              textTransform: "capitalize",
-                            }}
-                          >
-                            Break
-                          </Text>
-                        </TouchableOpacity>
-                        <TouchableOpacity
-                          style={{
-                            height: 40,
-                            width: "48%",
-                            borderRadius: 47,
-                            backgroundColor: "#DD1701",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            marginTop: 20,
-                          }}
-                          onPress={() => setIsCheckIn((prev) => !prev)}
-                        >
-                          <Text
-                            style={{
-                              fontFamily: "Inter-SemiBold",
-                              fontSize: 16,
-                              color: "white",
-                              textTransform: "capitalize",
-                            }}
-                          >
-                            Check Out
-                          </Text>
-                        </TouchableOpacity>
-                      </View>
-                    ) : (
                       <TouchableOpacity
                         style={{
                           height: 40,
-                          width: "100%",
+                          width: "48%",
                           borderRadius: 47,
-                          backgroundColor: "#2563EB",
+                          borderWidth: 1,
+                          borderStyle: "solid",
+                          borderColor: "#2563EB",
                           alignItems: "center",
                           justifyContent: "center",
                           marginTop: 20,
                         }}
-                        onPress={() => setIsCheckIn((prev) => !prev)}
+                        onPress={() => setModalVisible(true)}
+                      >
+                        <Text
+                          style={{
+                            fontFamily: "Inter-SemiBold",
+                            fontSize: 16,
+                            color: "#2563EB",
+                            textTransform: "capitalize",
+                          }}
+                        >
+                          Break
+                        </Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity
+                        style={{
+                          height: 40,
+                          width: "48%",
+                          borderRadius: 47,
+                          backgroundColor: "#DD1701",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          marginTop: 20,
+                        }}
+                        onPress={() => handleCheckIn(job)}
                       >
                         <Text
                           style={{
@@ -841,12 +824,39 @@ const HomeScreen = () => {
                             textTransform: "capitalize",
                           }}
                         >
-                          Check In
+                          Check Out
                         </Text>
                       </TouchableOpacity>
-                    )}
-                  </TouchableOpacity>
-                ))}
+                    </View>
+                  ) : (
+                    <TouchableOpacity
+                      disabled={job.checkin === false}
+                      style={{
+                        height: 40,
+                        width: "100%",
+                        borderRadius: 47,
+                        backgroundColor: "#2563EB",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        marginTop: 20,
+                        opacity: job.checkin === false ? 0.5 : 1,
+                      }}
+                      onPress={() => handleCheckIn(job)}
+                    >
+                      <Text
+                        style={{
+                          fontFamily: "Inter-SemiBold",
+                          fontSize: 16,
+                          color: "white",
+                          textTransform: "capitalize",
+                        }}
+                      >
+                        Check In
+                      </Text>
+                    </TouchableOpacity>
+                  )}
+                </TouchableOpacity>
+              ))}
           </>
         )}
         <View
