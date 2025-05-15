@@ -131,7 +131,7 @@ const HomeScreen = () => {
       try {
         const endPoint = `${base_url}hrm/hrm_mas_location/14/78/`; //${userData?.user_id}
         const headers = {
-          Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
+          Authorization: `Token 1f9187afae8c42f557018c9e48c9b020b0abf326`, //${userData?.token}
         };
         const payload = {
           user_latitude: 13.09997989105245, //location.coords.latitude
@@ -175,7 +175,7 @@ const HomeScreen = () => {
       try {
         const endPoint = `${base_url}hrm/attendance/12/76/`;
         const headers = {
-          Authorization: `Token b9c5f914363bbac9070f9f8b2849e527fa47f726`, //${userData?.token}
+          Authorization: `Token 1f9187afae8c42f557018c9e48c9b020b0abf326`, //${userData?.token}
         };
         const res = await axios.get(endPoint, { headers });
         setShiftData(res.data);
@@ -186,7 +186,29 @@ const HomeScreen = () => {
     fetchShiftDetails();
   }, []);
 
-  const handleCheckIn = (job) => {
+  const checkIn = async (id) => {
+    try {
+      const endPoint = `${base_url}hrm/hrm_user_attendance/14/78/`;
+      const payload = {
+        user_date_time: "2025-05-01T13:00:00Z",
+        user_latitude: location.coords.latitude,
+        user_longitude: location.coords.longitude,
+        master_location: id,
+        attendance_status: "present",
+        reason: 98,
+        // "reason_notes": "Heavy traffic on the way",
+        device_via: "finger_print",
+        work_place: "office",
+        // "createvia":null
+      };
+      const res = await axios.post(endPoint, payload);
+      console.log(res.data.message);
+    } catch (error) {
+      console.log("Error check in: ", error);
+    }
+  };
+
+  const handleCheckIn = async (job) => {
     const distanceDifference =
       job.distance_meters - job.geo_tolerance_radius_mtr;
 
@@ -198,10 +220,16 @@ const HomeScreen = () => {
         )} meters to check in.`
       );
     } else {
-      setCheckInStatus((prevStatus) => ({
-        ...prevStatus,
-        [job.id]: !prevStatus[job.id],
-      }));
+      try {
+        await checkIn(job.id);
+        setCheckInStatus((prevStatus) => ({
+          ...prevStatus,
+          [job.id]: !prevStatus[job.id],
+        }));
+      } catch (error) {
+        console.error("Error during check-in:", error);
+        Alert.alert("Error", "Failed to check in. Please try again.");
+      }
     }
   };
 
@@ -749,7 +777,7 @@ const HomeScreen = () => {
                           style={{
                             fontFamily: "Inter-Regular",
                             color: "#1B1B1B99",
-                            width: "96%",
+                            width: "94%",
                           }}
                         >
                           {job.address}
@@ -757,6 +785,7 @@ const HomeScreen = () => {
                       </View>
                     </View>
                     <TouchableOpacity
+                      disabled={job.checkin === false}
                       style={{
                         backgroundColor: "#2563EB1F",
                         height: 36,
