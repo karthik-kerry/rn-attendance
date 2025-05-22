@@ -129,7 +129,7 @@ const HomeScreen = () => {
         return;
       }
       try {
-        const endPoint = `${base_url}hrm/hrm_mas_location/14/78/`; //${userData?.user_id}
+        const endPoint = `${base_url}/hrm/hrm_mas_location/14/78/`; //${userData?.user_id}
         const headers = {
           Authorization: `Token 1f9187afae8c42f557018c9e48c9b020b0abf326`, //${userData?.token}
         };
@@ -173,7 +173,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchShiftDetails = async () => {
       try {
-        const endPoint = `${base_url}hrm/attendance/12/76/`;
+        const endPoint = `${base_url}/hrm/attendance/12/76/`;
         const headers = {
           Authorization: `Token 1f9187afae8c42f557018c9e48c9b020b0abf326`, //${userData?.token}
         };
@@ -188,7 +188,7 @@ const HomeScreen = () => {
 
   const checkIn = async (id) => {
     try {
-      const endPoint = `${base_url}hrm/hrm_user_attendance/14/78/`;
+      const endPoint = `${base_url}/hrm/hrm_user_attendance/14/78/`;
       const payload = {
         user_date_time: "2025-05-01T13:00:00Z",
         user_latitude: location.coords.latitude,
