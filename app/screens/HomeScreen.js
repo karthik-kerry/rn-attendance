@@ -121,7 +121,7 @@ const HomeScreen = () => {
     fetchUserData();
     getLocation();
   }, []);
-
+  // console.log(userData);
   useEffect(() => {
     const fetchNearbyJobs = async () => {
       if (!userData.token) {
@@ -129,9 +129,9 @@ const HomeScreen = () => {
         return;
       }
       try {
-        const endPoint = `${base_url}/hrm/hrm_mas_location/14/78/`; //${userData?.user_id}
+        const endPoint = `${base_url}/hrm/hrm_mas_location/${userData?.user_id}/78/`; //${userData?.user_id}
         const headers = {
-          Authorization: `Token 1f9187afae8c42f557018c9e48c9b020b0abf326`, //${userData?.token}
+          Authorization: `Token ${userData?.token}`, //${userData?.token}
         };
         const payload = {
           user_latitude: 13.09997989105245, //location.coords.latitude
@@ -175,7 +175,7 @@ const HomeScreen = () => {
       try {
         const endPoint = `${base_url}/hrm/attendance/12/76/`;
         const headers = {
-          Authorization: `Token 1f9187afae8c42f557018c9e48c9b020b0abf326`, //${userData?.token}
+          Authorization: `Token ${userData?.token}`, //${userData?.token}
         };
         const res = await axios.get(endPoint, { headers });
         setShiftData(res.data);
