@@ -173,7 +173,7 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchShiftDetails = async () => {
       try {
-        const endPoint = `${base_url}/hrm/attendance/12/76/`;
+        const endPoint = `${base_url}/hrm/attendance/14/78/`;
         const headers = {
           Authorization: `Token ${userData?.token}`, //${userData?.token}
         };
