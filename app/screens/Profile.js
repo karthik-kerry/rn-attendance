@@ -1,4 +1,11 @@
-import { View, Text, StatusBar, Image, TouchableOpacity } from "react-native";
+import {
+  View,
+  Text,
+  StatusBar,
+  Image,
+  TouchableOpacity,
+  Alert,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import ProfileAlt from "../../assets/images/profile-alt.jpg";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -9,8 +16,11 @@ import {
   Fontisto,
   SimpleLineIcons,
 } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const Profile = () => {
+  const navigation = useNavigation();
+
   const [userData, setUserData] = useState(null);
   const [isNotify, setIsNotify] = useState(false);
 
@@ -26,6 +36,22 @@ const Profile = () => {
 
     fetchUserData();
   }, []);
+
+  const handleLogout = async () => {
+    try {
+      const endpoint = `${base_url}/core/logout/`;
+      const headers = {
+        Authorization: `Token ${userData?.token}`,
+      };
+      const res = await axios.post(endpoint, {}, { headers });
+      await AsyncStorage.removeItem("userData");
+      Alert.alert("Logout successful");
+      navigation.navigate("login");
+    } catch (error) {
+      console.log("Error during logout:", error);
+      Alert.alert("Error during logout:", error.response.data.message);
+    }
+  };
 
   return (
     <View style={{ flex: 1 }}>
@@ -281,7 +307,7 @@ const Profile = () => {
             <Entypo name="chevron-thin-right" size={24} color="#64748B99" />
           </TouchableOpacity>
           <TouchableOpacity
-            onPress={() => {}}
+            onPress={handleLogout}
             style={{
               backgroundColor: "white",
               height: 54,
