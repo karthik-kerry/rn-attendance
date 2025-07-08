@@ -21,6 +21,7 @@ import MaterialIcons from "@expo/vector-icons/MaterialIcons";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import AntDesign from "@expo/vector-icons/AntDesign";
 import CustomModal from "../components/CustomModal";
+import LeaveModal from "../components/LeaveModal";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { base_url } from "../constant/api";
 import axios from "axios";
@@ -44,6 +45,7 @@ const HomeScreen = () => {
   const [isCheckIn, setIsCheckIn] = useState(false);
   const [checkInStatus, setCheckInStatus] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
+  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [shiftData, setShiftData] = useState(null);
   const [officeAlert, setOfficeAlert] = useState(false);
@@ -121,7 +123,7 @@ const HomeScreen = () => {
     fetchUserData();
     getLocation();
   }, []);
-  // console.log(userData);
+
   useEffect(() => {
     const fetchNearbyJobs = async () => {
       if (!userData.token) {
@@ -129,9 +131,9 @@ const HomeScreen = () => {
         return;
       }
       try {
-        const endPoint = `${base_url}/hrm/hrm_mas_location/${userData?.user_id}/78/`; //${userData?.user_id}
+        const endPoint = `${base_url}/hrm/hrm_mas_location/${userData?.user_id}/78/`;
         const headers = {
-          Authorization: `Token ${userData?.token}`, //${userData?.token}
+          Authorization: `Token ${userData?.token}`,
         };
         const payload = {
           user_latitude: 13.09997989105245, //location.coords.latitude
@@ -173,9 +175,9 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchShiftDetails = async () => {
       try {
-        const endPoint = `${base_url}/hrm/attendance/14/78/`;
+        const endPoint = `${base_url}/hrm/attendance/${userData?.user_id}/78/`;
         const headers = {
-          Authorization: `Token ${userData?.token}`, //${userData?.token}
+          Authorization: `Token ${userData?.token}`,
         };
         const res = await axios.get(endPoint, { headers });
         setShiftData(res.data);
@@ -188,7 +190,7 @@ const HomeScreen = () => {
 
   const checkIn = async (id) => {
     try {
-      const endPoint = `${base_url}/hrm/hrm_user_attendance/14/78/`;
+      const endPoint = `${base_url}/hrm/hrm_user_attendance/${userData?.user_id}/78/`;
       const payload = {
         user_date_time: "2025-05-01T13:00:00Z",
         user_latitude: location.coords.latitude,
@@ -232,6 +234,8 @@ const HomeScreen = () => {
       }
     }
   };
+
+  // console.log(userData.token);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
@@ -654,6 +658,15 @@ const HomeScreen = () => {
           setModalVisible(false);
         }}
       />
+      {/* Leave Modal */}
+      <LeaveModal
+        visible={leaveModalVisible}
+        onClose={() => setLeaveModalVisible(false)}
+        onSubmit={(data) => {
+          console.log(data);
+          setLeaveModalVisible(false);
+        }}
+      />
       {/* work cards */}
       <ScrollView
         style={{
@@ -785,7 +798,6 @@ const HomeScreen = () => {
                       </View>
                     </View>
                     <TouchableOpacity
-                      disabled={job.checkin === false}
                       style={{
                         backgroundColor: "#2563EB1F",
                         height: 36,
@@ -1034,7 +1046,7 @@ const HomeScreen = () => {
             borderRadius: 47,
             height: 44,
           }}
-          onPress={() => {}}
+          onPress={() => setLeaveModalVisible(true)}
         >
           <AntDesign name="plus" size={24} color="#2563EB" />
           <Text
@@ -1044,7 +1056,7 @@ const HomeScreen = () => {
               fontSize: 16,
             }}
           >
-            Request
+            Leave Request
           </Text>
         </TouchableOpacity>
         {showCalendar && (

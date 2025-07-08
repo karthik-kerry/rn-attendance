@@ -17,6 +17,8 @@ import {
   SimpleLineIcons,
 } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { base_url } from "../constant/api";
+import axios from "axios";
 
 const Profile = () => {
   const navigation = useNavigation();
