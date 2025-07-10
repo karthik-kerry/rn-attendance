@@ -9,6 +9,7 @@ import {
   Modal,
   TextInput,
   Alert,
+  FlatList,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -26,6 +27,8 @@ import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { base_url } from "../constant/api";
 import axios from "axios";
 import { Dropdown } from "react-native-element-dropdown";
+import FontAwesome from "@expo/vector-icons/FontAwesome";
+import Entypo from "@expo/vector-icons/Entypo";
 
 const HomeScreen = () => {
   const navigation = useNavigation();
@@ -48,9 +51,13 @@ const HomeScreen = () => {
   const [leaveModalVisible, setLeaveModalVisible] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [shiftData, setShiftData] = useState(null);
+  const [shiftDetails, setShiftDetails] = useState(null);
   const [officeAlert, setOfficeAlert] = useState(false);
   const [note, setNote] = useState("");
   const [selectedValue, setSelectedValue] = useState(null);
+  const [cmpBranchList, setCmpBranchList] = useState([]);
+  const [cmpModalVisible, setCmpModalVisible] = useState(false);
+  const [selectedBranch, setSelectedBranch] = useState(null);
 
   const dropdownData = [
     { label: "Option 1", value: "option1" },
@@ -81,6 +88,23 @@ const HomeScreen = () => {
 
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (
+      userData &&
+      userData.branchid &&
+      userData.branchid.branchid &&
+      cmpBranchList &&
+      cmpBranchList.length > 0
+    ) {
+      const found = cmpBranchList.find(
+        (item) => item.branchid === userData.branchid.branchid
+      );
+      if (found) {
+        setSelectedBranch(found);
+      }
+    }
+  }, [userData, cmpBranchList]);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -131,13 +155,13 @@ const HomeScreen = () => {
         return;
       }
       try {
-        const endPoint = `${base_url}/hrm/hrm_mas_location/${userData?.user_id}/78/`;
+        const endPoint = `${base_url}/hrm/latitude_longitude/${userData?.user_id}/${userData?.branchid?.companyid}/`; //${userData?.user_id}
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
         const payload = {
-          user_latitude: 13.09997989105245, //location.coords.latitude
-          user_longitude: 80.29011704834728, //location.coords.longitude
+          user_latitude: 13.09997989105245, //location.coords.latitude,
+          user_longitude: 80.29011704834728, //location.coords.longitude,
         };
         const res = await axios.post(endPoint, payload, { headers });
         setJobs(res.data);
@@ -173,38 +197,79 @@ const HomeScreen = () => {
   };
 
   useEffect(() => {
-    const fetchShiftDetails = async () => {
+    const fetchShiftData = async () => {
       try {
-        const endPoint = `${base_url}/hrm/attendance/${userData?.user_id}/78/`;
+        const endPoint = `${base_url}/hrm/attendance/${userData?.user_id}/${userData?.branchid?.companyid}/`;
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.get(endPoint, { headers });
+        const payload = {
+          usercompanyid: userData?.branchid?.usercompanyid,
+        };
+        const res = await axios.post(endPoint, payload, { headers });
         setShiftData(res.data);
       } catch (error) {
         console.log("Error fetching shift details:", error);
       }
     };
-    fetchShiftDetails();
+    fetchShiftData();
   }, []);
+
+  useEffect(() => {
+    const fetchShiftDetails = async () => {
+      try {
+        const endpoint = `${base_url}/hrm/user_company_details/${userData?.user_id}/${userData?.branchid?.companyid}/`;
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const payload = {
+          usercompanyid: userData?.branchid?.usercompanyid,
+        };
+        const res = await axios.post(endpoint, payload, { headers });
+        setShiftDetails(res.data);
+      } catch (error) {
+        console.log("Error fetching shift details:", error);
+      }
+    };
+    fetchShiftDetails();
+  }, [shiftDetails, userData]);
+
+  useEffect(() => {
+    const fetchCmpBranchDetails = async () => {
+      try {
+        const endpoint = `${base_url}/core/userbranch_cmp_branch_list/${userData?.user_id}/`;
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.get(endpoint, { headers });
+        setCmpBranchList(res.data);
+      } catch (error) {
+        console.log("Error fetching company branch details:", error);
+      }
+    };
+    fetchCmpBranchDetails();
+  }, [cmpBranchList, userData]);
 
   const checkIn = async (id) => {
     try {
-      const endPoint = `${base_url}/hrm/hrm_user_attendance/${userData?.user_id}/78/`;
+      const endPoint = `${base_url}/hrm/hrm_user_attendance/12/76/`; //${userData?.user_id}
+      const headers = {
+        Authorization: `Token ${userData?.token}`,
+      };
       const payload = {
         user_date_time: "2025-05-01T13:00:00Z",
-        user_latitude: location.coords.latitude,
-        user_longitude: location.coords.longitude,
+        user_latitude: location.coords.latitude, //13.09997989105245,
+        user_longitude: location.coords.longitude, //80.29011704834728,
         master_location: id,
         attendance_status: "present",
         reason: 98,
-        // "reason_notes": "Heavy traffic on the way",
+        reason_notes: "Heavy traffic on the way",
         device_via: "finger_print",
         work_place: "office",
-        // "createvia":null
+        createvia: null,
       };
-      const res = await axios.post(endPoint, payload);
-      console.log(res.data.message);
+      const res = await axios.post(endPoint, payload, { headers });
+      Alert.alert(res.data.message);
     } catch (error) {
       console.log("Error check in: ", error);
     }
@@ -235,7 +300,20 @@ const HomeScreen = () => {
     }
   };
 
-  // console.log(userData.token);
+  // console.log(
+  //   "user coords",
+  //   location.coords.latitude,
+  //   location.coords.longitude
+  // );
+  // AsyncStorage.removeItem("userData");
+
+  // console.log("jobs", jobs.datas[3].latitude, jobs.datas[3].longitude);
+
+  useEffect(() => {
+    AsyncStorage.getItem("userBranch").then((userBranch) => {
+      console.log("userBranch", userBranch);
+    });
+  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
@@ -323,19 +401,45 @@ const HomeScreen = () => {
         </TouchableOpacity>
       </View>
       {/* Username */}
-      <Text
-        style={{
-          position: "absolute",
-          top: "13%",
-          left: "5%",
-          color: "white",
-          fontFamily: "Inter-Regular",
-          fontWeight: "500",
-          fontSize: 24,
-        }}
-      >
-        Welcome, {userData?.username}
-      </Text>
+      <View style={{ position: "absolute", top: "13%", left: "5%" }}>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <TouchableOpacity
+            onPress={() => setCmpModalVisible(true)}
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "space-evenly",
+              backgroundColor: "#FFFFFF29",
+              borderRadius: 8,
+              width: 58,
+              height: 38,
+            }}
+          >
+            <FontAwesome name="building-o" size={19} color="white" />
+            <Entypo name="chevron-down" size={19} color="white" />
+          </TouchableOpacity>
+          <View>
+            <Text
+              style={{
+                color: "white",
+                fontFamily: "Inter-Regular",
+                fontWeight: "500",
+                fontSize: 16,
+              }}
+            >
+              Welcome, {userData?.username}
+            </Text>
+            <Text
+              style={{
+                fontFamily: "Inter-Regular",
+                color: "#FFFFFF99",
+              }}
+            >
+              {selectedBranch?.cmp_shortname} - {selectedBranch?.branch_name}
+            </Text>
+          </View>
+        </View>
+      </View>
       {/* Duty Card */}
       <View
         style={{
@@ -445,7 +549,8 @@ const HomeScreen = () => {
               textTransform: "uppercase",
             }}
           >
-            {jobs?.shift_group?.name} - {jobs?.user_shift?.name} Shift
+            {shiftDetails?.shift_group?.name} - {shiftDetails?.user_shift?.name}{" "}
+            Shift
           </Text>
         </View>
         {activeTab === "home" && (
@@ -533,7 +638,8 @@ const HomeScreen = () => {
             paddingHorizontal: 20,
           }}
         >
-          {jobs?.shift_group && jobs?.shift_group?.name === "Flexible" ? (
+          {shiftDetails?.shift_group &&
+          shiftDetails?.shift_group?.name === "Flexible" ? (
             <>
               <View
                 style={{
@@ -1217,6 +1323,101 @@ const HomeScreen = () => {
                 </Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Company Branch Modal */}
+      <Modal animationType="slide" transparent={true} visible={cmpModalVisible}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#00000060",
+          }}
+        >
+          <View
+            style={{
+              height: "auto",
+              width: width - 40,
+              marginHorizontal: 20,
+              backgroundColor: "white",
+              borderRadius: 20,
+              padding: 20,
+              elevation: 5,
+              justifyContent: "flex-start",
+            }}
+          >
+            <Text
+              style={{
+                fontFamily: "Inter-Bold",
+                textAlign: "center",
+                fontSize: 22,
+                color: "#1b1b1b",
+              }}
+            >
+              Company Branches
+            </Text>
+            <FlatList
+              data={cmpBranchList}
+              keyExtractor={(item) => item.id.toString()}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  onPress={() => {
+                    setSelectedBranch(item);
+                    setCmpModalVisible(false);
+                    AsyncStorage.setItem("userBranch", JSON.stringify(item));
+                  }}
+                  style={{
+                    padding: 15,
+                    borderBottomWidth: 1,
+                    borderBottomColor: "#E2E8F0",
+                    backgroundColor:
+                      selectedBranch?.id === item.id ? "#2563EB1F" : "white",
+                    borderRadius: 8,
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter-Regular",
+                      color: "#1B1B1B",
+                      fontSize: 16,
+                    }}
+                  >
+                    {item.cmp_shortname} - {item.branch_name}
+                  </Text>
+                </TouchableOpacity>
+              )}
+              ListEmptyComponent={() => (
+                <Text
+                  style={{
+                    fontFamily: "Inter-Regular",
+                    color: "#1B1B1B99",
+                    textAlign: "center",
+                    marginTop: 20,
+                  }}
+                >
+                  No branches available
+                </Text>
+              )}
+            />
+            <TouchableOpacity
+              onPress={() => setCmpModalVisible(false)}
+              style={{
+                height: 44,
+                width: "100%",
+                borderRadius: 47,
+                backgroundColor: "#2563EB",
+                alignItems: "center",
+                justifyContent: "center",
+                marginTop: 20,
+              }}
+            >
+              <Text style={{ fontFamily: "Inter-SemiBold", color: "#fff" }}>
+                Close
+              </Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
