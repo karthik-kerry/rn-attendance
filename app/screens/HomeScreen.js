@@ -300,20 +300,19 @@ const HomeScreen = () => {
     }
   };
 
+  useEffect(() => {
+    AsyncStorage.getItem("userBranch").then((userBranch) => {
+      console.log("userBranch", userBranch);
+    });
+  }, []);
+
   // console.log(
   //   "user coords",
   //   location.coords.latitude,
   //   location.coords.longitude
   // );
   // AsyncStorage.removeItem("userData");
-
   // console.log("jobs", jobs.datas[3].latitude, jobs.datas[3].longitude);
-
-  useEffect(() => {
-    AsyncStorage.getItem("userBranch").then((userBranch) => {
-      console.log("userBranch", userBranch);
-    });
-  }, []);
 
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
