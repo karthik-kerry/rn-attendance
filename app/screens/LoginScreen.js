@@ -54,7 +54,7 @@ const LoginScreen = () => {
       const res = await axios.post(endpoint, payload);
       await AsyncStorage.setItem("userData", JSON.stringify(res.data));
       navigation.navigate("homeNav");
-      Alert.alert("Login response:", JSON.stringify(res.data));
+      Alert.alert("Login response:", JSON.stringify(res.data.message));
     } catch (error) {
       console.log("Error logging in:", error);
       Alert.alert("Error", error.response.data.message);
