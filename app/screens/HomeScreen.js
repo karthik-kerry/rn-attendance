@@ -203,10 +203,7 @@ const HomeScreen = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const payload = {
-          usercompanyid: userData?.branchid?.usercompanyid,
-        };
-        const res = await axios.post(endPoint, payload, { headers });
+        const res = await axios.get(endPoint, { headers });
         setShiftData(res.data);
       } catch (error) {
         console.log("Error fetching shift details:", error);
@@ -222,10 +219,7 @@ const HomeScreen = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const payload = {
-          usercompanyid: userData?.branchid?.usercompanyid,
-        };
-        const res = await axios.post(endpoint, payload, { headers });
+        const res = await axios.get(endpoint, { headers });
         setShiftDetails(res.data);
       } catch (error) {
         console.log("Error fetching shift details:", error);
