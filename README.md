@@ -43,7 +43,6 @@ _Simple attendance tracking at your fingertips_
 - npm or yarn
 - Expo CLI
 
-```bash
 npm install -g expo-cli
 Installation
 bash
@@ -52,7 +51,9 @@ Edit
 git clone https://github.com/karthik-kerry/rn-attendance.git
 cd rn-attendance
 npm install
+
 # or
+
 yarn install
 npx expo start
 Scan the QR code in Expo Go app to view it on your device.
@@ -73,10 +74,10 @@ Tap the profile icon and choose Logout.
 📡 API (Example)
 (Replace this section if your app works fully offline, or document actual endpoints if you have them)
 
-Method	Endpoint	Description
-POST	/api/login	Authenticate user
-GET	/api/attendance	Fetch attendance list
-POST	/api/attendance	Mark attendance (present/absent)
+Method Endpoint Description
+POST /api/login Authenticate user
+GET /api/attendance Fetch attendance list
+POST /api/attendance Mark attendance (present/absent)
 
 Sample request:
 
@@ -88,8 +89,8 @@ Content-Type: application/json
 Authorization: Bearer YOUR_TOKEN
 
 {
-  "date": "2025-07-11",
-  "status": "present"
+"date": "2025-07-11",
+"status": "present"
 }
 Sample response:
 
@@ -97,11 +98,11 @@ json
 Copy
 Edit
 {
-  "success": true,
-  "message": "Attendance marked successfully"
+"success": true,
+"message": "Attendance marked successfully"
 }
 📸 Screenshots
-Login Screen	Home Screen	History Screen
+Login Screen Home Screen History Screen
 
 (Replace placeholder URLs with real screenshots)
 
@@ -136,4 +137,3 @@ See LICENSE.
 ✉️ Contact
 Karthik
 GitHub
-```
