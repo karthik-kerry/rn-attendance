@@ -160,8 +160,8 @@ const HomeScreen = () => {
           Authorization: `Token ${userData?.token}`,
         };
         const payload = {
-          user_latitude: location.coords.latitude, //13.09997989105245,
-          user_longitude: location.coords.longitude, //80.29011704834728,
+          user_latitude: 13.09997989105245, //location.coords.latitude,
+          user_longitude: 80.29011704834728, //location.coords.longitude,
         };
         const res = await axios.post(endPoint, payload, { headers });
         setJobs(res.data);
