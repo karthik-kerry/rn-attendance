@@ -1,9 +1,9 @@
 import { View, Text, Dimensions, TextInput, Modal } from "react-native";
 import React, { useState } from "react";
 import { TouchableOpacity } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Svg, { Path } from "react-native-svg";
 
 const RequestCard = ({
   initial,
@@ -123,7 +123,26 @@ const RequestCard = ({
             marginVertical: 10,
           }}
         >
-          <Ionicons name="checkmark-done-sharp" size={20} color="#13950F" />
+          <Svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <Path
+              d="M6.66634 10.8333L10.0607 13.5488C10.4886 13.8911 11.1123 13.8253 11.4593 13.4012L18.333 5"
+              stroke="#13950F"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <Path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M9.71665 9.98156L13.2743 5.63327C13.6241 5.20582 13.5611 4.5758 13.1336 4.22607C12.7062 3.87635 12.0762 3.93935 11.7264 4.36679L8.18014 8.70114L9.71665 9.98156ZM6.55033 13.8515L5.01383 12.5711L4.83347 12.7915L2.26705 10.8667C1.82522 10.5353 1.19842 10.6249 0.867051 11.0667C0.53568 11.5085 0.625223 12.1353 1.06705 12.4667L3.63347 14.3915C4.49086 15.0346 5.70273 14.8875 6.38139 14.058L6.55033 13.8515Z"
+              fill="#13950F"
+            />
+          </Svg>
           <Text style={{ color: "#13950F", fontFamily: "Inter-SemiBold" }}>
             Approved
           </Text>
@@ -223,7 +242,26 @@ const RequestCard = ({
             marginVertical: 10,
           }}
         >
-          <Ionicons name="checkmark-done-sharp" size={20} color="#13950F" />
+          <Svg
+            width="20"
+            height="20"
+            viewBox="0 0 20 20"
+            fill="none"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <Path
+              d="M6.66634 10.8333L10.0607 13.5488C10.4886 13.8911 11.1123 13.8253 11.4593 13.4012L18.333 5"
+              stroke="#13950F"
+              stroke-width="2"
+              stroke-linecap="round"
+            />
+            <Path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M9.71665 9.98156L13.2743 5.63327C13.6241 5.20582 13.5611 4.5758 13.1336 4.22607C12.7062 3.87635 12.0762 3.93935 11.7264 4.36679L8.18014 8.70114L9.71665 9.98156ZM6.55033 13.8515L5.01383 12.5711L4.83347 12.7915L2.26705 10.8667C1.82522 10.5353 1.19842 10.6249 0.867051 11.0667C0.53568 11.5085 0.625223 12.1353 1.06705 12.4667L3.63347 14.3915C4.49086 15.0346 5.70273 14.8875 6.38139 14.058L6.55033 13.8515Z"
+              fill="#13950F"
+            />
+          </Svg>
           <Text style={{ color: "#13950F", fontFamily: "Inter-SemiBold" }}>
             Notification Send
           </Text>
@@ -469,7 +507,56 @@ const RequestCard = ({
                   ? startDate.toLocaleDateString("en-GB")
                   : "Select Date"}
               </Text>
-              <Ionicons name="calendar-outline" size={22} color="#64748B" />
+              <Svg
+                width="24"
+                height="25"
+                viewBox="0 0 24 25"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <Path
+                  d="M16.6667 7.16699H6.66667C5.74619 7.16699 5 7.91318 5 8.83366V18.8337C5 19.7541 5.74619 20.5003 6.66667 20.5003H16.6667C17.5871 20.5003 18.3333 19.7541 18.3333 18.8337V8.83366C18.3333 7.91318 17.5871 7.16699 16.6667 7.16699Z"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M15 5.5V8.83333"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M8.33301 5.5V8.83333"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M5 12.167H18.3333"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M10.833 15.5H11.6663"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M11.667 15.5V18"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </Svg>
             </TouchableOpacity>
 
             {showDatePicker && (

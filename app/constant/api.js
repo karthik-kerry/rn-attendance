@@ -1,1 +1,1 @@
-export const base_url = "http://192.168.21.131:9000"; //"https://xbmtech.info/api";
+export const base_url = "https://xbmtech.info/api"; //"http://192.168.21.244:9000";

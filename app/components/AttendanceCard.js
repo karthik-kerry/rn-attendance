@@ -1,6 +1,5 @@
 import { View, Text, TouchableOpacity } from "react-native";
 import React from "react";
-import { MaterialCommunityIcons } from "@expo/vector-icons";
 
 const AttendanceCard = ({
   title,
@@ -100,7 +99,7 @@ const AttendanceCard = ({
               borderRadius: 47,
             }}
           >
-            <MaterialCommunityIcons name={icon} size={14} color="#64748B" />
+            {icon}
           </View>
         </View>
       </View>

@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Modal,
@@ -7,10 +6,8 @@ import {
   TextInput,
   Dimensions,
   TouchableOpacity,
-  Platform,
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
-import DateTimePicker from "@react-native-community/datetimepicker";
 
 const LeaveModal = ({ visible, onClose, onSubmit }) => {
   const { width } = Dimensions.get("window");

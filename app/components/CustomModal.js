@@ -1,4 +1,3 @@
-import { Ionicons } from "@expo/vector-icons";
 import React, { useState } from "react";
 import {
   Modal,
@@ -11,6 +10,7 @@ import {
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Svg, { Circle, Path } from "react-native-svg";
 
 const CustomModal = ({ visible, onClose, onSubmit }) => {
   const [selectedValue, setSelectedValue] = useState(null);
@@ -128,7 +128,30 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
               <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
                 {startTime ? startTime.toLocaleTimeString() : "Start Time"}
               </Text>
-              <Ionicons name="time-outline" size={22} color="#64748B" />
+              <Svg
+                width="20"
+                height="21"
+                viewBox="0 0 20 21"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <Circle
+                  cx="10"
+                  cy="10.5"
+                  r="9"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M10.5557 5.09961V10.4996L14.1557 12.2996"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </Svg>
             </TouchableOpacity>
             <TouchableOpacity
               style={{
@@ -147,7 +170,30 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
               <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
                 {endTime ? endTime.toLocaleTimeString() : "End Time"}
               </Text>
-              <Ionicons name="time-outline" size={22} color="#64748B" />
+              <Svg
+                width="20"
+                height="21"
+                viewBox="0 0 20 21"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <Circle
+                  cx="10"
+                  cy="10.5"
+                  r="9"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+                <Path
+                  d="M10.5557 5.09961V10.4996L14.1557 12.2996"
+                  stroke="#64748B"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </Svg>
             </TouchableOpacity>
           </View>
 
