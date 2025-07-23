@@ -30,7 +30,7 @@ _Simple attendance tracking at your fingertips_
 
 - **React Native**
 - **Expo**
-- AsyncStorage / Local database _(replace if using something else)_
+- AsyncStorage
 - React Navigation
 
 ---
