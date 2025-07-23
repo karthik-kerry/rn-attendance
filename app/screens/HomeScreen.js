@@ -189,48 +189,52 @@ const HomeScreen = () => {
     }
   };
 
-  const fetchShiftData = async () => {
-    try {
-      const endPoint = `${base_url}/hrm/attendance/${userData?.user_id}/${userData?.branchid?.companyid}/`;
-      const headers = {
-        Authorization: `Token ${userData?.token}`,
-      };
-      const res = await axios.get(endPoint, { headers });
-      setShiftData(res.data);
-    } catch (error) {
-      console.log("Error fetching shift details:", error);
-    }
-  };
-
-  const fetchShiftDetails = async () => {
-    try {
-      const endpoint = `${base_url}/hrm/user_company_details/${userData?.user_id}/${userData?.branchid?.companyid}/`;
-      const headers = {
-        Authorization: `Token ${userData?.token}`,
-      };
-      const res = await axios.get(endpoint, { headers });
-      setShiftDetails(res.data);
-    } catch (error) {
-      console.log("Error fetching shift details:", error);
-    }
-  };
-
-  const fetchCmpBranchDetails = async () => {
-    try {
-      const endpoint = `${base_url}/core/userbranch_cmp_branch_list/${userData?.user_id}/`;
-      const headers = {
-        Authorization: `Token ${userData?.token}`,
-      };
-      const res = await axios.get(endpoint, { headers });
-      setCmpBranchList(res.data);
-    } catch (error) {
-      console.log("Error fetching company branch details:", error);
-    }
-  };
+  useEffect(() => {
+    const fetchShiftData = async () => {
+      try {
+        const endPoint = `${base_url}/hrm/attendance/${userData?.user_id}/${userData?.branchid?.companyid}/`;
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.get(endPoint, { headers });
+        setShiftData(res.data);
+      } catch (error) {
+        console.log("Error fetching shift details:", error);
+      }
+    };
+    fetchShiftData();
+  }, []);
 
   useEffect(() => {
-    fetchShiftData();
+    const fetchShiftDetails = async () => {
+      try {
+        const endpoint = `${base_url}/hrm/user_company_details/${userData?.user_id}/${userData?.branchid?.companyid}/`;
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.get(endpoint, { headers });
+        setShiftDetails(res.data);
+      } catch (error) {
+        console.log("Error fetching shift details:", error);
+      }
+    };
     fetchShiftDetails();
+  }, [shiftDetails, userData]);
+
+  useEffect(() => {
+    const fetchCmpBranchDetails = async () => {
+      try {
+        const endpoint = `${base_url}/core/userbranch_cmp_branch_list/${userData?.user_id}/`;
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.get(endpoint, { headers });
+        setCmpBranchList(res.data);
+      } catch (error) {
+        console.log("Error fetching company branch details:", error);
+      }
+    };
+
     fetchCmpBranchDetails();
   }, [cmpBranchList, userData]);
 
