@@ -302,6 +302,8 @@ const HomeScreen = () => {
   // AsyncStorage.removeItem("userData");
   // console.log("jobs", jobs.datas[3].latitude, jobs.datas[3].longitude);
 
+  // console.log(userData?.token);
+
   return (
     <View style={{ flex: 1, backgroundColor: "#F4F6F8" }}>
       <StatusBar backgroundColor="#2563EB" barStyle="light-content" />

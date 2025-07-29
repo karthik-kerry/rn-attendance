@@ -13,6 +13,7 @@ import { Calendar } from "react-native-calendars";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Header from "../components/Header";
 import { useNavigation } from "@react-navigation/native";
+import Svg, { Circle, Path } from "react-native-svg";
 
 const CalendarScreen = () => {
   const navigation = useNavigation();
@@ -161,20 +162,103 @@ const CalendarScreen = () => {
                 borderRadius: 8,
                 padding: 10,
                 height: 60,
-                marginBottom: 10,
+                marginVertical: 10,
               }}
             />
 
-            <TouchableOpacity onPress={() => setShowStartPicker(true)}>
-              <Text style={{ marginBottom: 5 }}>
-                Start: {startTime.toLocaleTimeString()}
-              </Text>
-            </TouchableOpacity>
-            <TouchableOpacity onPress={() => setShowEndPicker(true)}>
-              <Text style={{ marginBottom: 5 }}>
-                End: {endTime.toLocaleTimeString()}
-              </Text>
-            </TouchableOpacity>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                marginVertical: 10,
+              }}
+            >
+              <TouchableOpacity
+                style={{
+                  height: 44,
+                  width: 150,
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
+                  borderRadius: 8,
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                  padding: 5,
+                }}
+                onPress={() => setShowStartPicker(true)}
+              >
+                <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                  {startTime ? startTime.toLocaleTimeString() : "Start Time"}
+                </Text>
+                <Svg
+                  width="20"
+                  height="21"
+                  viewBox="0 0 20 21"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <Circle
+                    cx="10"
+                    cy="10.5"
+                    r="9"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <Path
+                    d="M10.5557 5.09961V10.4996L14.1557 12.2996"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </Svg>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  height: 44,
+                  width: 150,
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
+                  borderRadius: 8,
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  flexDirection: "row",
+                  padding: 5,
+                }}
+                onPress={() => setShowEndPicker(true)}
+              >
+                <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                  {endTime ? endTime.toLocaleTimeString() : "End Time"}
+                </Text>
+                <Svg
+                  width="20"
+                  height="21"
+                  viewBox="0 0 20 21"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <Circle
+                    cx="10"
+                    cy="10.5"
+                    r="9"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <Path
+                    d="M10.5557 5.09961V10.4996L14.1557 12.2996"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </Svg>
+              </TouchableOpacity>
+            </View>
 
             {showStartPicker && (
               <DateTimePicker
@@ -202,7 +286,12 @@ const CalendarScreen = () => {
               />
             )}
 
-            <View style={{ flexDirection: "row", marginTop: 10 }}>
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+              }}
+            >
               <Text style={{ flex: 1 }}>Remind Me</Text>
               <Switch value={remindMe} onValueChange={setRemindMe} />
             </View>
@@ -211,7 +300,7 @@ const CalendarScreen = () => {
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                marginTop: 20,
+                marginTop: 10,
               }}
             >
               <TouchableOpacity

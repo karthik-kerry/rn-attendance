@@ -91,7 +91,6 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
             value={selectedValue}
             onChange={(item) => setSelectedValue(item.value)}
           />
-
           {/* Start & End Time */}
           <Text
             style={{
@@ -196,7 +195,6 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
               </Svg>
             </TouchableOpacity>
           </View>
-
           {showStartPicker && (
             <DateTimePicker
               value={startTime}
@@ -209,7 +207,6 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
               }}
             />
           )}
-
           {showEndPicker && (
             <DateTimePicker
               value={endTime}
@@ -222,7 +219,6 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
               }}
             />
           )}
-
           {/* Note Textarea */}
           <Text
             style={{
@@ -250,7 +246,6 @@ const CustomModal = ({ visible, onClose, onSubmit }) => {
             value={text}
             onChangeText={setText}
           />
-
           {/* Cancel & Submit Btn */}
           <View
             style={{
