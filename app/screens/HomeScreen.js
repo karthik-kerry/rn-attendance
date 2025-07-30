@@ -902,6 +902,7 @@ const HomeScreen = () => {
       />
       {/* work cards */}
       <ScrollView
+        showsVerticalScrollIndicator={false}
         style={{
           marginTop: activeTab === "home" ? "65%" : "55%",
           marginBottom: 20,

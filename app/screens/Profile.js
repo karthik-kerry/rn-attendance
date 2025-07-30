@@ -234,7 +234,7 @@ const Profile = () => {
           <View
             style={{
               backgroundColor: "white",
-              height: 54,
+              height: 58,
               width: "100%",
               borderRadius: 16,
               flexDirection: "row",
@@ -285,7 +285,7 @@ const Profile = () => {
             onPress={() => {}}
             style={{
               backgroundColor: "white",
-              height: 54,
+              height: 60,
               width: "100%",
               borderRadius: 16,
               flexDirection: "row",
@@ -345,7 +345,7 @@ const Profile = () => {
             onPress={handleLogout}
             style={{
               backgroundColor: "white",
-              height: 54,
+              height: 60,
               width: "100%",
               borderRadius: 16,
               flexDirection: "row",

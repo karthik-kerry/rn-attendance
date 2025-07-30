@@ -5,7 +5,7 @@ import {
   TouchableOpacity,
   ScrollView,
 } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { StatusBar } from "expo-status-bar";
 import Header from "../components/Header";
 import { useNavigation } from "@react-navigation/native";
@@ -15,7 +15,8 @@ const LeaveScreen = () => {
   const navigation = useNavigation();
   const screenWidth = Dimensions.get("window").width;
   const cardWidth = (screenWidth - 60) / 3;
-
+  const [selected, setSelected] = useState("All");
+  console.log(selected);
   return (
     <View style={{ paddingHorizontal: 20, flex: 1 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
@@ -211,83 +212,138 @@ const LeaveScreen = () => {
           </View>
         </View>
         {/* Tabs */}
-        <View
-          style={{
-            flexDirection: "row",
-            alignItems: "center",
-            justifyContent: "space-between",
-            marginVertical: 10,
+        {/* <ScrollView
+          horizontal={true}
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            gap: 12,
           }}
         >
-          <TouchableOpacity
+          <View
             style={{
-              paddingVertical: 6,
-              paddingHorizontal: 18,
-              borderColor: "#2563EB",
-              borderWidth: 1,
-              backgroundColor: "#2563EB1F",
+              flexDirection: "row",
               alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 47,
+              gap: 5,
+              justifyContent: "space-between",
+              marginVertical: -40,
             }}
-            onPress={() => {}}
           >
-            <Text style={{ fontFamily: "Inter-Regular", color: "#2563EB" }}>
-              All
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
+            <TouchableOpacity
+              style={{
+                paddingVertical: 6,
+                paddingHorizontal: 18,
+                borderColor: "#2563EB",
+                borderWidth: 1,
+                backgroundColor: "#2563EB1F",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 47,
+              }}
+              onPress={() => {}}
+            >
+              <Text style={{ fontFamily: "Inter-Regular", color: "#2563EB" }}>
+                All
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                paddingVertical: 6,
+                paddingHorizontal: 18,
+                borderColor: "#64748B",
+                borderWidth: 1,
+                backgroundColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 47,
+              }}
+              onPress={() => {}}
+            >
+              <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                Approved
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                paddingVertical: 6,
+                paddingHorizontal: 18,
+                borderColor: "#64748B",
+                borderWidth: 1,
+                backgroundColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 47,
+              }}
+              onPress={() => {}}
+            >
+              <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                Pending
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={{
+                paddingVertical: 6,
+                paddingHorizontal: 18,
+                borderColor: "#64748B",
+                borderWidth: 1,
+                backgroundColor: "white",
+                alignItems: "center",
+                justifyContent: "center",
+                borderRadius: 47,
+              }}
+              onPress={() => {}}
+            >
+              <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
+                Rejected
+              </Text>
+            </TouchableOpacity>
+          </View>
+        </ScrollView> */}
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={{
+            marginVertical: -40,
+          }}
+        >
+          <View
             style={{
-              paddingVertical: 6,
-              paddingHorizontal: 18,
-              borderColor: "#64748B",
-              borderWidth: 1,
-              backgroundColor: "white",
+              flexDirection: "row",
               alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 47,
+              marginVertical: 10,
             }}
-            onPress={() => {}}
           >
-            <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
-              Approved
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              paddingVertical: 6,
-              paddingHorizontal: 18,
-              borderColor: "#64748B",
-              borderWidth: 1,
-              backgroundColor: "white",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 47,
-            }}
-            onPress={() => {}}
-          >
-            <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
-              Pending
-            </Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={{
-              paddingVertical: 6,
-              paddingHorizontal: 18,
-              borderColor: "#64748B",
-              borderWidth: 1,
-              backgroundColor: "white",
-              alignItems: "center",
-              justifyContent: "center",
-              borderRadius: 47,
-            }}
-            onPress={() => {}}
-          >
-            <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
-              Rejected
-            </Text>
-          </TouchableOpacity>
-        </View>
+            {["All", "Approved", "Pending", "Rejected"].map((label) => {
+              const isActive = selected === label;
+
+              return (
+                <TouchableOpacity
+                  key={label}
+                  onPress={() => setSelected(label)}
+                  style={{
+                    paddingVertical: 6,
+                    paddingHorizontal: 18,
+                    borderRadius: 47,
+                    borderWidth: 1,
+                    borderColor: isActive ? "#2563EB" : "#64748B",
+                    backgroundColor: isActive ? "#2563EB1F" : "white",
+                    marginRight: 10,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                >
+                  <Text
+                    style={{
+                      fontFamily: "Inter-Regular",
+                      color: isActive ? "#2563EB" : "#64748B",
+                    }}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </ScrollView>
         {/* Cards */}
         <ScrollView
           showsVerticalScrollIndicator={false}
