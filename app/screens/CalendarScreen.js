@@ -1,25 +1,26 @@
+import React, { useState } from "react";
 import {
   View,
   Text,
-  StatusBar,
-  TextInput,
+  FlatList,
   TouchableOpacity,
   Modal,
+  TextInput,
   Switch,
-  Platform,
+  StatusBar,
 } from "react-native";
-import React, { useState } from "react";
+import { Calendar } from "react-native-calendars";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import Header from "../components/Header";
 import { useNavigation } from "@react-navigation/native";
-import { Agenda } from "react-native-calendars";
-import DateTimePicker from "@react-native-community/datetimepicker";
-import { Ionicons } from "@expo/vector-icons";
+import Svg, { Circle, Path } from "react-native-svg";
 
 const CalendarScreen = () => {
   const navigation = useNavigation();
-
-  const [items, setItems] = useState({});
-  const [selectedDate, setSelectedDate] = useState("");
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+  const [events, setEvents] = useState({});
   const [modalVisible, setModalVisible] = useState(false);
   const [eventName, setEventName] = useState("");
   const [note, setNote] = useState("");
@@ -29,67 +30,28 @@ const CalendarScreen = () => {
   const [showEndPicker, setShowEndPicker] = useState(false);
   const [remindMe, setRemindMe] = useState(false);
 
-  const loadItems = (day) => {
-    const newItems = { ...items };
-    for (let i = -15; i < 15; i++) {
-      const time = day.timestamp + i * 24 * 60 * 60 * 1000;
-      const dateStr = new Date(time).toISOString().split("T")[0];
-
-      if (!newItems[dateStr]) {
-        newItems[dateStr] = [];
-      }
-    }
-    setItems(newItems);
-  };
-
-  const renderItem = (item) => (
-    <View
-      style={{
-        backgroundColor: "#fff",
-        padding: 15,
-        marginRight: 10,
-        marginTop: 17,
-        borderRadius: 10,
-        elevation: 2,
-      }}
-    >
-      <Text style={{ fontSize: 14, marginTop: 5 }}>
-        {new Date(item.startTime).toLocaleTimeString()} -{" "}
-        {new Date(item.endTime).toLocaleTimeString()}
-      </Text>
-
-      <Text style={{ fontSize: 16, fontWeight: "bold" }}>{item.name}</Text>
-      <Text style={{ fontSize: 14, marginTop: 5 }}>{item.note}</Text>
-      <Text style={{ fontSize: 12, color: "#888", marginTop: 5 }}>
-        {item.completed ? "✅ Completed" : "⏳ Pending"}
-      </Text>
-    </View>
-  );
-
-  const handleDayPress = (day) => {
-    setSelectedDate(day.dateString);
-    setModalVisible(true);
-  };
-
   const handleAddEvent = () => {
-    if (eventName.trim() === "") return;
+    if (!eventName.trim()) return;
 
-    const newItems = { ...items };
-    if (!newItems[selectedDate]) {
-      newItems[selectedDate] = [];
-    }
-
-    newItems[selectedDate].push({
-      name: eventName,
-      note,
-      completed: false,
-      startTime,
-      endTime,
-      remindMe,
-      height: 70,
+    setEvents((prev) => {
+      const current = prev[selectedDate] || [];
+      return {
+        ...prev,
+        [selectedDate]: [
+          ...current,
+          {
+            name: eventName,
+            note,
+            startTime,
+            endTime,
+            remindMe,
+            completed: false,
+          },
+        ],
+      };
     });
 
-    setItems(newItems);
+    // Clear inputs
     setEventName("");
     setNote("");
     setRemindMe(false);
@@ -97,22 +59,61 @@ const CalendarScreen = () => {
   };
 
   return (
-    <View style={{ paddingHorizontal: 20, flex: 1 }}>
-      <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
+    <View style={{ flex: 1, padding: 16 }}>
+      <StatusBar barStyle="dark-content" backgroundColor="#F4F6F8" />
       <Header title="Calendar" navigate={() => navigation.goBack()} />
-      <Agenda
-        style={{ marginTop: 20 }}
-        items={items}
-        loadItemsForMonth={loadItems}
-        selected={new Date().toISOString().split("T")[0]}
-        renderItem={renderItem}
-        onDayPress={handleDayPress}
-        theme={{
-          agendaDayTextColor: "black",
-          agendaDayNumColor: "#2563EB",
-          agendaTodayColor: "#2563EB",
-          agendaKnobColor: "#2563EB",
+
+      <Calendar
+        style={{ marginVertical: 20 }}
+        onDayPress={(day) => {
+          setSelectedDate(day.dateString);
         }}
+        markedDates={{
+          [selectedDate]: {
+            selected: true,
+            selectedColor: "#2563EB",
+          },
+        }}
+      />
+
+      <TouchableOpacity
+        style={{
+          marginTop: 10,
+          backgroundColor: "#2563EB",
+          borderRadius: 8,
+          padding: 12,
+          alignItems: "center",
+        }}
+        onPress={() => setModalVisible(true)}
+      >
+        <Text style={{ color: "white", fontSize: 16 }}>Add Event</Text>
+      </TouchableOpacity>
+
+      <FlatList
+        data={events[selectedDate] || []}
+        keyExtractor={(item, index) => index.toString()}
+        style={{ marginVertical: 20 }}
+        renderItem={({ item }) => (
+          <View
+            style={{
+              backgroundColor: "#fff",
+              padding: 12,
+              borderRadius: 8,
+              marginVertical: 6,
+              elevation: 1,
+            }}
+          >
+            <Text style={{ fontWeight: "bold" }}>{item.name}</Text>
+            <Text>{item.note}</Text>
+            <Text>
+              {new Date(item.startTime).toLocaleTimeString()} -{" "}
+              {new Date(item.endTime).toLocaleTimeString()}
+            </Text>
+            <Text style={{ color: "#888" }}>
+              {item.completed ? "✅ Completed" : "⏳ Pending"}
+            </Text>
+          </View>
+        )}
       />
 
       {/* Modal */}
@@ -127,76 +128,50 @@ const CalendarScreen = () => {
         >
           <View
             style={{
-              width: "90%",
               backgroundColor: "#fff",
+              width: "90%",
               borderRadius: 10,
               padding: 20,
-              elevation: 5,
             }}
           >
             <Text
-              style={{
-                fontSize: 18,
-                marginBottom: 20,
-                textAlign: "center",
-                fontFamily: "Inter-SemiBold",
-                color: "#1b1b1b",
-              }}
+              style={{ fontSize: 18, marginBottom: 10, textAlign: "center" }}
             >
               Add New Event
             </Text>
-            <View>
-              <Text
-                style={{
-                  fontFamily: "Inter-Regular",
-                  color: "#64748B",
-                  marginBottom: 5,
-                }}
-              >
-                Event Name
-              </Text>
-              <TextInput
-                value={eventName}
-                onChangeText={setEventName}
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  marginBottom: 10,
-                }}
-              />
-            </View>
-            <View>
-              <Text
-                style={{
-                  fontFamily: "Inter-Regular",
-                  color: "#64748B",
-                  marginBottom: 5,
-                }}
-              >
-                Note
-              </Text>
-              <TextInput
-                value={note}
-                onChangeText={setNote}
-                multiline
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#ccc",
-                  borderRadius: 8,
-                  padding: 10,
-                  height: 80,
-                  marginBottom: 10,
-                }}
-              />
-            </View>
+            <TextInput
+              placeholder="Event Name"
+              value={eventName}
+              onChangeText={setEventName}
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 10,
+                marginBottom: 10,
+              }}
+            />
+            <TextInput
+              placeholder="Note"
+              value={note}
+              onChangeText={setNote}
+              multiline
+              style={{
+                borderWidth: 1,
+                borderColor: "#ccc",
+                borderRadius: 8,
+                padding: 10,
+                height: 60,
+                marginVertical: 10,
+              }}
+            />
 
             <View
               style={{
                 flexDirection: "row",
                 alignItems: "center",
                 justifyContent: "space-between",
+                marginVertical: 10,
               }}
             >
               <TouchableOpacity
@@ -216,7 +191,30 @@ const CalendarScreen = () => {
                 <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
                   {startTime ? startTime.toLocaleTimeString() : "Start Time"}
                 </Text>
-                <Ionicons name="time-outline" size={22} color="#64748B" />
+                <Svg
+                  width="20"
+                  height="21"
+                  viewBox="0 0 20 21"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <Circle
+                    cx="10"
+                    cy="10.5"
+                    r="9"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <Path
+                    d="M10.5557 5.09961V10.4996L14.1557 12.2996"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </Svg>
               </TouchableOpacity>
               <TouchableOpacity
                 style={{
@@ -235,7 +233,30 @@ const CalendarScreen = () => {
                 <Text style={{ fontFamily: "Inter-Regular", color: "#64748B" }}>
                   {endTime ? endTime.toLocaleTimeString() : "End Time"}
                 </Text>
-                <Ionicons name="time-outline" size={22} color="#64748B" />
+                <Svg
+                  width="20"
+                  height="21"
+                  viewBox="0 0 20 21"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <Circle
+                    cx="10"
+                    cy="10.5"
+                    r="9"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                  <Path
+                    d="M10.5557 5.09961V10.4996L14.1557 12.2996"
+                    stroke="#64748B"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                  />
+                </Svg>
               </TouchableOpacity>
             </View>
 
@@ -246,7 +267,7 @@ const CalendarScreen = () => {
                 is24Hour={false}
                 display="default"
                 onChange={(event, selectedDate) => {
-                  setShowStartPicker(Platform.OS === "ios");
+                  setShowStartPicker(false);
                   if (selectedDate) setStartTime(selectedDate);
                 }}
               />
@@ -259,7 +280,7 @@ const CalendarScreen = () => {
                 is24Hour={false}
                 display="default"
                 onChange={(event, selectedDate) => {
-                  setShowEndPicker(Platform.OS === "ios");
+                  setShowEndPicker(false);
                   if (selectedDate) setEndTime(selectedDate);
                 }}
               />
@@ -269,19 +290,9 @@ const CalendarScreen = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                marginTop: 10,
-                marginBottom: 15,
               }}
             >
-              <Text
-                style={{
-                  flex: 1,
-                  fontFamily: "Inter-Regular",
-                  color: "#1b1b1b",
-                }}
-              >
-                Remind me
-              </Text>
+              <Text style={{ flex: 1 }}>Remind Me</Text>
               <Switch value={remindMe} onValueChange={setRemindMe} />
             </View>
 
@@ -289,53 +300,33 @@ const CalendarScreen = () => {
               style={{
                 flexDirection: "row",
                 justifyContent: "space-between",
-                alignItems: "center",
+                marginTop: 10,
               }}
             >
               <TouchableOpacity
-                style={{
-                  borderWidth: 1,
-                  borderColor: "#64748B",
-                  borderRadius: 47,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 44,
-                  width: "47%",
-                }}
                 onPress={() => setModalVisible(false)}
+                style={{
+                  borderColor: "#ccc",
+                  borderWidth: 1,
+                  borderRadius: 6,
+                  padding: 10,
+                  width: "48%",
+                  alignItems: "center",
+                }}
               >
-                <Text
-                  style={{
-                    color: "#64748B",
-                    fontSize: 16,
-                    fontFamily: "Inter-Regular",
-                  }}
-                >
-                  Cancel
-                </Text>
+                <Text>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
-                style={{
-                  borderRadius: 47,
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: 44,
-                  width: "47%",
-                  backgroundColor: "#2563EB",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
                 onPress={handleAddEvent}
+                style={{
+                  backgroundColor: "#2563EB",
+                  borderRadius: 6,
+                  padding: 10,
+                  width: "48%",
+                  alignItems: "center",
+                }}
               >
-                <Text
-                  style={{
-                    color: "white",
-                    fontSize: 16,
-                    fontFamily: "Inter-Regular",
-                  }}
-                >
-                  Create
-                </Text>
+                <Text style={{ color: "white" }}>Create</Text>
               </TouchableOpacity>
             </View>
           </View>

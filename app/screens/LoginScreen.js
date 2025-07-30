@@ -16,6 +16,7 @@ import axios from "axios";
 import { TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
+import { saveCsrfToken, getCsrfToken } from "../constant/csrfToken";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -39,24 +40,51 @@ const LoginScreen = () => {
     fetchCountries();
   }, []);
 
+  const fetchCsrfToken = async () => {
+    try {
+      const response = await fetch(`${base_url}/core/get-csrf-token/`, {
+        credentials: "include",
+      });
+      const data = await response.json();
+      if (data.csrfToken) {
+        await saveCsrfToken(data.csrfToken);
+      }
+    } catch (error) {
+      console.log("Error fetching CSRF token:", error);
+    }
+  };
+
   const handleLogin = async () => {
     try {
+      await fetchCsrfToken();
+
+      const csrfToken = await getCsrfToken();
       const endpoint = `${base_url}/core/login/`;
       const payload = {
         username: userName,
         password: password,
         countryCode: selectedCountry,
       };
+
       if (!userName || !password) {
         Alert.alert("Please fill all fields");
         return;
       }
-      const res = await axios.post(endpoint, payload);
+
+      const res = await axios.post(endpoint, payload, {
+        headers: {
+          "X-CSRFToken": csrfToken,
+          "Content-Type": "application/json",
+        },
+        withCredentials: true,
+      });
+
       await AsyncStorage.setItem("userData", JSON.stringify(res.data));
       navigation.navigate("homeNav");
-      console.log("Login response:", res.data);
+      Alert.alert("Login response:", JSON.stringify(res.data.message));
     } catch (error) {
       console.log("Error logging in:", error);
+      Alert.alert("Error", error?.response?.data?.message || "Login failed");
     }
   };
 

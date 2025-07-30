@@ -1,4 +1,3 @@
-// import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RegisterScreen from "./screens/RegisterScreen";
 import LoginScreen from "./screens/LoginScreen";
@@ -14,7 +13,6 @@ import CalendarScreen from "./screens/CalendarScreen";
 import LeaveScreen from "./screens/LeaveScreen";
 import NotificationScreen from "./screens/NotificationScreen";
 import Employees from "./screens/Employees";
-import NotifyTopTabs from "./navigation/NotifyTopTabs";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,7 +23,6 @@ export default function Index() {
     "Inter-Regular": require("../assets/fonts/Inter-Regular.ttf"),
     "Inter-SemiBold": require("../assets/fonts/Inter-SemiBold.ttf"),
     "Inter-Bold": require("../assets/fonts/Inter-Bold.ttf"),
-    "Inter-ExtraBold": require("../assets/fonts/Inter-ExtraBold.ttf"),
   });
 
   useEffect(() => {
