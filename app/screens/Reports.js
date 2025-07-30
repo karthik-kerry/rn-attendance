@@ -113,7 +113,7 @@ const Reports = () => {
               />
             </Svg>
           }
-          onPress={() => {}}
+          onPress={() => navigation.navigate("payslips")}
         />
         <ReportCard
           name="Reimbursement"

@@ -12,7 +12,7 @@ const Header = ({ title, navigate }) => {
         flexDirection: "row",
         alignItems: "center",
         justifyContent: "space-between",
-        marginTop: 30,
+        marginTop: 50,
       }}
     >
       <View
