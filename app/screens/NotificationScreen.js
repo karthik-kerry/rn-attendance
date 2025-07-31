@@ -56,8 +56,8 @@ const NotificationScreen = () => {
             time="11:30 AM"
           />
           <NotifyCard
-            profileBg="#DD17011F"
-            profileText="#DD1701"
+            profileBg="#E4403B1F"
+            profileText="#E4403B"
             userName="HR"
             content="Remember to take short breaks during work — it helps boost productivity and focus."
             time="11:30 AM"
@@ -73,8 +73,8 @@ const NotificationScreen = () => {
             yesterday
           </Text>
           <NotifyCard
-            profileBg="#DD17011F"
-            profileText="#DD1701"
+            profileBg="#E4403B1F"
+            profileText="#E4403B"
             userName="HR"
             content="Reminder: Your shift starts in 30 minutes."
             time="11:30 AM"
@@ -101,8 +101,8 @@ const NotificationScreen = () => {
             time="11:30 AM"
           />
           <NotifyCard
-            profileBg="#DD17011F"
-            profileText="#DD1701"
+            profileBg="#E4403B1F"
+            profileText="#E4403B"
             userName="HR"
             content={
               <Text>

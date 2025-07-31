@@ -30,8 +30,8 @@ const Employees = () => {
           code="EMP-1035"
           initial="SS"
           role="Front-End Developer"
-          profileBg="#DD17011F"
-          profileText="#DD1701"
+          profileBg="#E4403B1F"
+          profileText="#E4403B"
         />
         <UserEmpCard
           name="Karthik"

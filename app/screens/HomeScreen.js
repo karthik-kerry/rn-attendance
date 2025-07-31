@@ -637,7 +637,7 @@ const HomeScreen = () => {
                   borderStyle: "solid",
                   borderColor: "#2563EB",
                 }}
-                onPress={() => setModalVisible(true)}
+                onPress={() => navigation.navigate("break")}
               >
                 <Text
                   style={{
@@ -662,7 +662,7 @@ const HomeScreen = () => {
             )}
             <TouchableOpacity
               style={{
-                backgroundColor: isCheckedIn ? "#DD1701" : "#2563EB",
+                backgroundColor: isCheckedIn ? "#E4403B" : "#2563EB",
                 height: 44,
                 width: 148,
                 borderRadius: 47,
@@ -1088,7 +1088,7 @@ const HomeScreen = () => {
                           justifyContent: "center",
                           marginTop: 20,
                         }}
-                        onPress={() => setModalVisible(true)}
+                        onPress={() => navigation.navigate("break")}
                       >
                         <Text
                           style={{
@@ -1106,7 +1106,7 @@ const HomeScreen = () => {
                           height: 40,
                           width: "48%",
                           borderRadius: 47,
-                          backgroundColor: "#DD1701",
+                          backgroundColor: "#E4403B",
                           alignItems: "center",
                           justifyContent: "center",
                           marginTop: 20,
@@ -1252,8 +1252,8 @@ const HomeScreen = () => {
             style={{
               height: 76,
               width: 114,
-              backgroundColor: "#DD170114",
-              borderTopColor: "#DD1701",
+              backgroundColor: "#E4403B14",
+              borderTopColor: "#E4403B",
               borderTopWidth: 3,
               borderRadius: 6,
               padding: 10,
@@ -1265,7 +1265,7 @@ const HomeScreen = () => {
             <Text
               style={{
                 fontFamily: "Inter-Bold",
-                color: "#DD1701",
+                color: "#E4403B",
                 fontSize: 18,
                 alignSelf: "flex-end",
               }}

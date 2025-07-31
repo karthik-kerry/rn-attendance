@@ -185,11 +185,11 @@ const LeaveScreen = () => {
           </View>
           <View
             style={{
-              backgroundColor: "#DD170114",
+              backgroundColor: "#E4403B14",
               height: 76,
               width: cardWidth,
               borderTopWidth: 4,
-              borderTopColor: "#DD1701",
+              borderTopColor: "#E4403B",
               borderRadius: 6,
               paddingVertical: 6,
               paddingHorizontal: 10,
@@ -202,7 +202,7 @@ const LeaveScreen = () => {
             <Text
               style={{
                 fontFamily: "Inter-Bold",
-                color: "#DD1701",
+                color: "#E4403B",
                 textAlign: "right",
                 fontSize: 18,
               }}
@@ -283,7 +283,7 @@ const LeaveScreen = () => {
           />
           <LeaveDetailCard
             title="Mar 05, 2025"
-            statusBgColor="#DD1701"
+            statusBgColor="#E4403B"
             statusText="Rejected"
             leaveType="Casual Leave"
             appliedDays="1 Day"
