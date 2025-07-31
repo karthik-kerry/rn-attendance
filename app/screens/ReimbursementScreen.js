@@ -2,8 +2,9 @@ import { View, Text, StatusBar } from "react-native";
 import React from "react";
 import Header from "../components/Header";
 import Svg, { G, Path } from "react-native-svg";
-
+import { useNavigation } from "@react-navigation/native";
 const ReimbursementScreen = () => {
+  const navigation = useNavigation();
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
