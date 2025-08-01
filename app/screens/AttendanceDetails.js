@@ -20,7 +20,12 @@ const AttendanceDetails = () => {
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
-      <Header title="Attendance Details" navigate={() => navigation.goBack()} />
+      <Header
+        title="Attendance Details"
+        navigate={() => navigation.goBack()}
+        addVisible={true}
+        addFunc={() => {}}
+      />
       <View
         style={{
           flexDirection: "row",
@@ -484,7 +489,7 @@ const AttendanceDetails = () => {
           />
           <View
             style={{
-              backgroundColor: "#DD1701",
+              backgroundColor: "#E4403B",
               height: 34,
               width: 74,
               borderRadius: 30,
@@ -508,10 +513,10 @@ const AttendanceDetails = () => {
               paddingHorizontal: 15,
             }}
           >
-            <Text style={{ color: "#DD1701", fontFamily: "Inter-Regular" }}>
+            <Text style={{ color: "#E4403B", fontFamily: "Inter-Regular" }}>
               Check-Out Time
             </Text>
-            <Text style={{ color: "#DD1701", fontFamily: "Inter-Regular" }}>
+            <Text style={{ color: "#E4403B", fontFamily: "Inter-Regular" }}>
               (18:30)
             </Text>
           </View>

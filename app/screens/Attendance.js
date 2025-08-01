@@ -57,12 +57,17 @@ const Attendance = () => {
       }
     };
     fetchAttendance();
-  }, []);
+  }, [userData]);
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
-      <Header title="Attendance" navigate={() => navigation.goBack()} />
+      <Header
+        title="Attendance"
+        navigate={() => navigation.goBack()}
+        addVisible={true}
+        addFunc={() => {}}
+      />
       {isLoading && <Text>Loading...</Text>}
       <View
         style={{
@@ -262,7 +267,7 @@ const Attendance = () => {
           inTime="10:30 AM"
           outTime="6:30 PM"
           workHrs="08:00:00"
-          inTimeColor="#DD1701"
+          inTimeColor="#E4403B"
           outTimeColor="#13950F"
           workHrsColor="#F09E07"
           onPress={() =>
@@ -295,9 +300,9 @@ const Attendance = () => {
           inTime="10:30 AM"
           outTime="6:00 PM"
           workHrs="07:30:00"
-          inTimeColor="#DD1701"
-          outTimeColor="#DD1701"
-          workHrsColor="#DD1701"
+          inTimeColor="#E4403B"
+          outTimeColor="#E4403B"
+          workHrsColor="#E4403B"
           onPress={() =>
             navigation.navigate("attendanceDetails", {
               data: "Thu, Apr 3, 2025",
@@ -307,9 +312,9 @@ const Attendance = () => {
         <LeaveCard
           title="Fri, Apr 4, 2025"
           type="Leave"
-          typeBgColor="#DD1701"
+          typeBgColor="#E4403B"
           typeTextColor="white"
-          cardBgColor="#DD17011F"
+          cardBgColor="#E4403B1F"
           onPress={() => {}}
         />
         <AttendanceCard

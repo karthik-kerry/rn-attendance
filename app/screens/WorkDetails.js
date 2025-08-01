@@ -173,7 +173,7 @@ const WorkDetails = () => {
             </Svg>
           </TouchableOpacity>
         </View>
-        {isCheckIn ? (
+        {/* {isCheckIn ? (
           <View
             style={{
               flexDirection: "row",
@@ -212,7 +212,7 @@ const WorkDetails = () => {
                 height: 40,
                 width: "48%",
                 borderRadius: 47,
-                backgroundColor: "#DD1701",
+                backgroundColor: "#E4403B",
                 alignItems: "center",
                 justifyContent: "center",
                 marginTop: 20,
@@ -255,7 +255,7 @@ const WorkDetails = () => {
               Check In
             </Text>
           </TouchableOpacity>
-        )}
+        )} */}
         <View
           style={{
             height: 1,
@@ -827,7 +827,7 @@ const WorkDetails = () => {
           />
           <View
             style={{
-              backgroundColor: "#DD1701",
+              backgroundColor: "#E4403B",
               height: 34,
               width: 74,
               borderRadius: 30,
@@ -851,10 +851,10 @@ const WorkDetails = () => {
               paddingHorizontal: 15,
             }}
           >
-            <Text style={{ color: "#DD1701", fontFamily: "Inter-Regular" }}>
+            <Text style={{ color: "#E4403B", fontFamily: "Inter-Regular" }}>
               Check-Out Time
             </Text>
-            <Text style={{ color: "#DD1701", fontFamily: "Inter-Regular" }}>
+            <Text style={{ color: "#E4403B", fontFamily: "Inter-Regular" }}>
               (18:30)
             </Text>
           </View>
