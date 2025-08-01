@@ -14,9 +14,11 @@ const AttendanceCard = ({
   outTimeColor,
   workHrsColor,
   onPress,
+  key,
 }) => {
   return (
     <TouchableOpacity
+      key={key}
       style={{
         height: "auto",
         width: "100%",
