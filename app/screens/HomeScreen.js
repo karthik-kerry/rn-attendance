@@ -317,7 +317,7 @@ const HomeScreen = () => {
           alignItems: "center",
           justifyContent: "space-between",
           position: "absolute",
-          top: "5%",
+          top: "2%",
           width: width,
           paddingHorizontal: 20,
         }}

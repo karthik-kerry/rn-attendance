@@ -1,9 +1,81 @@
-import { View, Text } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import React, { useState } from "react";
 import Svg, { G, Path } from "react-native-svg";
-
+import { List } from "react-native-paper";
+import AttendanceChart from "../components/AttendanceChart";
 const AttendanceOverview = () => {
   const [noData, setNoData] = useState(false);
+  const [expanded, setExpanded] = useState(false);
+  const insightsData = {
+    range: "26 Jun - 25 Jul",
+    deductionOverview: {
+      count: 3,
+      data: [
+        {
+          type: "Half Day Minimum Hours",
+          date: "26 Jun",
+          message:
+            "Half day minimum hours is not fulfilled and so, 0.5 day(s) of LOP will be deducted.",
+        },
+        {
+          type: "Late In",
+          date: "22 Jun",
+          message:
+            "Half day minimum hours is not fulfilled and so, 0.5 day(s) of LOP will be deducted.",
+        },
+        {
+          type: "Full Day Minimum Hours",
+          date: "16 Jun",
+          message:
+            "Half day minimum hours is not fulfilled and so, 0.5 day(s) of LOP will be deducted.",
+        },
+      ],
+    },
+    lateIn: {
+      count: 4,
+      data: ["22 Jun", "20 Jun", "17 Jun", "12 Jun"],
+    },
+    earlyOut: {
+      count: 4,
+      data: ["21 Jun", "19 Jun", "18 Jun", "11 Jun"],
+    },
+    exception: "None",
+  };
+
+  const AccordionItem = ({ title, count, children }) => {
+    return (
+      <View
+        style={{
+          borderRadius: 12,
+          borderWidth: 1,
+          borderColor: "#2563EB",
+          backgroundColor: "#fff",
+          overflow: "hidden",
+          marginBottom: 12,
+        }}
+      >
+        <List.Accordion
+          title={title}
+          description={`${count} Day${count > 1 ? "s" : ""}`}
+          expanded={expanded}
+          onPress={() => setExpanded(!expanded)}
+          titleStyle={{
+            fontFamily: "Inter-SemiBold",
+            color: "#1b1b1b",
+            fontSize: 14,
+          }}
+          descriptionStyle={{
+            fontFamily: "Inter-Regular",
+            color: "#64748B",
+            fontSize: 14,
+          }}
+          style={{ backgroundColor: "#2563EB0A" }}
+        >
+          {children}
+        </List.Accordion>
+      </View>
+    );
+  };
 
   return (
     <View style={{ marginTop: 20 }}>
@@ -390,23 +462,24 @@ const AttendanceOverview = () => {
           </View>
         </View>
       ) : (
-        <View>
+        <ScrollView showsVerticalScrollIndicator={false}>
           <View
             style={{
               backgroundColor: "#FFFFFF",
-              height: 400,
+              height: 450,
               width: "100%",
               borderRadius: 16,
               alignItems: "center",
               justifyContent: "space-between",
               padding: 16,
+              elevation: 1,
             }}
           >
             {/* Summary */}
             <View
               style={{
                 flexDirection: "row",
-                alignItems: "center",
+                alignItems: "flex-start",
                 justifyContent: "space-between",
                 width: "100%",
               }}
@@ -422,7 +495,7 @@ const AttendanceOverview = () => {
                     fontSize: 16,
                   }}
                 >
-                  Summary26 Jul - 25 Aug
+                  26 Jul - 25 Aug
                 </Text>
               </View>
               <Text style={{ color: "#64748B", fontFamily: "Inter-Regular" }}>
@@ -430,14 +503,26 @@ const AttendanceOverview = () => {
               </Text>
             </View>
             {/* Chart */}
-            <View></View>
+            <View>
+              <AttendanceChart
+                present={22}
+                absent={2}
+                rest={8}
+                totalDays={30}
+              />
+            </View>
             {/* Divider */}
             <View
-              style={{ height: 1, width: "100%", backgroundColor: "#0000001F" }}
+              style={{
+                height: 1,
+                width: "100%",
+                backgroundColor: "#0000001F",
+              }}
             />
             {/* Average working hrs */}
             <View
               style={{
+                marginTop: 6,
                 flexDirection: "row",
                 alignItems: "flex-start",
                 justifyContent: "space-between",
@@ -481,7 +566,174 @@ const AttendanceOverview = () => {
               </View>
             </View>
           </View>
-        </View>
+          {/* Insights */}
+
+          <Text
+            style={{
+              color: "#64748B",
+              fontFamily: "Inter-Regular",
+              marginTop: 20,
+            }}
+          >
+            Insights
+          </Text>
+          <Text
+            style={{
+              color: "#1B1B1B",
+              fontFamily: "Inter-SemiBold",
+              fontSize: 16,
+              marginBottom: 16,
+            }}
+          >
+            26 Jun - 25 Jul
+          </Text>
+
+          {/* Deduction Overview */}
+          <AccordionItem
+            title="Deduction Overview"
+            count={insightsData.deductionOverview.count}
+          >
+            {insightsData.deductionOverview.data.map((item, idx) => (
+              <View
+                key={idx}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderTopWidth: idx === 0 ? 0 : 1,
+                  borderColor: "#E2E8F0",
+                  backgroundColor: "#fff",
+
+                  gap: 6,
+                }}
+              >
+                <View style={{ flexDirection: "row", gap: 6 }}>
+                  <Svg
+                    width="28"
+                    height="28"
+                    viewBox="0 0 28 28"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <Path
+                      d="M19.4446 7.77734H7.77794C6.70405 7.77734 5.8335 8.6479 5.8335 9.72179V21.3885C5.8335 22.4623 6.70405 23.3329 7.77794 23.3329H19.4446C20.5185 23.3329 21.3891 22.4623 21.3891 21.3885V9.72179C21.3891 8.6479 20.5185 7.77734 19.4446 7.77734Z"
+                      stroke="#64748B"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <Path
+                      d="M17.5 5.83301V9.7219"
+                      stroke="#64748B"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <Path
+                      d="M9.72217 5.83301V9.7219"
+                      stroke="#64748B"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <Path
+                      d="M5.8335 13.6113H21.3891"
+                      stroke="#64748B"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <Path
+                      d="M12.6387 17.5H13.6109"
+                      stroke="#64748B"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                    <Path
+                      d="M13.6113 17.5V20.4167"
+                      stroke="#64748B"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    />
+                  </Svg>
+                  <View>
+                    <Text style={{ fontWeight: "600", color: "#64748B" }}>
+                      {item.type}
+                    </Text>
+                    <Text style={{ color: "#1B1B1B", fontWeight: "500" }}>
+                      {item.date}
+                    </Text>
+                  </View>
+                </View>
+                <Text style={{ color: "#64748B", marginTop: 4 }}>
+                  {item.message}
+                </Text>
+              </View>
+            ))}
+          </AccordionItem>
+
+          <AccordionItem title="Late-in" count={insightsData.lateIn.count}>
+            {insightsData.lateIn.data.map((date, idx) => (
+              <View
+                key={idx}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderTopWidth: idx === 0 ? 0 : 1,
+                  borderColor: "#E2E8F0",
+                }}
+              >
+                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
+                  {date}
+                </Text>
+              </View>
+            ))}
+          </AccordionItem>
+
+          <AccordionItem title="Early-out" count={insightsData.earlyOut.count}>
+            {insightsData.earlyOut.data.map((date, idx) => (
+              <View
+                key={idx}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderTopWidth: idx === 0 ? 0 : 1,
+                  borderColor: "#E2E8F0",
+                }}
+              >
+                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
+                  {date}
+                </Text>
+              </View>
+            ))}
+          </AccordionItem>
+
+          <View
+            style={{
+              padding: 16,
+              borderRadius: 12,
+              borderWidth: 1,
+              borderColor: "#CBD5E1",
+              marginTop: 12,
+              backgroundColor: "#fff",
+            }}
+          >
+            <Text style={{ fontWeight: "600", color: "#64748B", fontSize: 14 }}>
+              Exception
+            </Text>
+            <Text
+              style={{
+                fontWeight: "500",
+                color: "#1b1b1b",
+                marginTop: 8,
+                fontSize: 14,
+              }}
+            >
+              {insightsData.exception}
+            </Text>
+          </View>
+        </ScrollView>
       )}
     </View>
   );
