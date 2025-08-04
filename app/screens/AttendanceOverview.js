@@ -3,7 +3,11 @@ import React, { useState } from "react";
 import Svg, { G, Path } from "react-native-svg";
 import { List } from "react-native-paper";
 import AttendanceChart from "../components/AttendanceChart";
+import { useNavigation } from "@react-navigation/native";
+
 const AttendanceOverview = () => {
+  const navigation = useNavigation();
+
   const [noData, setNoData] = useState(false);
   const [expanded1, setExpanded1] = useState(false);
   const [expanded2, setExpanded2] = useState(false);
@@ -58,20 +62,41 @@ const AttendanceOverview = () => {
         }}
       >
         <List.Accordion
-          title={title}
-          description={`${count} Day${count > 1 ? "s" : ""}`}
+          title={
+            <View
+              style={{
+                flexDirection: "row",
+                alignItems: "center",
+                justifyContent: "space-between",
+                width: "100%",
+              }}
+            >
+              <Text
+                style={{
+                  fontFamily: "Inter-SemiBold",
+                  color: "#1b1b1b",
+                  fontSize: 16,
+                }}
+              >
+                {title}
+              </Text>
+              <Text
+                style={{
+                  fontFamily: "Inter-Regular",
+                  color: "#1B1B1B",
+                  fontSize: 14,
+                  paddingVertical: 8,
+                  paddingHorizontal: 16,
+                  borderWidth: 0.6,
+                  borderRadius: 47,
+                  borderColor: "#64748B",
+                  backgroundColor: "#64748B1F",
+                }}
+              >{`${count} Day${count > 1 ? "s" : ""}`}</Text>
+            </View>
+          }
           expanded={expanded}
           onPress={onPress}
-          titleStyle={{
-            fontFamily: "Inter-SemiBold",
-            color: "#1b1b1b",
-            fontSize: 14,
-          }}
-          descriptionStyle={{
-            fontFamily: "Inter-Regular",
-            color: "#64748B",
-            fontSize: 14,
-          }}
           style={{ backgroundColor: "#2563EB0A" }}
         >
           {children}
@@ -600,7 +625,11 @@ const AttendanceOverview = () => {
           >
             {insightsData.deductionOverview.data.map((item, idx) => (
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() =>
+                  navigation.navigate("attendanceDetails", {
+                    data: "Mon, Aug 04, 2025",
+                  })
+                }
                 key={idx}
                 style={{
                   paddingHorizontal: 16,
@@ -612,65 +641,90 @@ const AttendanceOverview = () => {
                   gap: 6,
                 }}
               >
-                <View style={{ flexDirection: "row", gap: 6 }}>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <View style={{ flexDirection: "row", gap: 6 }}>
+                    <Svg
+                      width="28"
+                      height="28"
+                      viewBox="0 0 28 28"
+                      fill="none"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <Path
+                        d="M19.4446 7.77734H7.77794C6.70405 7.77734 5.8335 8.6479 5.8335 9.72179V21.3885C5.8335 22.4623 6.70405 23.3329 7.77794 23.3329H19.4446C20.5185 23.3329 21.3891 22.4623 21.3891 21.3885V9.72179C21.3891 8.6479 20.5185 7.77734 19.4446 7.77734Z"
+                        stroke="#64748B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <Path
+                        d="M17.5 5.83301V9.7219"
+                        stroke="#64748B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <Path
+                        d="M9.72217 5.83301V9.7219"
+                        stroke="#64748B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <Path
+                        d="M5.8335 13.6113H21.3891"
+                        stroke="#64748B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <Path
+                        d="M12.6387 17.5H13.6109"
+                        stroke="#64748B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                      <Path
+                        d="M13.6113 17.5V20.4167"
+                        stroke="#64748B"
+                        stroke-width="1.5"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </Svg>
+                    <View>
+                      <Text style={{ fontWeight: "600", color: "#64748B" }}>
+                        {item.type}
+                      </Text>
+                      <Text style={{ color: "#1B1B1B", fontWeight: "500" }}>
+                        {item.date}
+                      </Text>
+                    </View>
+                  </View>
                   <Svg
-                    width="28"
-                    height="28"
-                    viewBox="0 0 28 28"
+                    width="9"
+                    height="16"
+                    viewBox="0 0 9 16"
                     fill="none"
                     xmlns="http://www.w3.org/2000/svg"
                   >
                     <Path
-                      d="M19.4446 7.77734H7.77794C6.70405 7.77734 5.8335 8.6479 5.8335 9.72179V21.3885C5.8335 22.4623 6.70405 23.3329 7.77794 23.3329H19.4446C20.5185 23.3329 21.3891 22.4623 21.3891 21.3885V9.72179C21.3891 8.6479 20.5185 7.77734 19.4446 7.77734Z"
-                      stroke="#64748B"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <Path
-                      d="M17.5 5.83301V9.7219"
-                      stroke="#64748B"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <Path
-                      d="M9.72217 5.83301V9.7219"
-                      stroke="#64748B"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <Path
-                      d="M5.8335 13.6113H21.3891"
-                      stroke="#64748B"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <Path
-                      d="M12.6387 17.5H13.6109"
-                      stroke="#64748B"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
-                    />
-                    <Path
-                      d="M13.6113 17.5V20.4167"
-                      stroke="#64748B"
-                      stroke-width="1.5"
-                      stroke-linecap="round"
-                      stroke-linejoin="round"
+                      opacity="0.8"
+                      d="M1 1L8 8L1 15"
+                      stroke="#1B1B1B"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
                     />
                   </Svg>
-                  <View>
-                    <Text style={{ fontWeight: "600", color: "#64748B" }}>
-                      {item.type}
-                    </Text>
-                    <Text style={{ color: "#1B1B1B", fontWeight: "500" }}>
-                      {item.date}
-                    </Text>
-                  </View>
                 </View>
                 <Text style={{ color: "#64748B", marginTop: 4 }}>
                   {item.message}
@@ -678,7 +732,6 @@ const AttendanceOverview = () => {
               </TouchableOpacity>
             ))}
           </AccordionItem>
-
           <AccordionItem
             title="Late-in"
             count={insightsData.lateIn.count}
@@ -687,7 +740,11 @@ const AttendanceOverview = () => {
           >
             {insightsData.lateIn.data.map((date, idx) => (
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() =>
+                  navigation.navigate("attendanceDetails", {
+                    data: "Mon, Aug 04, 2025",
+                  })
+                }
                 key={idx}
                 style={{
                   paddingHorizontal: 16,
@@ -696,13 +753,37 @@ const AttendanceOverview = () => {
                   borderColor: "#E2E8F0",
                 }}
               >
-                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
-                  {date}
-                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
+                    {date}
+                  </Text>
+                  <Svg
+                    width="9"
+                    height="16"
+                    viewBox="0 0 9 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <Path
+                      opacity="0.8"
+                      d="M1 1L8 8L1 15"
+                      stroke="#1B1B1B"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
               </TouchableOpacity>
             ))}
           </AccordionItem>
-
           <AccordionItem
             title="Early-out"
             count={insightsData.earlyOut.count}
@@ -711,7 +792,11 @@ const AttendanceOverview = () => {
           >
             {insightsData.earlyOut.data.map((date, idx) => (
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() =>
+                  navigation.navigate("attendanceDetails", {
+                    data: "Mon, Aug 04, 2025",
+                  })
+                }
                 key={idx}
                 style={{
                   paddingHorizontal: 16,
@@ -720,9 +805,34 @@ const AttendanceOverview = () => {
                   borderColor: "#E2E8F0",
                 }}
               >
-                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
-                  {date}
-                </Text>
+                <View
+                  style={{
+                    flexDirection: "row",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    width: "100%",
+                  }}
+                >
+                  <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
+                    {date}
+                  </Text>
+                  <Svg
+                    width="9"
+                    height="16"
+                    viewBox="0 0 9 16"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <Path
+                      opacity="0.8"
+                      d="M1 1L8 8L1 15"
+                      stroke="#1B1B1B"
+                      strokeWidth="2"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </Svg>
+                </View>
               </TouchableOpacity>
             ))}
           </AccordionItem>

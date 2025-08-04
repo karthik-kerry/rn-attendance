@@ -15,6 +15,7 @@ const AttendanceCard = ({
   workHrsColor,
   onPress,
   key,
+  duty,
 }) => {
   return (
     <TouchableOpacity
@@ -71,6 +72,27 @@ const AttendanceCard = ({
             gap: 10,
           }}
         >
+          <View
+            style={{
+              backgroundColor: shiftBgColor,
+              borderRadius: 30,
+              paddingVertical: 5,
+              paddingHorizontal: 8,
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Text
+              style={{
+                color: shiftTextColor,
+                fontFamily: "Inter-SemiBold",
+                textTransform: "uppercase",
+                fontSize: 10,
+              }}
+            >
+              {duty}
+            </Text>
+          </View>
           <View
             style={{
               backgroundColor: shiftBgColor,

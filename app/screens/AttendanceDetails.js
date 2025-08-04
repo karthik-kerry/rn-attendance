@@ -37,7 +37,7 @@ const AttendanceDetails = () => {
       >
         <Text
           style={{
-            fontFamily: "Inter-Regular",
+            fontFamily: "Inter-SemiBold",
             color: "#1b1b1b",
             fontSize: 16,
           }}
@@ -96,6 +96,65 @@ const AttendanceDetails = () => {
           marginHorizontal: -20,
         }}
       >
+        <View
+          style={{
+            flexDirection: "row",
+            alignItems: "center",
+            justifyContent: "space-between",
+            width: "100%",
+          }}
+        >
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            <Text
+              style={{
+                color: "#64748B",
+                fontSize: 12,
+                fontFamily: "Inter-SemiBold",
+              }}
+            >
+              Total Working Hrs
+            </Text>
+            <Text style={{ color: "#1B1B1B", fontFamily: "Inter-Bold" }}>
+              08:00 Hrs
+            </Text>
+          </View>
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            <Text
+              style={{
+                color: "#64748B",
+                fontSize: 12,
+                fontFamily: "Inter-SemiBold",
+              }}
+            >
+              User Working Hrs
+            </Text>
+            <Text style={{ color: "#1B1B1B", fontFamily: "Inter-Bold" }}>
+              07:30 Hrs
+            </Text>
+          </View>
+          <View style={{ alignItems: "center", justifyContent: "center" }}>
+            <Text
+              style={{
+                color: "#64748B",
+                fontSize: 12,
+                fontFamily: "Inter-SemiBold",
+              }}
+            >
+              Total Break Hrs
+            </Text>
+            <Text style={{ color: "#1B1B1B", fontFamily: "Inter-Bold" }}>
+              35:00 Mins
+            </Text>
+          </View>
+        </View>
+        <View
+          style={{
+            height: 1,
+            width: "100%",
+            backgroundColor: "#0000001F",
+            marginVertical: 20,
+          }}
+        />
         <View
           style={{
             flexDirection: "row",
