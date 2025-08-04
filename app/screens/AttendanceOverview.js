@@ -5,7 +5,10 @@ import { List } from "react-native-paper";
 import AttendanceChart from "../components/AttendanceChart";
 const AttendanceOverview = () => {
   const [noData, setNoData] = useState(false);
-  const [expanded, setExpanded] = useState(false);
+  const [expanded1, setExpanded1] = useState(false);
+  const [expanded2, setExpanded2] = useState(false);
+  const [expanded3, setExpanded3] = useState(false);
+
   const insightsData = {
     range: "26 Jun - 25 Jul",
     deductionOverview: {
@@ -42,7 +45,7 @@ const AttendanceOverview = () => {
     exception: "None",
   };
 
-  const AccordionItem = ({ title, count, children }) => {
+  const AccordionItem = ({ title, count, children, expanded, onPress }) => {
     return (
       <View
         style={{
@@ -58,7 +61,7 @@ const AttendanceOverview = () => {
           title={title}
           description={`${count} Day${count > 1 ? "s" : ""}`}
           expanded={expanded}
-          onPress={() => setExpanded(!expanded)}
+          onPress={onPress}
           titleStyle={{
             fontFamily: "Inter-SemiBold",
             color: "#1b1b1b",
@@ -592,9 +595,12 @@ const AttendanceOverview = () => {
           <AccordionItem
             title="Deduction Overview"
             count={insightsData.deductionOverview.count}
+            expanded={expanded1}
+            onPress={() => setExpanded1(!expanded1)}
           >
             {insightsData.deductionOverview.data.map((item, idx) => (
-              <View
+              <TouchableOpacity
+                onPress={() => {}}
                 key={idx}
                 style={{
                   paddingHorizontal: 16,
@@ -669,70 +675,57 @@ const AttendanceOverview = () => {
                 <Text style={{ color: "#64748B", marginTop: 4 }}>
                   {item.message}
                 </Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </AccordionItem>
 
-          <AccordionItem title="Late-in" count={insightsData.lateIn.count}>
-            {insightsData.lateIn.data.map((date, idx) => (
-              <View
-                key={idx}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  borderTopWidth: idx === 0 ? 0 : 1,
-                  borderColor: "#E2E8F0",
-                }}
-              >
-                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
-                  {date}
-                </Text>
-              </View>
-            ))}
-          </AccordionItem>
-
-          <AccordionItem title="Early-out" count={insightsData.earlyOut.count}>
-            {insightsData.earlyOut.data.map((date, idx) => (
-              <View
-                key={idx}
-                style={{
-                  paddingHorizontal: 16,
-                  paddingVertical: 12,
-                  borderTopWidth: idx === 0 ? 0 : 1,
-                  borderColor: "#E2E8F0",
-                }}
-              >
-                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
-                  {date}
-                </Text>
-              </View>
-            ))}
-          </AccordionItem>
-
-          <View
-            style={{
-              padding: 16,
-              borderRadius: 12,
-              borderWidth: 1,
-              borderColor: "#CBD5E1",
-              marginTop: 12,
-              backgroundColor: "#fff",
-            }}
+          <AccordionItem
+            title="Late-in"
+            count={insightsData.lateIn.count}
+            expanded={expanded2}
+            onPress={() => setExpanded2(!expanded2)}
           >
-            <Text style={{ fontWeight: "600", color: "#64748B", fontSize: 14 }}>
-              Exception
-            </Text>
-            <Text
-              style={{
-                fontWeight: "500",
-                color: "#1b1b1b",
-                marginTop: 8,
-                fontSize: 14,
-              }}
-            >
-              {insightsData.exception}
-            </Text>
-          </View>
+            {insightsData.lateIn.data.map((date, idx) => (
+              <TouchableOpacity
+                onPress={() => {}}
+                key={idx}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderTopWidth: idx === 0 ? 0 : 1,
+                  borderColor: "#E2E8F0",
+                }}
+              >
+                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
+                  {date}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </AccordionItem>
+
+          <AccordionItem
+            title="Early-out"
+            count={insightsData.earlyOut.count}
+            expanded={expanded3}
+            onPress={() => setExpanded3(!expanded3)}
+          >
+            {insightsData.earlyOut.data.map((date, idx) => (
+              <TouchableOpacity
+                onPress={() => {}}
+                key={idx}
+                style={{
+                  paddingHorizontal: 16,
+                  paddingVertical: 12,
+                  borderTopWidth: idx === 0 ? 0 : 1,
+                  borderColor: "#E2E8F0",
+                }}
+              >
+                <Text style={{ fontWeight: "500", color: "#1b1b1b" }}>
+                  {date}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </AccordionItem>
         </ScrollView>
       )}
     </View>

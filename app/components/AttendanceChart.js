@@ -15,8 +15,8 @@ const AttendanceChart = ({
 
   const data = [
     { label: "Present", value: present, color: "#13950F" },
+    { label: "Rest Day", value: rest, color: "#64748B" },
     { label: "Absent", value: absent, color: "#E4403B" },
-    { label: "Rest", value: rest, color: "#64748B" },
     { label: "LOP", value: lop, color: "#F09E07" },
   ];
 
@@ -30,6 +30,8 @@ const AttendanceChart = ({
           alignItems: "flex-end",
           height: chartHeight,
           width: screenWidth - 40,
+          borderBottomWidth: 1,
+          borderBottomColor: "#00000033",
         }}
       >
         {data.map((item, index) => {
@@ -39,6 +41,7 @@ const AttendanceChart = ({
           return (
             <View
               key={index}
+              index={index}
               style={{ alignItems: "center", marginHorizontal: 6 }}
             >
               <View style={{ height: chartHeight, justifyContent: "flex-end" }}>
@@ -48,8 +51,8 @@ const AttendanceChart = ({
                     width: barWidth,
                     height: emptyHeight,
                     backgroundColor: "#64748B14",
-                    borderTopLeftRadius: 6,
-                    borderTopRightRadius: 6,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
                   }}
                 />
                 {/* Colored filled portion */}
@@ -58,14 +61,11 @@ const AttendanceChart = ({
                     width: barWidth,
                     height: filledHeight,
                     backgroundColor: item.color,
-                    borderRadius: 6,
+                    borderTopLeftRadius: 8,
+                    borderTopRightRadius: 8,
                   }}
                 />
               </View>
-              {/* Value on top of the bar */}
-              <Text style={{ marginTop: 6, fontSize: 13, fontWeight: "bold" }}>
-                {item.value}
-              </Text>
             </View>
           );
         })}
@@ -84,6 +84,7 @@ const AttendanceChart = ({
         {data.map((item, index) => (
           <View
             key={index}
+            index={index}
             style={{
               width: (screenWidth - 150) / 2,
               paddingVertical: 6,
@@ -96,7 +97,7 @@ const AttendanceChart = ({
           >
             <View
               style={{
-                height: 30,
+                height: 42,
                 width: 3,
                 backgroundColor: item.color,
                 borderRadius: 6,
@@ -107,7 +108,13 @@ const AttendanceChart = ({
               <Text style={{ fontSize: 13, color: "#374151" }}>
                 {item.label}
               </Text>
-              <Text style={{ fontSize: 13, color: "#374151" }}>
+              <Text
+                style={{
+                  fontSize: 16,
+                  color: "#1B1B1B",
+                  fontFamily: "Inter-SemiBold",
+                }}
+              >
                 {item.value}
               </Text>
             </View>

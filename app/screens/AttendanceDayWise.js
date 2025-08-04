@@ -110,6 +110,7 @@ const AttendanceDayWise = () => {
             <>
               <AttendanceCard
                 key={i}
+                index={i}
                 title={formattedDate}
                 shift={attendance?.shiftname}
                 shiftTextColor="#13950F"
