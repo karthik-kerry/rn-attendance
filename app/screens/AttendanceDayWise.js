@@ -1,4 +1,11 @@
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+  Dimensions,
+  Modal,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import AttendanceCard from "../components/AttendanceCard";
 import Svg, { Path } from "react-native-svg";
@@ -8,14 +15,17 @@ import axios from "axios";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToggleButton } from "react-native-paper";
 import AttendanceCalendar from "../components/AttendanceCalendar";
+import LegendsTabs from "../navigation/LegendsTabs";
 
 const AttendanceDayWise = () => {
   const navigation = useNavigation();
+  const { width } = Dimensions.get("window");
 
   const [userData, setUserData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
   const [attendanceList, setAttendanceList] = useState([]);
   const [toggle, setToggle] = useState("grid");
+  const [modalVisible, setModalVisible] = useState(false);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -78,7 +88,7 @@ const AttendanceDayWise = () => {
             alignItems: "center",
             justifyContent: "center",
           }}
-          onPress={() => {}}
+          onPress={() => setModalVisible(!modalVisible)}
         >
           <Svg
             width="20"
@@ -416,6 +426,66 @@ const AttendanceDayWise = () => {
             })
           }
         /> */}
+      <Modal animationType="slide" transparent={true} visible={modalVisible}>
+        <View
+          style={{
+            flex: 1,
+            justifyContent: "center",
+            alignItems: "center",
+            backgroundColor: "#00000060",
+          }}
+        >
+          <View
+            style={{
+              height: "65%",
+              width: width - 40,
+              marginHorizontal: 20,
+              backgroundColor: "white",
+              borderRadius: 20,
+              padding: 20,
+              elevation: 5,
+            }}
+          >
+            <View
+              style={{
+                alignItems: "center",
+                justifyContent: "space-between",
+                flexDirection: "row",
+              }}
+            >
+              <View />
+              <Text
+                style={{
+                  fontFamily: "Inter-Bold",
+                  textAlign: "center",
+                  fontSize: 16,
+                  color: "#1b1b1b",
+                }}
+              >
+                Legends
+              </Text>
+              <TouchableOpacity onPress={() => setModalVisible(false)}>
+                <Svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 14 14"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <Path
+                    d="M1 13L13 1M1 1L13 13"
+                    stroke="#64748B"
+                    strokeWidth="1.5"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </Svg>
+              </TouchableOpacity>
+            </View>
+            <LegendsTabs />
+          </View>
+        </View>
+      </Modal>
     </ScrollView>
   );
 };
