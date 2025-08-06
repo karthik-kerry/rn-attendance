@@ -282,7 +282,7 @@ const Profile = () => {
             />
           </View>
           <TouchableOpacity
-            onPress={() => {}}
+            onPress={() => navigation.navigate("settings")}
             style={{
               backgroundColor: "white",
               height: 60,

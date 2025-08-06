@@ -16,6 +16,15 @@ import Employees from "./screens/Employees";
 import PayslipScreen from "./screens/PayslipScreen";
 import ReimbursementScreen from "./screens/ReimbursementScreen";
 import BreakScreen from "./screens/BreakScreen";
+import HolidayScreen from "./screens/HolidayScreen";
+import InsuranceScreen from "./screens/InsuranceScreen";
+import PolicyScreen from "./screens/PolicyScreen";
+import TermScreen from "./screens/TermScreen";
+import SettingScreen from "./screens/SettingScreen";
+import AboutApp from "./screens/AboutApp";
+import EnablePinLock from "./screens/EnablePinLock";
+import HelpScreen from "./screens/HelpScreen";
+import ChangePassword from "./screens/ChangePassword";
 
 const Stack = createNativeStackNavigator();
 
@@ -60,6 +69,15 @@ export default function Index() {
       <Stack.Screen name="payslips" component={PayslipScreen} />
       <Stack.Screen name="reimbursement" component={ReimbursementScreen} />
       <Stack.Screen name="break" component={BreakScreen} />
+      <Stack.Screen name="holiday" component={HolidayScreen} />
+      <Stack.Screen name="insurance" component={InsuranceScreen} />
+      <Stack.Screen name="policy" component={PolicyScreen} />
+      <Stack.Screen name="term" component={TermScreen} />
+      <Stack.Screen name="settings" component={SettingScreen} />
+      <Stack.Screen name="about" component={AboutApp} />
+      <Stack.Screen name="enablePinLock" component={EnablePinLock} />
+      <Stack.Screen name="help" component={HelpScreen} />
+      <Stack.Screen name="changePassword" component={ChangePassword} />
     </Stack.Navigator>
     // </NavigationContainer>
   );

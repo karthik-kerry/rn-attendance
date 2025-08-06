@@ -225,7 +225,7 @@ const Reports = () => {
               />
             </Svg>
           }
-          onPress={() => {}}
+          onPress={() => navigation.navigate("holiday")}
         />
         <ReportCard
           name="Insurance"
@@ -247,7 +247,7 @@ const Reports = () => {
               />
             </Svg>
           }
-          onPress={() => {}}
+          onPress={() => navigation.navigate("insurance")}
         />
         <ReportCard
           name="Policies"
@@ -273,7 +273,7 @@ const Reports = () => {
               />
             </Svg>
           }
-          onPress={() => {}}
+          onPress={() => navigation.navigate("policy")}
         />
         <ReportCard
           name="Terms & Conditions"
@@ -299,7 +299,7 @@ const Reports = () => {
               />
             </Svg>
           }
-          onPress={() => {}}
+          onPress={() => navigation.navigate("term")}
         />
       </ScrollView>
     </View>
