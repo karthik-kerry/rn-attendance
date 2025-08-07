@@ -241,7 +241,7 @@ const HelpScreen = () => {
           <View style={{ gap: 20 }}>
             <Text
               style={{
-                fontSize: 14,
+                fontSize: 16,
                 fontFamily: "Inter-Regular",
                 color: "#1b1b1b",
               }}
