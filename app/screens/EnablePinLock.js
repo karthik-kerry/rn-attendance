@@ -7,7 +7,7 @@ import {
   Modal,
   Dimensions,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import Header from "../components/Header";
 import Svg, { G, Path } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
@@ -15,9 +15,30 @@ import { useNavigation } from "@react-navigation/native";
 const EnablePinLock = () => {
   const navigation = useNavigation();
   const { width } = Dimensions.get("window");
-
   const [modalVisible, setModalVisible] = useState(false);
+  const [pin, setPin] = useState(["", "", "", ""]);
+  const inputs = useRef([]);
 
+  const handleChange = (text, index) => {
+    if (/^\d$/.test(text)) {
+      const newPin = [...pin];
+      newPin[index] = text;
+      setPin(newPin);
+      if (index < 3) {
+        inputs.current[index + 1].focus();
+      }
+    } else if (text === "") {
+      const newPin = [...pin];
+      newPin[index] = "";
+      setPin(newPin);
+    }
+  };
+
+  const handleKeyPress = (e, index) => {
+    if (e.nativeEvent.key === "Backspace" && pin[index] === "" && index > 0) {
+      inputs.current[index - 1].focus();
+    }
+  };
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
@@ -595,7 +616,7 @@ const EnablePinLock = () => {
           <Text style={{ color: "#64748B", fontFamily: "Inter-regular" }}>
             This pin will be used to access the XBM app
           </Text>
-          <View
+          {/* <View
             style={{
               flexDirection: "row",
               alignItems: "center",
@@ -648,6 +669,36 @@ const EnablePinLock = () => {
                 textAlign: "center",
               }}
             />
+          </View> */}
+          <View
+            style={{
+              flexDirection: "row",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 20,
+              marginTop: 20,
+            }}
+          >
+            {pin.map((digit, index) => (
+              <TextInput
+                key={index}
+                ref={(ref) => (inputs.current[index] = ref)}
+                keyboardType="numeric"
+                maxLength={1}
+                value={digit}
+                onChangeText={(text) => handleChange(text, index)}
+                onKeyPress={(e) => handleKeyPress(e, index)}
+                style={{
+                  height: 52,
+                  width: 52,
+                  backgroundColor: "white",
+                  borderWidth: 1,
+                  borderColor: "#E2E8F0",
+                  borderRadius: 12,
+                  textAlign: "center",
+                }}
+              />
+            ))}
           </View>
         </View>
       </View>
