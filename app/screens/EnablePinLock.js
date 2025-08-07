@@ -17,28 +17,91 @@ const EnablePinLock = () => {
   const { width } = Dimensions.get("window");
   const [modalVisible, setModalVisible] = useState(false);
   const [pin, setPin] = useState(["", "", "", ""]);
+  const [confirmPin, setConfirmPin] = useState(["", "", "", ""]);
+  const [isConfirmMode, setIsConfirmMode] = useState(false);
   const inputs = useRef([]);
 
   const handleChange = (text, index) => {
     if (/^\d$/.test(text)) {
-      const newPin = [...pin];
-      newPin[index] = text;
-      setPin(newPin);
-      if (index < 3) {
-        inputs.current[index + 1].focus();
+      if (isConfirmMode) {
+        const newPin = [...confirmPin];
+        newPin[index] = text;
+        setConfirmPin(newPin);
+        if (index < 3) {
+          inputs.current[index + 1].focus();
+        }
+      } else {
+        const newPin = [...pin];
+        newPin[index] = text;
+        setPin(newPin);
+        if (index < 3) {
+          inputs.current[index + 1].focus();
+        }
       }
     } else if (text === "") {
-      const newPin = [...pin];
-      newPin[index] = "";
-      setPin(newPin);
+      if (isConfirmMode) {
+        const newPin = [...confirmPin];
+        newPin[index] = "";
+        setConfirmPin(newPin);
+      } else {
+        const newPin = [...pin];
+        newPin[index] = "";
+        setPin(newPin);
+      }
     }
   };
 
   const handleKeyPress = (e, index) => {
-    if (e.nativeEvent.key === "Backspace" && pin[index] === "" && index > 0) {
-      inputs.current[index - 1].focus();
+    if (e.nativeEvent.key === "Backspace") {
+      const arr = isConfirmMode ? [...confirmPin] : [...pin];
+
+      if (arr[index] === "") {
+        if (index > 0) {
+          arr[index - 1] = "";
+          if (isConfirmMode) {
+            setConfirmPin(arr);
+          } else {
+            setPin(arr);
+          }
+          inputs.current[index - 1]?.focus();
+        }
+      } else {
+        arr[index] = "";
+        if (isConfirmMode) {
+          setConfirmPin(arr);
+        } else {
+          setPin(arr);
+        }
+      }
     }
   };
+
+  const handleNextOrConfirm = () => {
+    if (!isConfirmMode) {
+      setIsConfirmMode(true);
+      setConfirmPin(["", "", "", ""]);
+      setTimeout(() => {
+        inputs.current[0]?.focus();
+      }, 100);
+    } else {
+      setModalVisible(true);
+    }
+  };
+
+  const handleCancel = () => {
+    if (isConfirmMode) {
+      setIsConfirmMode(false);
+      setConfirmPin(["", "", "", ""]);
+      setPin(["", "", "", ""]);
+      setTimeout(() => {
+        inputs.current[0]?.focus();
+      }, 100);
+    } else {
+      navigation.goBack();
+    }
+  };
+
+  const pinToShow = isConfirmMode ? confirmPin : pin;
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
@@ -48,7 +111,8 @@ const EnablePinLock = () => {
           flex: 1,
           alignItems: "center",
           justifyContent: "flex-start",
-          marginTop: 40,
+          // marginTop: 40,
+          paddingVertical: 40,
         }}
       >
         <Svg
@@ -611,65 +675,14 @@ const EnablePinLock = () => {
           <Text
             style={{ color: "#1B1B1B", fontFamily: "Inter-Bold", fontSize: 20 }}
           >
-            Enter 4 Digit PIN
+            {isConfirmMode ? "Confirm 4 Digit PIN" : "Enter 4 Digit PIN"}
           </Text>
           <Text style={{ color: "#64748B", fontFamily: "Inter-regular" }}>
-            This pin will be used to access the XBM app
+            {isConfirmMode
+              ? "Re-enter your PIN to confirm"
+              : "This pin will be used to access the XBM app"}
           </Text>
-          {/* <View
-            style={{
-              flexDirection: "row",
-              alignItems: "center",
-              justifyContent: "center",
-              gap: 20,
-              marginTop: 20,
-            }}
-          >
-            <TextInput
-              style={{
-                height: 52,
-                width: 52,
-                backgroundColor: "white",
-                borderWidth: 1,
-                borderColor: "#E2E8F0",
-                borderRadius: 12,
-                textAlign: "center",
-              }}
-            />
-            <TextInput
-              style={{
-                height: 52,
-                width: 52,
-                backgroundColor: "white",
-                borderWidth: 1,
-                borderColor: "#E2E8F0",
-                borderRadius: 12,
-                textAlign: "center",
-              }}
-            />
-            <TextInput
-              style={{
-                height: 52,
-                width: 52,
-                backgroundColor: "white",
-                borderWidth: 1,
-                borderColor: "#E2E8F0",
-                borderRadius: 12,
-                textAlign: "center",
-              }}
-            />
-            <TextInput
-              style={{
-                height: 52,
-                width: 52,
-                backgroundColor: "white",
-                borderWidth: 1,
-                borderColor: "#E2E8F0",
-                borderRadius: 12,
-                textAlign: "center",
-              }}
-            />
-          </View> */}
+
           <View
             style={{
               flexDirection: "row",
@@ -679,7 +692,7 @@ const EnablePinLock = () => {
               marginTop: 20,
             }}
           >
-            {pin.map((digit, index) => (
+            {pinToShow.map((digit, index) => (
               <TextInput
                 key={index}
                 ref={(ref) => (inputs.current[index] = ref)}
@@ -707,11 +720,10 @@ const EnablePinLock = () => {
           flexDirection: "row",
           alignItems: "center",
           justifyContent: "space-between",
-          marginBottom: 50,
         }}
       >
         <TouchableOpacity
-          onPress={() => {}}
+          onPress={handleCancel}
           style={{
             borderWidth: 1.5,
             borderColor: "#64748B",
@@ -720,6 +732,7 @@ const EnablePinLock = () => {
             borderRadius: 47,
             alignItems: "center",
             justifyContent: "center",
+            marginBottom: 25,
           }}
         >
           <Text
@@ -733,7 +746,7 @@ const EnablePinLock = () => {
           </Text>
         </TouchableOpacity>
         <TouchableOpacity
-          onPress={() => setModalVisible(!modalVisible)}
+          onPress={handleNextOrConfirm}
           style={{
             height: 44,
             width: 169,
@@ -741,6 +754,7 @@ const EnablePinLock = () => {
             alignItems: "center",
             justifyContent: "center",
             backgroundColor: "#2563EB",
+            marginBottom: 25,
           }}
         >
           <Text
@@ -750,7 +764,7 @@ const EnablePinLock = () => {
               fontSize: 16,
             }}
           >
-            Confirm
+            {isConfirmMode ? "Confirm" : "Next"}
           </Text>
         </TouchableOpacity>
       </View>
