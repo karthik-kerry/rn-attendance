@@ -29,7 +29,7 @@ const AttendanceChart = ({
           justifyContent: "space-around",
           alignItems: "flex-end",
           height: chartHeight,
-          width: screenWidth - 40,
+          width: (screenWidth - 40) * 0.8,
           borderBottomWidth: 1,
           borderBottomColor: "#00000033",
         }}
