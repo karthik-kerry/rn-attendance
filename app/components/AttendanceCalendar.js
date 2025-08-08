@@ -29,15 +29,31 @@ const AttendanceCalendar = () => {
       customStyles: {
         container: {
           backgroundColor: getColor(code),
-          borderRadius: 6,
+          borderRadius: 0,
+          width: 55,
+          height: 50,
           alignItems: "center",
           justifyContent: "center",
+          position: "relative",
         },
         text: {
           color: "#000",
           fontWeight: "bold",
         },
       },
+      codeStyle: {
+        fontSize: 10,
+        color: "#888",
+      },
+
+      iconStyle: {
+        fontSize: 12,
+        position: "absolute",
+        top: 4,
+        left: 4,
+        zIndex: 2,
+      },
+
       icon: icon,
       code: code,
     };
@@ -46,13 +62,14 @@ const AttendanceCalendar = () => {
   function getColor(code) {
     return (
       {
-        P: "#d1f1d1",
-        A: "#ffe2e2",
-        OD: "#c2e1ff",
-        L: "#fff7c2",
-        R: "#d9d9d9",
-        H: "#ffd6d6",
-        "?": "#e4ccf7",
+        P: "#DFF5E1",
+        A: "#FFE3E3",
+        OD: "#D7F3FE",
+        L: "#FFF7D1",
+        R: "#E3F2FD",
+        H: "#FFE9F0",
+        O: "#EDEDEDEB",
+        "?": "#F3E8FFEB",
         "📅": "#e9f0f7",
         "🏠": "#f0f8ff",
         "🌓": "#d1f1d1",
@@ -87,8 +104,8 @@ const AttendanceCalendar = () => {
               onPress={() => handleDayPress(date)}
               style={[
                 {
-                  height: 40,
-                  width: 40,
+                  height: 50,
+                  width: 50,
                   alignItems: "center",
                   justifyContent: "center",
                   borderRadius: 6,
@@ -107,11 +124,9 @@ const AttendanceCalendar = () => {
               >
                 {date.day}
               </Text>
-              {entry?.icon && (
-                <Text style={{ fontSize: 10 }}>{entry.icon}</Text>
-              )}
+              {entry?.icon && <Text style={entry.iconStyle}>{entry.icon}</Text>}
               {!entry?.icon && entry?.code && entry.code.length <= 3 && (
-                <Text style={{ fontSize: 10 }}>{entry.code}</Text>
+                <Text style={entry.codeStyle}>{entry.code}</Text>
               )}
             </TouchableOpacity>
           );
