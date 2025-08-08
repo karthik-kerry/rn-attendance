@@ -1,61 +1,96 @@
 import React, { useState } from "react";
 import { View, Text, TouchableOpacity, ScrollView } from "react-native";
 import { Calendar } from "react-native-calendars";
+import {
+  CalendarIcon,
+  HomeIcon,
+  HalfDayIcon,
+  StatusUnknown,
+} from "../components/AttendanceIcons";
 
 const AttendanceCalendar = () => {
   const [selectedDate, setSelectedDate] = useState(null);
 
   const markedDates = {
-    "2025-07-26": createMarked("P"),
-    "2025-07-27": createMarked("P", "🏠"),
-    "2025-07-28": createMarked("P"),
-    "2025-07-29": createMarked("📅"),
-    "2025-07-30": createMarked("🏠"),
-    "2025-07-31": createMarked("A"),
-    "2025-08-01": createMarked("P"),
+    "2025-08-01": createMarked("A"),
     "2025-08-02": createMarked("P"),
-    "2025-08-03": createMarked("P", "🏠"),
-    "2025-08-04": createMarked("🌓"),
-    "2025-08-05": createMarked("R"),
+    "2025-08-03": createMarked("P", null, "Ignored"),
+    "2025-08-04": createMarked("P", <HomeIcon width={14} height={12} />),
+    "2025-08-05": createMarked("R", <HalfDayIcon width={14} height={12} />),
+    "2025-08-06": createMarked("O", <CalendarIcon width={14} height={12} />),
+    "2025-08-07": createMarked("P"),
+    "2025-08-08": createMarked("P"),
     "2025-08-09": createMarked("L"),
+    "2025-08-10": createMarked("P"),
+    "2025-08-11": createMarked("P"),
     "2025-08-12": createMarked("H"),
-    "2025-08-16": createMarked("A"),
-    "2025-08-22": createMarked("OD"),
-    "2025-08-23": createMarked("?"),
+    "2025-08-13": createMarked("O", <CalendarIcon width={14} height={12} />),
+    "2025-08-14": createMarked("P"),
+    "2025-08-15": createMarked("A"),
+    "2025-08-16": createMarked("P"),
+    "2025-08-17": createMarked("A"),
+    "2025-08-18": createMarked("P", <HomeIcon width={14} height={12} />),
+    "2025-08-19": createMarked(
+      "O",
+      <CalendarIcon width={14} height={12} />,
+      "Grace"
+    ),
+    "2025-08-20": createMarked("P"),
+    "2025-08-21": createMarked(
+      "O",
+      <CalendarIcon width={14} height={12} />,
+      "Regularized"
+    ),
+    "2025-08-22": createMarked("P"),
+    "2025-08-23": createMarked("?", <StatusUnknown width={14} height={12} />),
+    "2025-07-26": createMarked("P", <HomeIcon width={14} height={12} />),
+    "2025-07-27": createMarked("O"),
+    "2025-07-28": createMarked("P"),
+    "2025-07-29": createMarked("O", <CalendarIcon width={14} height={12} />),
+    "2025-07-30": createMarked("P", <HomeIcon width={14} height={12} />),
+    "2025-07-31": createMarked("OD"),
   };
 
-  function createMarked(code, icon = null) {
+  function createMarked(code, icon = null, badge = null) {
     return {
       customStyles: {
         container: {
           backgroundColor: getColor(code),
           borderRadius: 0,
           width: 55,
-          height: 50,
+          height: 55,
           alignItems: "center",
           justifyContent: "center",
           position: "relative",
+          marginBottom: -14.5,
         },
         text: {
-          color: "#000",
-          fontWeight: "bold",
+          color: "#1B1B1B",
+          fontWeight: "inter-Regular",
+          position: "absolute",
+          bottom: 6,
+          left: 6,
+          fontSize: 10,
         },
       },
       codeStyle: {
         fontSize: 10,
-        color: "#888",
+        color: "#64748B",
+        position: "absolute",
+        top: 2,
+        right: 7,
       },
 
       iconStyle: {
-        fontSize: 12,
+        fontSize: 10,
         position: "absolute",
-        top: 4,
-        left: 4,
-        zIndex: 2,
+        top: 5,
+        left: 6,
       },
 
       icon: icon,
       code: code,
+      badge: badge,
     };
   }
 
@@ -70,9 +105,6 @@ const AttendanceCalendar = () => {
         H: "#FFE9F0",
         O: "#EDEDEDEB",
         "?": "#F3E8FFEB",
-        "📅": "#e9f0f7",
-        "🏠": "#f0f8ff",
-        "🌓": "#d1f1d1",
       }[code] || "#fff"
     );
   }
@@ -104,11 +136,12 @@ const AttendanceCalendar = () => {
               onPress={() => handleDayPress(date)}
               style={[
                 {
-                  height: 50,
-                  width: 50,
+                  height: 55,
+                  width: 55,
                   alignItems: "center",
                   justifyContent: "center",
-                  borderRadius: 6,
+                  borderRadius: 0,
+                  marginBottom: -14.5,
                 },
                 entry?.customStyles?.container,
               ]}
@@ -124,9 +157,55 @@ const AttendanceCalendar = () => {
               >
                 {date.day}
               </Text>
+
               {entry?.icon && <Text style={entry.iconStyle}>{entry.icon}</Text>}
-              {!entry?.icon && entry?.code && entry.code.length <= 3 && (
+              {entry?.code && entry.code.length <= 3 && (
                 <Text style={entry.codeStyle}>{entry.code}</Text>
+              )}
+              {entry?.badge === "Grace" && (
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: "#9C6BFF",
+                    height: 16,
+                    width: 16,
+                    borderTopLeftRadius: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                />
+              )}
+              {entry?.badge === "Regularized" && (
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: "#3CDDCF",
+                    height: 16,
+                    width: 16,
+                    borderTopLeftRadius: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                />
+              )}
+              {entry?.badge === "Ignored" && (
+                <View
+                  style={{
+                    position: "absolute",
+                    bottom: 0,
+                    right: 0,
+                    backgroundColor: "#CDBAAF",
+                    height: 16,
+                    width: 16,
+                    borderTopLeftRadius: 20,
+                    alignItems: "center",
+                    justifyContent: "center",
+                  }}
+                />
               )}
             </TouchableOpacity>
           );
