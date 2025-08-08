@@ -87,6 +87,8 @@ const AttendanceOverview = () => {
                   fontSize: 14,
                   paddingVertical: 8,
                   paddingHorizontal: 16,
+                  width: 78,
+                  height: 31,
                   borderWidth: 0.6,
                   borderRadius: 47,
                   borderColor: "#64748B",
@@ -111,7 +113,7 @@ const AttendanceOverview = () => {
         <View
           style={{
             backgroundColor: "#FFFFFF",
-            height: 400,
+            height: "auto",
             width: "100%",
             borderRadius: 16,
             alignItems: "center",
@@ -494,7 +496,7 @@ const AttendanceOverview = () => {
           <View
             style={{
               backgroundColor: "#FFFFFF",
-              height: 450,
+              height: "auto",
               width: "100%",
               borderRadius: 16,
               alignItems: "center",
@@ -637,7 +639,6 @@ const AttendanceOverview = () => {
                   borderTopWidth: idx === 0 ? 0 : 1,
                   borderColor: "#E2E8F0",
                   backgroundColor: "#fff",
-
                   gap: 6,
                 }}
               >
