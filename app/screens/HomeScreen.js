@@ -246,8 +246,8 @@ const HomeScreen = () => {
       };
       const payload = {
         user_date_time: "2025-05-01T13:00:00Z",
-        user_latitude: location.coords.latitude, //13.09997989105245,
-        user_longitude: location.coords.longitude, //80.29011704834728,
+        user_latitude: location?.coords?.latitude, //13.09997989105245,
+        user_longitude: location?.coords?.longitude, //80.29011704834728,
         master_location: id,
         attendance_status: "present",
         reason: 98,
@@ -257,6 +257,7 @@ const HomeScreen = () => {
         createvia: null,
       };
       const res = await axios.post(endPoint, payload, { headers });
+      console.log("Checkin successfull: ", res.data);
       Alert.alert(res.data.message);
     } catch (error) {
       console.log("Error check in: ", error);

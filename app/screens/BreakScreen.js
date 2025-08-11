@@ -8,10 +8,13 @@ import {
   Modal,
   TextInput,
 } from "react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "../components/Header";
 import { useNavigation } from "@react-navigation/native";
 import Svg, { Circle, Path } from "react-native-svg";
+import { base_url } from "../constant/api";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
 
 const BreakScreen = () => {
   const navigation = useNavigation();
@@ -19,6 +22,37 @@ const BreakScreen = () => {
 
   const [modalVisible, setModalVisible] = useState(false);
   const [text, setText] = useState("");
+  const [userData, setUserData] = useState(null);
+  const [breakList, setBreakList] = useState([]);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const storedData = await AsyncStorage.getItem("userData");
+      if (storedData) {
+        setUserData(JSON.parse(storedData));
+      }
+    };
+
+    fetchUserData();
+  }, []);
+
+  useEffect(() => {
+    const fetchBreakList = async () => {
+      try {
+        const endpoint = `${base_url}/hrm/hrm_shiftbreak_view/14/78/`;
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.post(endpoint, {}, { headers });
+        setBreakList(res.data);
+      } catch (error) {
+        console.error("Error fetching break list: ", error);
+      }
+    };
+    fetchBreakList();
+  }, [breakList]);
+
+  console.log("Break List: ", breakList);
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
