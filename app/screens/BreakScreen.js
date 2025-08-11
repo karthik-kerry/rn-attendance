@@ -43,7 +43,7 @@ const BreakScreen = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.post(endpoint, {}, { headers });
+        const res = await axios.get(endpoint, { headers });
         setBreakList(res.data);
       } catch (error) {
         console.error("Error fetching break list: ", error);

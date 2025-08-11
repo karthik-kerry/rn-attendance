@@ -17,7 +17,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import ReimbursementCard from "../components/ReimbursementCard";
-import { launchCamera, launchImageLibrary } from "react-native-image-picker";
+import * as DocumentPicker from "expo-document-picker";
 
 const formatDate = (dateObj) => {
   const day = String(dateObj.getDate()).padStart(2, "0");
@@ -41,7 +41,7 @@ const ReimbursementScreen = () => {
   const [date, setDate] = useState(new Date());
   const [formattedDate, setFormattedDate] = useState(formatDate(new Date()));
   const [noData, SetNoData] = useState(false);
-  const [billAttachment, setBillAttachment] = useState("");
+  const [billAttachment, setBillAttachment] = useState(null);
 
   const onDateChange = (event, selectedDate) => {
     setShowDatePicker(false);
@@ -56,30 +56,19 @@ const ReimbursementScreen = () => {
     { label: "Option 2", value: "option2" },
   ];
 
-  const handleAttachment = () => {
-    Alert.alert(
-      "Upload Bill",
-      "Choose an option",
-      [
-        {
-          text: "Camera",
-          onPress: () =>
-            launchCamera({ mediaType: "photo" }, handlePickerResponse),
-        },
-        {
-          text: "Gallery",
-          onPress: () =>
-            launchImageLibrary({ mediaType: "photo" }, handlePickerResponse),
-        },
-        { text: "Cancel", style: "cancel" },
-      ],
-      { cancelable: true }
-    );
-  };
+  const pickDocument = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        copyToCacheDirectory: true,
+      });
 
-  const handlePickerResponse = (response) => {
-    if (!response.didCancel && response.assets && response.assets.length > 0) {
-      setBillAttachment(response.assets[0]);
+      if (result.type === "success") {
+        setBillAttachment(result);
+        console.log("Picked file:", result);
+      }
+    } catch (error) {
+      console.error("Error picking document:", error);
     }
   };
 
@@ -2043,7 +2032,7 @@ const ReimbursementScreen = () => {
             {/* Bill Attachment */}
             <View>
               <TouchableOpacity
-                onPress={handleAttachment}
+                onPress={pickDocument}
                 style={{
                   marginTop: 10,
                   padding: 12,
