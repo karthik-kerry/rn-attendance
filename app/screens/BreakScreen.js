@@ -94,7 +94,7 @@ const BreakScreen = () => {
                   <FlexibleBreakCard
                     key={breakItem.id}
                     id={breakItem.id}
-                    title={breakItem.name}
+                    title={breakItem.namename}
                     duration={breakItem.allowed_break_duration_min}
                     openModal={() => setModalVisible(true)}
                     icon={

@@ -1,12 +1,15 @@
 import { View, Text, StatusBar, TouchableOpacity } from "react-native";
-import React from "react";
+import React, { useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import Header from "../components/Header";
 import Svg, { Path } from "react-native-svg";
 import AttendanceTopTabs from "../navigation/AttendanceTopTabs";
+import LeaveModal from "../components/LeaveModal";
 
 const Attendance = () => {
   const navigation = useNavigation();
+
+  const [leaveModalVisible, setLeaveModalVisible] = useState(false);
 
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
@@ -15,7 +18,7 @@ const Attendance = () => {
         title="Attendance Info"
         navigate={() => navigation.goBack()}
         addVisible={true}
-        addFunc={() => {}}
+        addFunc={() => setLeaveModalVisible(true)}
       />
       <View
         style={{
@@ -82,6 +85,14 @@ const Attendance = () => {
       <View style={{ flex: 1, marginTop: 20 }}>
         <AttendanceTopTabs />
       </View>
+      <LeaveModal
+        visible={leaveModalVisible}
+        onClose={() => setLeaveModalVisible(false)}
+        onSubmit={(data) => {
+          setLeaveModalVisible(false);
+          console.log("Leave apply: ", data);
+        }}
+      />
     </View>
   );
 };
