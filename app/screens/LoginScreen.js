@@ -35,7 +35,6 @@ const LoginScreen = () => {
         const endpoint = `${base_url}/core/country_code/`;
         const res = await axios.get(endpoint);
         setCountries(res.data);
-
         console.log("Countries fetched:", res.data);
       } catch (error) {
         console.log("Error fetching countries:", error);
@@ -47,15 +46,26 @@ const LoginScreen = () => {
   const fetchCsrfToken = async () => {
     try {
       const response = await fetch(`${base_url}/core/get-csrf-token/`, {
-        credentials: "include",
         headers: {
           Accept: "application/json",
         },
       });
+
+      const setCookie = response.headers.get("set-cookie");
+      let csrfCookie = null;
+      if (setCookie) {
+        const match = setCookie.match(/csrftoken=([^;]+)/);
+        if (match) csrfCookie = match[1];
+      }
+
       const data = await response.json();
       console.log("CSRF token response:", data);
-      if (data.csrfToken) {
-        await saveCsrfToken(data.csrfToken);
+
+      const csrfToken = data.csrfToken || csrfCookie;
+
+      if (csrfToken) {
+        await saveCsrfToken(csrfToken);
+        console.log("✅ CSRF token saved:", csrfToken);
       }
     } catch (error) {
       console.log("Error fetching CSRF token:", error);
@@ -67,6 +77,11 @@ const LoginScreen = () => {
   };
 
   const handleLogin = async () => {
+    if (!userName || !password) {
+      Alert.alert("Please fill all fields");
+      return;
+    }
+
     try {
       await fetchCsrfToken();
 
@@ -87,22 +102,17 @@ const LoginScreen = () => {
         countryCode: selectedCountry,
       };
 
-      if (!userName || !password) {
-        Alert.alert("Please fill all fields");
-        return;
-      }
-
       const res = await axios.post(endpoint, payload, {
         headers: {
           "X-CSRFToken": csrfToken,
           "Content-Type": "application/json",
+          Cookie: `csrftoken=${csrfToken}`,
         },
-        withCredentials: true,
       });
 
       await AsyncStorage.setItem("userData", JSON.stringify(res.data));
+      Alert.alert("Success", JSON.stringify(res.data.message));
       navigation.navigate("homeNav");
-      Alert.alert("Login response:", JSON.stringify(res.data.message));
     } catch (error) {
       console.log("Error logging in:", error);
 
