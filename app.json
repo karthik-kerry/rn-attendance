@@ -34,7 +34,9 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      ["expo-font"],
+      [
+        "expo-font"
+      ],
       [
         "expo-secure-store",
         {
@@ -47,7 +49,8 @@
         {
           "iCloudContainerEnvironment": "Production"
         }
-      ]
+      ],
+      "@react-native-community/datetimepicker"
     ],
     "experiments": {
       "typedRoutes": true
@@ -57,7 +60,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "4e7e0857-4479-4b15-bf31-698350bef4f6"
+        "projectId": "1977e82c-d8b4-4a48-9ffd-8ad29c6f220b"
       }
     }
   }
