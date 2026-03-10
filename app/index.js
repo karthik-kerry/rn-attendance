@@ -1,3 +1,4 @@
+import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import RegisterScreen from "./screens/RegisterScreen";
 import LoginScreen from "./screens/LoginScreen";
@@ -50,35 +51,35 @@ export default function Index() {
   if (!loaded) return null;
 
   return (
-    // <NavigationContainer>
-    <Stack.Navigator
-      initialRouteName={userData ? "homeNav" : "login"}
-      screenOptions={{ headerShown: false }}
-    >
-      <Stack.Screen name="login" component={LoginScreen} />
-      <Stack.Screen name="register" component={RegisterScreen} />
-      <Stack.Screen name="verify" component={VerifyScreen} />
-      <Stack.Screen name="setpass" component={SetPassword} />
-      <Stack.Screen name="homeNav" component={HomeNavigation} />
-      <Stack.Screen name="details" component={WorkDetails} />
-      <Stack.Screen name="attendanceDetails" component={AttendanceDetails} />
-      <Stack.Screen name="calendar" component={CalendarScreen} />
-      <Stack.Screen name="leave" component={LeaveScreen} />
-      <Stack.Screen name="notifications" component={NotificationScreen} />
-      <Stack.Screen name="employees" component={Employees} />
-      <Stack.Screen name="payslips" component={PayslipScreen} />
-      <Stack.Screen name="reimbursement" component={ReimbursementScreen} />
-      <Stack.Screen name="break" component={BreakScreen} />
-      <Stack.Screen name="holiday" component={HolidayScreen} />
-      <Stack.Screen name="insurance" component={InsuranceScreen} />
-      <Stack.Screen name="policy" component={PolicyScreen} />
-      <Stack.Screen name="term" component={TermScreen} />
-      <Stack.Screen name="settings" component={SettingScreen} />
-      <Stack.Screen name="about" component={AboutApp} />
-      <Stack.Screen name="enablePinLock" component={EnablePinLock} />
-      <Stack.Screen name="help" component={HelpScreen} />
-      <Stack.Screen name="changePassword" component={ChangePassword} />
-    </Stack.Navigator>
-    // </NavigationContainer>
+    <NavigationContainer>
+      <Stack.Navigator
+        initialRouteName={userData ? "homeNav" : "login"}
+        screenOptions={{ headerShown: false }}
+      >
+        <Stack.Screen name="login" component={LoginScreen} />
+        <Stack.Screen name="register" component={RegisterScreen} />
+        <Stack.Screen name="verify" component={VerifyScreen} />
+        <Stack.Screen name="setpass" component={SetPassword} />
+        <Stack.Screen name="homeNav" component={HomeNavigation} />
+        <Stack.Screen name="details" component={WorkDetails} />
+        <Stack.Screen name="attendanceDetails" component={AttendanceDetails} />
+        <Stack.Screen name="calendar" component={CalendarScreen} />
+        <Stack.Screen name="leave" component={LeaveScreen} />
+        <Stack.Screen name="notifications" component={NotificationScreen} />
+        <Stack.Screen name="employees" component={Employees} />
+        <Stack.Screen name="payslips" component={PayslipScreen} />
+        <Stack.Screen name="reimbursement" component={ReimbursementScreen} />
+        <Stack.Screen name="break" component={BreakScreen} />
+        <Stack.Screen name="holiday" component={HolidayScreen} />
+        <Stack.Screen name="insurance" component={InsuranceScreen} />
+        <Stack.Screen name="policy" component={PolicyScreen} />
+        <Stack.Screen name="term" component={TermScreen} />
+        <Stack.Screen name="settings" component={SettingScreen} />
+        <Stack.Screen name="about" component={AboutApp} />
+        <Stack.Screen name="enablePinLock" component={EnablePinLock} />
+        <Stack.Screen name="help" component={HelpScreen} />
+        <Stack.Screen name="changePassword" component={ChangePassword} />
+      </Stack.Navigator>
+    </NavigationContainer>
   );
 }
