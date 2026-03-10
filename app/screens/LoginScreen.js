@@ -35,6 +35,8 @@ const LoginScreen = () => {
         const endpoint = `${base_url}/core/country_code/`;
         const res = await axios.get(endpoint);
         setCountries(res.data);
+
+        console.log("Countries fetched:", res.data);
       } catch (error) {
         console.log("Error fetching countries:", error);
       }
@@ -46,13 +48,21 @@ const LoginScreen = () => {
     try {
       const response = await fetch(`${base_url}/core/get-csrf-token/`, {
         credentials: "include",
+        headers: {
+          Accept: "application/json",
+        },
       });
       const data = await response.json();
+      console.log("CSRF token response:", data);
       if (data.csrfToken) {
         await saveCsrfToken(data.csrfToken);
       }
     } catch (error) {
       console.log("Error fetching CSRF token:", error);
+      Alert.alert(
+        "CSRF token error",
+        error?.message || String(error) || "Unable to fetch CSRF token",
+      );
     }
   };
 
@@ -61,6 +71,15 @@ const LoginScreen = () => {
       await fetchCsrfToken();
 
       const csrfToken = await getCsrfToken();
+
+      if (!csrfToken) {
+        Alert.alert(
+          "Login error",
+          "Missing CSRF token. Please check your network connection or try again.",
+        );
+        return;
+      }
+
       const endpoint = `${base_url}/core/login/`;
       const payload = {
         username: userName,
@@ -86,7 +105,16 @@ const LoginScreen = () => {
       Alert.alert("Login response:", JSON.stringify(res.data.message));
     } catch (error) {
       console.log("Error logging in:", error);
-      Alert.alert("Error", error?.response?.data?.message || "Login failed");
+
+      const status = error?.response?.status;
+      const data = error?.response?.data;
+      const message =
+        data?.message || data?.detail || error?.message || "Login failed";
+
+      Alert.alert(
+        "Login error",
+        `status: ${status ?? "n/a"}\nmessage: ${message}`,
+      );
     }
   };
 
