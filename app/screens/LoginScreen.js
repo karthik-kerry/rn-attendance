@@ -13,7 +13,7 @@ import BG from "../../assets/images/bg.png";
 import { Dropdown } from "react-native-element-dropdown";
 import { base_url } from "../constant/api";
 import axios from "axios";
-import { TextInput } from "react-native-paper";
+import { ActivityIndicator, TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import { saveCsrfToken, getCsrfToken } from "../constant/csrfToken";
@@ -28,16 +28,22 @@ const LoginScreen = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     const fetchCountries = async () => {
+      setIsLoading(true);
       try {
         const endpoint = `${base_url}/core/country_code/`;
         const res = await axios.get(endpoint);
         setCountries(res.data);
+        setIsLoading(false);
         console.log("Countries fetched:", res.data);
       } catch (error) {
-        console.log("Error fetching countries:", error);
+        console.log("Full error:", JSON.stringify(error, null, 2));
+        console.log("Response:", error?.response);
+        console.log("Request:", error?.request);
+        console.log("Message:", error?.message);
       }
     };
     fetchCountries();
