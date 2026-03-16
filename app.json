@@ -49,14 +49,7 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      [
-        "expo-build-properties",
-        {
-          "android": {
-            "networkSecurityConfig": "./network_security_config.xml"
-          }
-        }
-      ]
+      ["expo-build-properties"]
     ],
     "experiments": {
       "typedRoutes": true
