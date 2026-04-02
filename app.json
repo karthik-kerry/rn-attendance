@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kerryindev.attendance"
+      "package": "com.kerryindev.attendance",
+      "networkSecurityConfig": "./network-security-config.xml"
     },
     "web": {
       "bundler": "metro",
@@ -49,7 +50,14 @@
         }
       ],
       "@react-native-community/datetimepicker",
-      ["expo-build-properties"]
+      [
+        "expo-build-properties",
+        {
+          "android": {
+            "networkSecurityConfig": "./network_security_config.xml"
+          }
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
