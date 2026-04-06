@@ -38,11 +38,7 @@ const LoginScreen = () => {
         const res = await axios.get(endpoint);
         setCountries(res.data);
         setIsLoading(false);
-        console.log("Countries fetched:", res.data);
       } catch (error) {
-        console.log("Full error:", JSON.stringify(error, null, 2));
-        console.log("Response:", error?.response);
-        console.log("Request:", error?.request);
         console.log("Message:", error?.message);
       }
     };

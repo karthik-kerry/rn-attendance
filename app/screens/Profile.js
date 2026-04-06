@@ -20,6 +20,7 @@ const Profile = () => {
 
   const [userData, setUserData] = useState(null);
   const [isNotify, setIsNotify] = useState(false);
+  const [userInfo, setUserInfo] = useState(null);
 
   const onToggleSwitch = () => setIsNotify(!isNotify);
 
@@ -34,13 +35,38 @@ const Profile = () => {
     fetchUserData();
   }, []);
 
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      try {
+        const endpoint = `${base_url}/core/user_details/${userData?.user_id}/`;
+        const payload = {
+          username: userData?.username,
+          countrycode: "IN",
+        };
+        const headers = {
+          Authorization: `Token ${userData?.token}`,
+        };
+        const res = await axios.post(endpoint, payload, { headers });
+        setUserInfo(res.data);
+      } catch (error) {
+        console.log("Error fetching user info:", {
+          message: error.message,
+          response: error.response?.data,
+          status: error.response?.status,
+          fullError: error,
+        });
+      }
+    };
+    fetchUserInfo();
+  }, [userData]);
+
   const handleLogout = async () => {
     try {
       const endpoint = `${base_url}/core/logout/`;
       const headers = {
         Authorization: `Token ${userData?.token}`,
       };
-      const res = await axios.post(endpoint, {}, { headers });
+      await axios.post(endpoint, {}, { headers });
       await AsyncStorage.removeItem("userData");
       Alert.alert("Logout successful");
       navigation.navigate("login");
@@ -76,7 +102,7 @@ const Profile = () => {
           }}
         >
           <Image
-            source={ProfileAlt}
+            source={{ uri: userInfo?.profile_photo_url || ProfileAlt }}
             style={{ height: 120, width: 120 }}
             resizeMode="cover"
           />
@@ -91,7 +117,7 @@ const Profile = () => {
             color: "#1b1b1b",
           }}
         >
-          {userData?.username}
+          {userInfo?.username}
         </Text>
         <View
           style={{
@@ -152,7 +178,7 @@ const Profile = () => {
                 Mobile No.
               </Text>
               <Text style={{ fontFamily: "Inter-SemiBold", color: "#1b1b1b" }}>
-                {userData?.usermobile}
+                {userInfo?.userMobile}
               </Text>
             </View>
             <View
@@ -176,7 +202,7 @@ const Profile = () => {
                 Email ID
               </Text>
               <Text style={{ fontFamily: "Inter-SemiBold", color: "#1b1b1b" }}>
-                {userData?.useremail}
+                {userInfo?.email}
               </Text>
             </View>
             <View
