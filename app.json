@@ -16,7 +16,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.kerryindev.attendance"
+      "package": "com.kerryindev.attendance",
+      "usesCleartextTraffic": true
     },
     "web": {
       "bundler": "metro",

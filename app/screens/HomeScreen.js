@@ -35,7 +35,7 @@ const HomeScreen = () => {
   const [time, setTime] = useState("");
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedMonth, setSelectedMonth] = useState(
-    new Date().toLocaleString("default", { month: "short" })
+    new Date().toLocaleString("default", { month: "short" }),
   );
   const [isCheckedIn, setIsCheckedIn] = useState(false);
   const [isCheckIn, setIsCheckIn] = useState(false);
@@ -91,7 +91,7 @@ const HomeScreen = () => {
       cmpBranchList.length > 0
     ) {
       const found = cmpBranchList.find(
-        (item) => item.branchid === userData.branchid.branchid
+        (item) => item.branchid === userData.branchid.branchid,
       );
       if (found) {
         setSelectedBranch(found);
@@ -272,8 +272,8 @@ const HomeScreen = () => {
       Alert.alert(
         "Check-In Alert",
         `Please move closer by ${Math.round(
-          distanceDifference
-        )} meters to check in.`
+          distanceDifference,
+        )} meters to check in.`,
       );
     } else {
       try {
