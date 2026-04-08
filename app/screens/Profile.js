@@ -49,12 +49,7 @@ const Profile = () => {
         const res = await axios.post(endpoint, payload, { headers });
         setUserInfo(res.data);
       } catch (error) {
-        console.log("Error fetching user info:", {
-          message: error.message,
-          response: error.response?.data,
-          status: error.response?.status,
-          fullError: error,
-        });
+        console.log("Error fetching user info:", error);
       }
     };
     fetchUserInfo();
