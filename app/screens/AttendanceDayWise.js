@@ -52,7 +52,7 @@ const AttendanceDayWise = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.post(endpoint, {}, { headers });
+        const res = await axios.get(endpoint, { headers });
         setAttendanceList(res.data);
         setIsLoading(false);
       } catch (error) {
@@ -205,7 +205,7 @@ const AttendanceDayWise = () => {
                 const diffMs = end - start;
                 const diffHrs = Math.floor(diffMs / (1000 * 60 * 60));
                 const diffMins = Math.floor(
-                  (diffMs % (1000 * 60 * 60)) / (1000 * 60)
+                  (diffMs % (1000 * 60 * 60)) / (1000 * 60),
                 );
 
                 return `${diffHrs}h ${diffMins}m`;

@@ -102,7 +102,7 @@ const Profile = () => {
           }}
         >
           <Image
-            source={{ uri: userInfo?.profile_photo_url || ProfileAlt }}
+            source={{ uri: userInfo && userInfo?.profile_photo_url }}
             style={{ height: 120, width: 120 }}
             resizeMode="cover"
           />
