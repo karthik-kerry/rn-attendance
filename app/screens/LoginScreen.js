@@ -114,7 +114,7 @@ const LoginScreen = () => {
 
       await AsyncStorage.setItem("userData", JSON.stringify(res.data));
       Alert.alert("Success", JSON.stringify(res.data.message));
-      navigation.navigate("homeNav");
+      navigation.navigate("dashboard");
     } catch (error) {
       console.log("Error logging in:", error);
 

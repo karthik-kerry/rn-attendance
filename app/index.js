@@ -26,7 +26,9 @@ import AboutApp from "./screens/AboutApp";
 import EnablePinLock from "./screens/EnablePinLock";
 import HelpScreen from "./screens/HelpScreen";
 import ChangePassword from "./screens/ChangePassword";
-
+import CareerNavigation from "./navigation/career/CareerNavigation";
+import Dashboard from "./screens/Dashboard";
+import JobDetail from "./screens/career/JobDetail";
 const Stack = createNativeStackNavigator();
 
 export default function Index() {
@@ -53,7 +55,7 @@ export default function Index() {
   return (
     <NavigationContainer>
       <Stack.Navigator
-        initialRouteName={userData ? "homeNav" : "login"}
+        initialRouteName={userData ? "dashboard" : "login"}
         screenOptions={{ headerShown: false }}
       >
         <Stack.Screen name="login" component={LoginScreen} />
@@ -61,11 +63,14 @@ export default function Index() {
         <Stack.Screen name="verify" component={VerifyScreen} />
         <Stack.Screen name="setpass" component={SetPassword} />
         <Stack.Screen name="homeNav" component={HomeNavigation} />
+        <Stack.Screen name="careerNav" component={CareerNavigation} />
+        <Stack.Screen name="jobDetail" component={JobDetail} />
         <Stack.Screen name="details" component={WorkDetails} />
         <Stack.Screen name="attendanceDetails" component={AttendanceDetails} />
         <Stack.Screen name="calendar" component={CalendarScreen} />
         <Stack.Screen name="leave" component={LeaveScreen} />
         <Stack.Screen name="notifications" component={NotificationScreen} />
+        <Stack.Screen name="dashboard" component={Dashboard} />
         <Stack.Screen name="employees" component={Employees} />
         <Stack.Screen name="payslips" component={PayslipScreen} />
         <Stack.Screen name="reimbursement" component={ReimbursementScreen} />
