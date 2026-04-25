@@ -44,9 +44,7 @@ const CareerNavigation = () => {
       })}
     >
       <Tab.Screen name="Overview" component={Overview} />
-
       <Tab.Screen name="Jobs" component={JobListing} />
-
       <Tab.Screen name="Candidates" component={CandidateListing} />
       <Tab.Screen name="Profile" component={Profile} />
     </Tab.Navigator>

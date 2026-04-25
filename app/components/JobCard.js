@@ -1,0 +1,104 @@
+import React from "react";
+import { View, Text, TouchableOpacity } from "react-native";
+import Svg, { Path } from "react-native-svg";
+import { useNavigation } from "@react-navigation/native";
+
+const ExperienceIcon = () => (
+  <Svg
+    width="17"
+    height="17"
+    viewBox="0 0 17 17"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <Path
+      d="M13.25 4.5V7M13.25 7V9.5M13.25 7H15.75M13.25 7H10.75M8.875 3.5625C8.875 4.30842 8.57868 5.02379 8.05124 5.55124C7.52379 6.07868 6.80842 6.375 6.0625 6.375C5.31658 6.375 4.60121 6.07868 4.07376 5.55124C3.54632 5.02379 3.25 4.30842 3.25 3.5625C3.25 2.81658 3.54632 2.10121 4.07376 1.57376C4.60121 1.04632 5.31658 0.75 6.0625 0.75C6.80842 0.75 7.52379 1.04632 8.05124 1.57376C8.57868 2.10121 8.875 2.81658 8.875 3.5625ZM0.75 14.2792V14.1875C0.75 12.7785 1.30971 11.4273 2.306 10.431C3.30228 9.43471 4.65354 8.875 6.0625 8.875C7.47146 8.875 8.82272 9.43471 9.819 10.431C10.8153 11.4273 11.375 12.7785 11.375 14.1875V14.2783C9.77123 15.2442 7.93384 15.7532 6.06167 15.75C4.11917 15.75 2.30167 15.2125 0.75 14.2783V14.2792Z"
+      stroke="#6B7A8F"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </Svg>
+);
+
+const BriefcaseIcon = () => (
+  <Svg
+    width="17"
+    height="17"
+    viewBox="0 0 17 17"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <Path
+      d="M15.125 10.0417V13.5833C15.125 14.495 14.4692 15.28 13.565 15.4C11.8259 15.6308 10.0517 15.75 8.25005 15.75C6.44838 15.75 4.67421 15.6308 2.93505 15.4C2.03088 15.28 1.37505 14.495 1.37505 13.5833V10.0417M15.125 10.0417C15.3229 9.86971 15.4812 9.65696 15.5891 9.41803C15.697 9.1791 15.7519 8.91965 15.75 8.6575V5.505C15.75 4.60417 15.11 3.82583 14.2192 3.6925C13.2753 3.55118 12.3266 3.44361 11.375 3.37M15.125 10.0417C14.9634 10.1792 14.775 10.2875 14.5642 10.3583C12.5277 11.034 10.3957 11.3773 8.25005 11.375C6.04338 11.375 3.92088 11.0175 1.93588 10.3583C1.73026 10.2899 1.53982 10.1824 1.37505 10.0417M1.37505 10.0417C1.17717 9.86971 1.01885 9.65696 0.910962 9.41803C0.803077 9.1791 0.748182 8.91965 0.750046 8.6575V5.505C0.750046 4.60417 1.39005 3.82583 2.28088 3.6925C3.22479 3.55118 4.17345 3.44361 5.12505 3.37M11.375 3.37V2.625C11.375 2.12772 11.1775 1.65081 10.8259 1.29917C10.4742 0.947544 9.99733 0.75 9.50005 0.75H7.00005C6.50277 0.75 6.02585 0.947544 5.67422 1.29917C5.32259 1.65081 5.12505 2.12772 5.12505 2.625V3.37M11.375 3.37C9.29482 3.20923 7.20528 3.20923 5.12505 3.37M8.25005 8.875H8.25671V8.88167H8.25005V8.875Z"
+      stroke="#6B7A8F"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    />
+  </Svg>
+);
+
+// helper
+const formatExperience = (exp) => {
+  const num = parseFloat(exp);
+  if (isNaN(num)) return "-";
+  if (Number.isInteger(num)) return `${num}+ Year${num !== 1 ? "s" : ""}`;
+  return `${num} Years`;
+};
+
+const JobCard = ({ item, styles }) => {
+  const navigation = useNavigation();
+  const isActive = item.job_candidate_status_name?.toLowerCase() === "active";
+
+  const statusColor = isActive ? "#16A34A" : "#D97706";
+  const statusBg = isActive ? "#DCFCE7" : "#FEF3C7";
+
+  const handleStatusClick = () => {
+    navigation.navigate("CandidateStatusScreen", {
+      type: "job",
+      jobId: item.jobposting_id || item.id,
+      selectedRecord: {
+        raw: item,
+      },
+    });
+  };
+
+  return (
+    <View style={styles.jobCard}>
+      <Text style={styles.jobCardTitle}>{item.job_name}</Text>
+
+      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+        <View style={[styles.jobStatusBadge, { backgroundColor: statusBg }]}>
+          <TouchableOpacity
+            style={[styles.jobStatusBadge, { backgroundColor: statusBg }]}
+            onPress={handleStatusClick}
+            activeOpacity={0.7}
+          >
+            <Text style={[styles.jobStatusText, { color: statusColor }]}>
+              {item.job_candidate_status_name || "Active"}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        <Text style={styles.jobCardCompany}>
+          {item.company_name || item.cmp_name || ""}
+        </Text>
+      </View>
+
+      <View style={styles.jobCardMeta}>
+        <ExperienceIcon />
+        <Text style={styles.jobCardMetaText}>
+          {formatExperience(item.experience_from)}
+        </Text>
+      </View>
+
+      <View style={styles.jobCardMeta}>
+        <BriefcaseIcon />
+        <Text style={styles.jobCardMetaText}>{item.job_name || "-"}</Text>
+      </View>
+    </View>
+  );
+};
+
+export default JobCard;

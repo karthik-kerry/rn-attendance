@@ -29,6 +29,8 @@ import ChangePassword from "./screens/ChangePassword";
 import CareerNavigation from "./navigation/career/CareerNavigation";
 import Dashboard from "./screens/Dashboard";
 import JobDetail from "./screens/career/JobDetail";
+import CandidateDetails from "./screens/career/CandidateDetails";
+import CandidateStatusScreen from "./screens/career/CandidateStatusScreen";
 const Stack = createNativeStackNavigator();
 
 export default function Index() {
@@ -65,6 +67,11 @@ export default function Index() {
         <Stack.Screen name="homeNav" component={HomeNavigation} />
         <Stack.Screen name="careerNav" component={CareerNavigation} />
         <Stack.Screen name="jobDetail" component={JobDetail} />
+        <Stack.Screen name="candidateDetails" component={CandidateDetails} />
+        <Stack.Screen
+          name="CandidateStatusScreen"
+          component={CandidateStatusScreen}
+        />
         <Stack.Screen name="details" component={WorkDetails} />
         <Stack.Screen name="attendanceDetails" component={AttendanceDetails} />
         <Stack.Screen name="calendar" component={CalendarScreen} />
