@@ -13,7 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import Svg, { Path } from "react-native-svg";
 import { ActivityIndicator } from "react-native-paper";
 import { base_url } from "../../constant/api";
-import axios from "axios";
+import axiosInstance from "@/app/utils/axiosInstance";
 
 const JobListing = () => {
   const navigation = useNavigation();
@@ -23,21 +23,11 @@ const JobListing = () => {
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    const fetchUserData = async () => {
-      const storedData = await AsyncStorage.getItem("userData");
-      if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData?.token) {
-          setUserData(parsedData);
-        } else {
-          console.error("Token is missing in userData");
-        }
-      } else {
-        console.error("No userData found in AsyncStorage");
-      }
+    const getUser = async () => {
+      const data = await AsyncStorage.getItem("userData");
+      setUserData(JSON.parse(data));
     };
-
-    fetchUserData();
+    getUser();
   }, []);
 
   useEffect(() => {
@@ -46,11 +36,8 @@ const JobListing = () => {
 
       try {
         const endpoint = `${base_url}/career/career_jobposting_crud/${userData?.user_id}/${userData?.branchid?.companyid}/?branch=${userData?.branchid?.branchid}`;
-        const headers = {
-          Authorization: `Token ${userData?.token}`,
-        };
 
-        const res = await axios.get(endpoint, { headers });
+        const res = await axiosInstance.get(endpoint);
         setJobs([...res.data].reverse());
       } catch (error) {
         console.log("Error loading job posting list:", error);
@@ -174,26 +161,11 @@ const JobListing = () => {
                       flex: 1,
                       flexDirection: "row",
                       gap: 12,
+                      width: "100%",
                       alignItems: "center",
+                      justifyContent: "space-between",
                     }}
                   >
-                    <Text
-                      style={{
-                        backgroundColor: job?.is_active
-                          ? "#107B1D1F"
-                          : "#FF00001F",
-                        paddingHorizontal: 12,
-                        paddingVertical: 3,
-                        borderRadius: 40,
-                        alignItems: "flex-start",
-                        justifyContent: "center",
-                        fontSize: 16,
-                        color: job?.is_active ? "#107B1D" : "#FF0000",
-                        fontWeight: 600,
-                      }}
-                    >
-                      {job?.is_active ? "Active" : "Inactive"}
-                    </Text>
                     <Text
                       style={{
                         fontSize: 14,
@@ -202,6 +174,26 @@ const JobListing = () => {
                       }}
                     >
                       {job?.cmp_name}{" "}
+                    </Text>
+                    <Text
+                      style={{
+                        backgroundColor: job?.job_staus_name
+                          ? "#107B1D1F"
+                          : "#DBEAFE",
+                        paddingHorizontal: 12,
+                        paddingVertical: 3,
+                        borderRadius: 40,
+                        alignItems: "flex-start",
+                        justifyContent: "center",
+                        fontSize: 14,
+                        color: job?.job_staus_name ? "#065F46" : "#2563EB",
+                        fontWeight: 600,
+                      }}
+                    >
+                      {(job?.job_staus_name
+                        ? job?.job_staus_name
+                        : "Update Status"
+                      )?.toUpperCase()}{" "}
                     </Text>
                   </View>
                   <View

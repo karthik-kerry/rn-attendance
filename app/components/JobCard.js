@@ -47,20 +47,21 @@ const formatExperience = (exp) => {
   return `${num} Years`;
 };
 
-const JobCard = ({ item, styles }) => {
+const JobCard = ({ item, styles, candidateId, onStatusUpdateSuccess }) => {
   const navigation = useNavigation();
-  const isActive = item.job_candidate_status_name?.toLowerCase() === "active";
+  const isUpdate = !item.job_candidate_status_name;
+  const record = item.raw ?? item;
 
-  const statusColor = isActive ? "#16A34A" : "#D97706";
-  const statusBg = isActive ? "#DCFCE7" : "#FEF3C7";
+  const statusColor = isUpdate ? "#2563EB" : "#065F46";
+  const statusBg = isUpdate ? "#DBEAFE" : "#107B1D1F";
 
   const handleStatusClick = () => {
     navigation.navigate("CandidateStatusScreen", {
       type: "job",
-      jobId: item.jobposting_id || item.id,
-      selectedRecord: {
-        raw: item,
-      },
+      jobId: record.jobposting?.id || item.jobposting_id || item.id,
+      candidateId: candidateId,
+      selectedRecord: record,
+      refreshCandidates: onStatusUpdateSuccess,
     });
   };
 
@@ -68,7 +69,17 @@ const JobCard = ({ item, styles }) => {
     <View style={styles.jobCard}>
       <Text style={styles.jobCardTitle}>{item.job_name}</Text>
 
-      <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+      <View
+        style={{
+          flexDirection: "row",
+          alignItems: "center",
+          justifyContent: "space-between",
+          gap: 10,
+        }}
+      >
+        <Text style={styles.jobCardCompany}>
+          {item.company_name || item.cmp_name || ""}
+        </Text>
         <View style={[styles.jobStatusBadge, { backgroundColor: statusBg }]}>
           <TouchableOpacity
             style={[styles.jobStatusBadge, { backgroundColor: statusBg }]}
@@ -76,14 +87,10 @@ const JobCard = ({ item, styles }) => {
             activeOpacity={0.7}
           >
             <Text style={[styles.jobStatusText, { color: statusColor }]}>
-              {item.job_candidate_status_name || "Active"}
+              {item.job_candidate_status_name || "Update Status"}
             </Text>
           </TouchableOpacity>
         </View>
-
-        <Text style={styles.jobCardCompany}>
-          {item.company_name || item.cmp_name || ""}
-        </Text>
       </View>
 
       <View style={styles.jobCardMeta}>

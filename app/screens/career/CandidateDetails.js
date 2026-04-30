@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import Svg, { Path, Circle } from "react-native-svg";
 import { base_url } from "../../constant/api";
 import AddJobModal from "../../components/AddJobModal";
@@ -217,10 +217,9 @@ const CandidateDetails = () => {
     if (!ud) return;
     setLoading(true);
     try {
-      const res = await axios.get(
-        `${base_url}/career/career_jobcandidate_r/${ud.user_id}/${ud.branchid?.companyid}/?candidate=${candidateData?.id}`,
-        { headers: { Authorization: `Token ${ud.token}` } },
-      );
+      const endpoint = `${base_url}/career/career_jobcandidate_r/${ud.user_id}/${ud.branchid?.companyid}/?candidate=${candidateData?.id}`;
+
+      const res = await axiosInstance.get(endpoint);
       const formatted = (res.data || []).map((item) => ({
         id: item.jobposting?.id,
         job_name: item.jobposting?.job_name,
@@ -393,7 +392,13 @@ const CandidateDetails = () => {
             />
           ) : filteredJobs.length > 0 ? (
             filteredJobs.map((item, idx) => (
-              <JobCard key={item.id ?? idx} item={item} styles={styles} />
+              <JobCard
+                key={item.id ?? idx}
+                item={item}
+                styles={styles}
+                candidateId={candidateData?.id}
+                onStatusUpdateSuccess={() => fetchJobList()}
+              />
             ))
           ) : (
             <Text style={styles.emptyText}>No jobs found</Text>
@@ -548,7 +553,7 @@ const styles = {
   },
   jobCardTitle: { fontSize: 16, fontWeight: "700", color: "#2563EB" },
   jobStatusBadge: {
-    paddingHorizontal: 10,
+    paddingHorizontal: 5,
     paddingVertical: 3,
     borderRadius: 20,
   },

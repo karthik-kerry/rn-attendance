@@ -15,8 +15,8 @@ import {
 import { Dropdown } from "react-native-element-dropdown";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import Svg, { Path } from "react-native-svg";
-import axios from "axios";
 import { base_url } from "../constant/api";
+import axiosInstance from "../utils/axiosInstance";
 
 const CalendarIcon = () => (
   <Svg width={16} height={16} viewBox="0 0 24 24" fill="none">
@@ -93,37 +93,28 @@ const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
 
     const fetchAll = async () => {
       try {
-        const headers = { Authorization: `Token ${userData.token}` };
         const companyId = userData.branchid?.companyid;
         const userId = userData.user_id;
 
         const [jobsRes, statusRes, reportToRes, levelRes, jvRes, sourcesRes] =
           await Promise.all([
-            axios.get(
+            axiosInstance.get(
               `${base_url}/career/career_jobposnotcandidate_r/${userId}/${companyId}/?candidateid=${candidate?.id}`,
-              { headers },
             ),
-            axios.get(
+            axiosInstance.get(
               `${base_url}/career/career_jobcandidate_status_crud/${userId}/${companyId}/`,
-              { headers },
             ),
-            axios.get(
+            axiosInstance.get(
               `${base_url}/core/cmp_user_list/${userId}/${companyId}/`,
-              { headers },
             ),
-            axios.get(
+            axiosInstance.get(
               `${base_url}/career/career_level_crud/${userId}/${companyId}/`,
-              { headers },
             ),
-            axios.get(
+            axiosInstance.get(
               `${base_url}/core/coreorgchild_list/${userId}/${companyId}/`,
-              { headers },
             ),
-
-            // ✅ ADD THIS API
-            axios.get(
+            axiosInstance.get(
               `${base_url}/career/career_sourceofhiring_crud/${userId}/${companyId}/`,
-              { headers },
             ),
           ]);
 
@@ -238,14 +229,19 @@ const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
         createvia: "mobile app",
         remarks: form.remarks,
       };
+      console.log("Submitting Payload:", payload);
 
       const formData = new FormData();
       formData.append("jobcandidate_payload", JSON.stringify(payload));
 
-      await axios.post(
+      await axiosInstance.post(
         `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${userData.branchid?.companyid}/`,
         formData,
-        { headers: { Authorization: `Token ${userData.token}` } },
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        },
       );
 
       Alert.alert("Success", "Job added successfully");
@@ -261,7 +257,6 @@ const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <Modal transparent visible={visible} animationType="slide">
       <KeyboardAvoidingView
@@ -271,7 +266,6 @@ const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
       >
         <View style={styles.overlay}>
           <View style={[styles.container, { width: width - 32 }]}>
-            {/* Drag handle */}
             <View style={styles.dragHandle} />
 
             <ScrollView
@@ -587,6 +581,7 @@ const styles = {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
+    marginTop: -30,
   },
   dropdownItem: {
     paddingVertical: 10,

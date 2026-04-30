@@ -12,12 +12,12 @@ import Logo from "../../assets/images/logo.png";
 import BG from "../../assets/images/bg.png";
 import { Dropdown } from "react-native-element-dropdown";
 import { base_url } from "../constant/api";
-import axios from "axios";
 import { ActivityIndicator, TextInput } from "react-native-paper";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import { saveCsrfToken, getCsrfToken } from "../constant/csrfToken";
 import Svg, { Path } from "react-native-svg";
+import axiosInstance from "../utils/axiosInstance";
 
 const LoginScreen = () => {
   const navigation = useNavigation();
@@ -35,7 +35,7 @@ const LoginScreen = () => {
       setIsLoading(true);
       try {
         const endpoint = `${base_url}/core/country_code/`;
-        const res = await axios.get(endpoint);
+        const res = await axiosInstance.get(endpoint);
         setCountries(res.data);
         setIsLoading(false);
       } catch (error) {
@@ -45,76 +45,81 @@ const LoginScreen = () => {
     fetchCountries();
   }, []);
 
-  const fetchCsrfToken = async () => {
-    try {
-      const response = await fetch(`${base_url}/core/get-csrf-token/`, {
-        headers: {
-          Accept: "application/json",
-        },
-      });
+  // const fetchCsrfToken = async () => {
+  //   try {
+  //     const response = await fetch(`${base_url}/core/get-csrf-token/`, {
+  //       headers: {
+  //         Accept: "application/json",
+  //       },
+  //     });
 
-      const setCookie = response.headers.get("set-cookie");
-      let csrfCookie = null;
-      if (setCookie) {
-        const match = setCookie.match(/csrftoken=([^;]+)/);
-        if (match) csrfCookie = match[1];
-      }
+  //     const setCookie = response.headers.get("set-cookie");
+  //     let csrfCookie = null;
+  //     if (setCookie) {
+  //       const match = setCookie.match(/csrftoken=([^;]+)/);
+  //       if (match) csrfCookie = match[1];
+  //     }
 
-      const data = await response.json();
-      console.log("CSRF token response:", data);
+  //     const data = await response.json();
+  //     console.log("CSRF token response:", data);
 
-      const csrfToken = data.csrfToken || csrfCookie;
+  //     const csrfToken = data.csrfToken || csrfCookie;
 
-      if (csrfToken) {
-        await saveCsrfToken(csrfToken);
-        console.log("✅ CSRF token saved:", csrfToken);
-      }
-    } catch (error) {
-      console.log("Error fetching CSRF token:", error);
-      Alert.alert(
-        "CSRF token error",
-        error?.message || String(error) || "Unable to fetch CSRF token",
-      );
-    }
-  };
+  //     if (csrfToken) {
+  //       await saveCsrfToken(csrfToken);
+  //       console.log("✅ CSRF token saved:", csrfToken);
+  //     }
+  //   } catch (error) {
+  //     console.log("Error fetching CSRF token:", error);
+  //     Alert.alert(
+  //       "CSRF token error",
+  //       error?.message || String(error) || "Unable to fetch CSRF token",
+  //     );
+  //   }
+  // };
 
   const handleLogin = async () => {
     if (!userName || !password) {
       Alert.alert("Please fill all fields");
       return;
     }
+    setIsLoading(true);
 
     try {
-      await fetchCsrfToken();
-
-      const csrfToken = await getCsrfToken();
-
-      if (!csrfToken) {
-        Alert.alert(
-          "Login error",
-          "Missing CSRF token. Please check your network connection or try again.",
-        );
-        return;
-      }
-
       const endpoint = `${base_url}/core/login/`;
       const payload = {
         username: userName,
         password: password,
-        countryCode: selectedCountry,
+        countrycode: selectedCountry,
       };
 
-      const res = await axios.post(endpoint, payload, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-          "Content-Type": "application/json",
-          Cookie: `csrftoken=${csrfToken}`,
-        },
-      });
+      const res = await axiosInstance.post(endpoint, payload, {});
+      const userData = res.data;
 
-      await AsyncStorage.setItem("userData", JSON.stringify(res.data));
+      const { access, refresh, ...rest } = userData;
+
+      const now = Date.now();
+      const ACCESS_EXPIRY_DURATION = 6 * 60 * 60 * 1000;
+      const REFRESH_EXPIRY_DURATION = 24 * 60 * 60 * 1000;
+
+      await AsyncStorage.setItem("userData", JSON.stringify(rest));
+      await AsyncStorage.setItem("accessToken", access);
+      await AsyncStorage.setItem("refreshToken", refresh);
+      await AsyncStorage.setItem(
+        "accessTokenExpiry",
+        (now + ACCESS_EXPIRY_DURATION).toString(),
+      );
+      await AsyncStorage.setItem(
+        "refreshTokenExpiry",
+        (now + REFRESH_EXPIRY_DURATION).toString(),
+      );
+
       Alert.alert("Success", JSON.stringify(res.data.message));
-      navigation.navigate("dashboard");
+      // navigation.navigate("dashboard");
+      navigation.reset({
+        index: 0,
+        routes: [{ name: "dashboard" }],
+      });
     } catch (error) {
       console.log("Error logging in:", error);
 
@@ -127,6 +132,8 @@ const LoginScreen = () => {
         "Login error",
         `status: ${status ?? "n/a"}\nmessage: ${message}`,
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 

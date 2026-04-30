@@ -12,7 +12,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Switch } from "react-native-paper";
 import { useNavigation } from "@react-navigation/native";
 import { base_url } from "../constant/api";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import Svg, { Path } from "react-native-svg";
 
 const Profile = () => {
@@ -46,7 +46,7 @@ const Profile = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.post(endpoint, payload, { headers });
+        const res = await axiosInstance.post(endpoint, payload);
         setUserInfo(res.data);
       } catch (error) {
         console.log("Error fetching user info:", error);
@@ -58,10 +58,8 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       const endpoint = `${base_url}/core/logout/`;
-      const headers = {
-        Authorization: `Token ${userData?.token}`,
-      };
-      await axios.post(endpoint, {}, { headers });
+
+      await axiosInstance.post(endpoint, {});
       await AsyncStorage.removeItem("userData");
       Alert.alert("Logout successful");
       navigation.navigate("login");

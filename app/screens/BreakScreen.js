@@ -14,7 +14,7 @@ import { useNavigation } from "@react-navigation/native";
 import Svg, { Circle, Path } from "react-native-svg";
 import { base_url } from "../constant/api";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import FlexibleBreakCard from "../components/FlexibleBreakCard";
 import FixedBreakCard from "../components/FixedBreakCard";
 
@@ -45,7 +45,7 @@ const BreakScreen = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.get(endpoint, { headers });
+        const res = await axiosInstance.get(endpoint);
         setBreakList(res.data);
       } catch (error) {
         console.error("Error fetching break list: ", error);
@@ -74,7 +74,7 @@ const BreakScreen = () => {
             const flexibleBreaks = breakList.filter(
               (item) =>
                 item.fixed_or_flexible === "flexible" ||
-                item.fixed_or_flexible === null
+                item.fixed_or_flexible === null,
             );
             const chunked = [];
             for (let i = 0; i < flexibleBreaks.length; i += 2) {
@@ -276,7 +276,7 @@ const BreakScreen = () => {
                   breakItem.start_time && breakItem.end_time
                     ? `${breakItem.start_time.slice(
                         0,
-                        5
+                        5,
                       )} - ${breakItem.end_time.slice(0, 5)}`
                     : `${breakItem.allowed_break_duration_min} min`
                 }

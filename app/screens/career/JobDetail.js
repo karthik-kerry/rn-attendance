@@ -10,10 +10,10 @@ import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
 import { base_url } from "../../constant/api";
 import Svg, { Path } from "react-native-svg";
 import AddCandidateModal from "../../components/AddCandidateModal";
+import axiosInstance from "@/app/utils/axiosInstance";
 
 const JobDetail = () => {
   const route = useRoute();
@@ -148,23 +148,18 @@ const JobDetail = () => {
     getUser();
   }, []);
 
-  useEffect(() => {
-    const fetchCandidates = async () => {
-      try {
-        const res = await axios.get(
-          `${base_url}/career/career_jobcandidate_r/${userData?.user_id}/${userData?.branchid?.companyid}/?jobposting=${job.id}`,
-          {
-            headers: {
-              Authorization: `Token ${userData?.token}`,
-            },
-          },
-        );
-        setCandidates(res.data);
-      } catch (err) {
-        console.log("Candidate error", err);
-      }
-    };
+  const fetchCandidates = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `${base_url}/career/career_jobcandidate_r/${userData?.user_id}/${userData?.branchid?.companyid}/?jobposting=${job.id}`,
+      );
+      setCandidates(res.data);
+    } catch (err) {
+      console.log("Candidate error", err);
+    }
+  };
 
+  useEffect(() => {
     if (userData) fetchCandidates();
   }, [userData]);
 
@@ -363,6 +358,7 @@ const JobDetail = () => {
           {filteredCandidates?.length > 0 ? (
             filteredCandidates.map((item) => {
               const c = item.candidate;
+              const isUpdate = !item.job_candidate_status_name;
 
               return (
                 <View
@@ -392,17 +388,29 @@ const JobDetail = () => {
                     >
                       {c.candidate_name}
                     </Text>
-
-                    <Text
-                      style={{
-                        backgroundColor: "#107B1D1F",
-                        paddingHorizontal: 10,
-                        borderRadius: 20,
-                        color: "#065F46",
-                      }}
+                    <TouchableOpacity
+                      activeOpacity={0.7}
+                      onPress={() =>
+                        navigation.navigate("CandidateStatusScreen", {
+                          type: "candidate",
+                          candidateId: c.id,
+                          jobId: job.id,
+                          selectedRecord: item,
+                          refreshCandidates: fetchCandidates,
+                        })
+                      }
                     >
-                      {item.job_candidate_status_name || "Active"}
-                    </Text>
+                      <Text
+                        style={{
+                          backgroundColor: isUpdate ? "#DBEAFE" : "#107B1D1F", // blue / green
+                          paddingHorizontal: 10,
+                          borderRadius: 20,
+                          color: isUpdate ? "#2563EB" : "#065F46", // blue / green text
+                        }}
+                      >
+                        {item.job_candidate_status_name || "Update Status"}
+                      </Text>
+                    </TouchableOpacity>
                   </View>
                   <View
                     style={{
@@ -484,9 +492,9 @@ const JobDetail = () => {
         jobId={job?.id}
         job={job}
         candidates={candidates}
-        onSubmit={(data) => {
-          console.log("Form Data:", data);
+        onSubmit={() => {
           setShowModal(false);
+          fetchCandidates();
         }}
       />
     </View>
@@ -506,7 +514,7 @@ const styles = {
     flexDirection: "row",
     justifyContent: "space-between",
     padding: 16,
-    backgroundColor: "#fff",
+    marginBottom: 10,
   },
   cancelBtn: {
     borderWidth: 1,

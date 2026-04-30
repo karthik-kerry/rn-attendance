@@ -19,7 +19,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import CustomModal from "../components/CustomModal";
 import LeaveModal from "../components/LeaveModal";
 import { base_url } from "../constant/api";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import { Dropdown } from "react-native-element-dropdown";
 import Svg, { Path } from "react-native-svg";
 
@@ -156,7 +156,7 @@ const HomeScreen = () => {
           user_latitude: 13.09997989105245, //location.coords.latitude,
           user_longitude: 80.29011704834728, //location.coords.longitude,
         };
-        const res = await axios.post(endPoint, payload, { headers });
+        const res = await axiosInstance.post(endPoint, payload);
         setJobs(res.data);
       } catch (error) {
         console.log("Error fetching nearby jobs:", error.message);
@@ -192,11 +192,11 @@ const HomeScreen = () => {
   useEffect(() => {
     const fetchShiftData = async () => {
       try {
-        const endPoint = `${base_url}/hrm/attendance/${userData?.user_id}/${userData?.branchid?.companyid}/`;
+        const endpoint = `${base_url}/hrm/attendance/${userData?.user_id}/${userData?.branchid?.companyid}/`;
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.get(endPoint, { headers });
+        const res = await axiosInstance.get(endpoint);
         setShiftData(res.data);
       } catch (error) {
         console.log("Error fetching shift details:", error);
@@ -212,7 +212,7 @@ const HomeScreen = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.get(endpoint, { headers });
+        const res = await axiosInstance.get(endpoint);
         setShiftDetails(res.data);
       } catch (error) {
         console.log("Error fetching shift details:", error);
@@ -228,7 +228,7 @@ const HomeScreen = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.get(endpoint, { headers });
+        const res = await axiosInstance.get(endpoint);
         setCmpBranchList(res.data);
       } catch (error) {
         console.log("Error fetching company branch details:", error);
@@ -256,7 +256,7 @@ const HomeScreen = () => {
         work_place: "office",
         createvia: null,
       };
-      const res = await axios.post(endPoint, payload, { headers });
+      const res = await axiosInstance.post(endPoint, payload);
       console.log("Checkin successfull: ", res.data);
       Alert.alert(res.data.message);
     } catch (error) {

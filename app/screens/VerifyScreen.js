@@ -9,7 +9,7 @@ import {
 import React, { useEffect, useState } from "react";
 import { Dropdown } from "react-native-element-dropdown";
 import { useNavigation, useRoute } from "@react-navigation/native";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import Logo from "../../assets/images/logo.png";
 import BG from "../../assets/images/bg.png";
 import { base_url } from "../constant/api";
@@ -54,7 +54,7 @@ const VerifyScreen = () => {
     const fetchCountries = async () => {
       try {
         const endpoint = `${base_url}/core/country_code/`;
-        const res = await axios.get(endpoint);
+        const res = await axiosInstance.get(endpoint);
         setCountries(res.data);
       } catch (error) {
         console.log("Error fetching countries:", error);

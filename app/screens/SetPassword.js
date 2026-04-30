@@ -12,7 +12,7 @@ import Logo from "../../assets/images/logo.png";
 import BG from "../../assets/images/bg.png";
 import { Dropdown } from "react-native-element-dropdown";
 import { base_url } from "../constant/api";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import { Checkbox, TextInput } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 
@@ -32,7 +32,7 @@ const SetPassword = () => {
     const fetchCountries = async () => {
       try {
         const endpoint = `${base_url}/core/country_code/`;
-        const res = await axios.get(endpoint);
+        const res = await axiosInstance.get(endpoint);
         setCountries(res.data);
       } catch (error) {
         console.log("Error fetching countries:", error);
@@ -57,7 +57,7 @@ const SetPassword = () => {
         Alert.alert("Please fill all fields");
         return;
       }
-      const res = await axios.post(endpoint, request);
+      const res = await axiosInstance.post(endpoint, request);
       console.log("User creation response:", res.data);
       navigation.navigate("login");
     } catch (error) {

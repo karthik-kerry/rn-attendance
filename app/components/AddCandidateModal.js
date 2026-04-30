@@ -15,7 +15,7 @@ import DateTimePicker from "@react-native-community/datetimepicker";
 import Svg, { Path } from "react-native-svg";
 import { KeyboardAvoidingView } from "react-native";
 import { base_url } from "../constant/api";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { BottomNavigation } from "react-native-paper";
 
@@ -74,57 +74,51 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     getUser();
   }, []);
 
-  useEffect(() => {
-    const fetchCandidateFilterList = async () => {
-      try {
-        const res = await axios.get(
-          `${base_url}/career/career_jobposnotcandidate_r/${userData?.user_id}/${userData?.branchid?.companyid}/?jobid=${jobId}`,
-          { headers: { Authorization: `Token ${userData?.token}` } },
-        );
-        setCandidatesRaw(res.data); // keep raw for lookup
-        const formattedData = res.data.map((item) => ({
-          label:
-            `${item.candidate_name} (${item.email ?? ""} ${item.phone ?? ""})`.trim(),
-          value: item.id,
-        }));
-        setCandidates(formattedData);
-      } catch (err) {
-        console.log("Candidate error", err);
-      }
-    };
-    if (
-      userData?.user_id &&
-      userData?.branchid?.companyid &&
-      userData?.token &&
-      jobId
-    ) {
-      fetchCandidateFilterList();
+  const fetchCandidateFilterList = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `${base_url}/career/career_jobposnotcandidate_r/${userData?.user_id}/${userData?.branchid?.companyid}/?jobid=${jobId}`,
+      );
+      setCandidatesRaw(res.data);
+      const formattedData = res.data.map((item) => ({
+        label:
+          `${item.candidate_name} (${item.email ?? ""} ${item.phone ?? ""})`.trim(),
+        value: item.id,
+      }));
+      setCandidates(formattedData);
+    } catch (err) {
+      console.log("Candidate error", err);
     }
-  }, [userData]);
+  };
 
   useEffect(() => {
-    const fetchCandidateStatus = async () => {
-      try {
-        const res = await axios.get(
-          `${base_url}/career/career_jobcandidate_status_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
-          { headers: { Authorization: `Token ${userData?.token}` } },
-        );
-        setCandidateStatus(
-          res.data.map((item) => ({ label: item.name, value: item.id })),
-        );
-      } catch (err) {
-        console.log("Status error", err);
-      }
-    };
+    if (userData?.user_id && userData?.branchid?.companyid && jobId) {
+      fetchCandidateFilterList();
+    }
+  }, [userData, jobId]);
+
+  const fetchCandidateStatus = async () => {
+    try {
+      const res = await axiosInstance.get(
+        `${base_url}/career/career_jobcandidate_status_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+      );
+      setCandidateStatus(
+        res.data.map((item) => ({ label: item.name, value: item.id })),
+      );
+    } catch (err) {
+      console.log("Status error", err);
+    }
+  };
+
+  useEffect(() => {
     if (userData) fetchCandidateStatus();
   }, [userData]);
 
   useEffect(() => {
     const fetchReportTo = async () => {
       try {
-        const res = await axios.get(
+        const res = await axiosInstance.get(
           `${base_url}/core/cmp_user_list/${userData?.user_id}/${userData?.branchid?.companyid}/`,
-          { headers: { Authorization: `Token ${userData?.token}` } },
         );
         setReportTo(
           (res.data ?? []).map((item) => ({
@@ -142,9 +136,8 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   useEffect(() => {
     const fetchLevel = async () => {
       try {
-        const res = await axios.get(
+        const res = await axiosInstance.get(
           `${base_url}/career/career_level_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
-          { headers: { Authorization: `Token ${userData?.token}` } },
         );
         setLevel(
           (res.data ?? []).map((item) => ({
@@ -162,9 +155,8 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   useEffect(() => {
     const fetchPayJV = async () => {
       try {
-        const res = await axios.get(
+        const res = await axiosInstance.get(
           `${base_url}/core/coreorgchild_list/${userData?.user_id}/${userData?.branchid?.companyid}/`,
-          { headers: { Authorization: `Token ${userData?.token}` } },
         );
         const filtered = res.data.filter((item) => item.org_category === 1);
         setPayJVList(
@@ -183,9 +175,8 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   useEffect(() => {
     const fetchSourceOfHiring = async () => {
       try {
-        const res = await axios.get(
+        const res = await axiosInstance.get(
           `${base_url}/career/career_sourceofhiring_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
-          { headers: { Authorization: `Token ${userData?.token}` } },
         );
         setSourceOfHiring(
           (res.data ?? []).map((item) => ({
@@ -235,26 +226,21 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
         createvia: "Mobile App",
         remarks: form.remarks,
       };
-      console.log("Submitting endpoint:", endpoint);
 
       console.log("Submitting Payload:", payload);
       const formData = new FormData();
-      console.log("FormData:", formData);
 
       formData.append("jobcandidate_payload", JSON.stringify(payload));
 
-      const res = await axios.post(endpoint, formData, {
+      const res = await axiosInstance.post(endpoint, formData, {
         headers: {
-          Authorization: `Token ${userData?.token}`,
           "Content-Type": "multipart/form-data",
         },
       });
-
       Alert.alert(
         "Success",
         res?.data?.message || "Candidate Created successfully",
       );
-      onClose();
       if (onSubmit) onSubmit();
     } catch (error) {
       console.log("MESSAGE:", error.message);

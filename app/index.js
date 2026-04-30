@@ -31,16 +31,20 @@ import Dashboard from "./screens/Dashboard";
 import JobDetail from "./screens/career/JobDetail";
 import CandidateDetails from "./screens/career/CandidateDetails";
 import CandidateStatusScreen from "./screens/career/CandidateStatusScreen";
+import useSessionGuard from "./hooks/useSessionGuard";
+import { useNavigationContainerRef } from "@react-navigation/native";
 const Stack = createNativeStackNavigator();
 
 export default function Index() {
   const [userData, setUserData] = useState(null);
-
+  const [isNavReady, setIsNavReady] = useState(false);
   const [loaded, error] = useFonts({
     "Inter-Regular": require("../assets/fonts/Inter-Regular.ttf"),
     "Inter-SemiBold": require("../assets/fonts/Inter-SemiBold.ttf"),
     "Inter-Bold": require("../assets/fonts/Inter-Bold.ttf"),
   });
+  const navigationRef = useNavigationContainerRef();
+  useSessionGuard(isNavReady ? navigationRef : null);
 
   useEffect(() => {
     const fetchUserData = async () => {
@@ -55,7 +59,10 @@ export default function Index() {
   if (!loaded) return null;
 
   return (
-    <NavigationContainer>
+    <NavigationContainer
+      ref={navigationRef}
+      onReady={() => setIsNavReady(true)}
+    >
       <Stack.Navigator
         initialRouteName={userData ? "dashboard" : "login"}
         screenOptions={{ headerShown: false }}

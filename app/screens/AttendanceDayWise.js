@@ -11,7 +11,7 @@ import AttendanceCard from "../components/AttendanceCard";
 import Svg, { Path } from "react-native-svg";
 import { useNavigation } from "@react-navigation/native";
 import { base_url } from "../constant/api";
-import axios from "axios";
+import axiosInstance from "../utils/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { ToggleButton } from "react-native-paper";
 import AttendanceCalendar from "../components/AttendanceCalendar";
@@ -52,7 +52,7 @@ const AttendanceDayWise = () => {
         const headers = {
           Authorization: `Token ${userData?.token}`,
         };
-        const res = await axios.get(endpoint, { headers });
+        const res = await axiosInstance.get(endpoint);
         setAttendanceList(res.data);
         setIsLoading(false);
       } catch (error) {

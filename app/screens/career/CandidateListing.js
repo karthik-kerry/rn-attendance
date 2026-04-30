@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import axios from "axios";
+import axiosInstance from "../../utils/axiosInstance";
 import Svg, { Path, Circle } from "react-native-svg";
 import { base_url } from "../../constant/api";
 import Header from "@/app/components/Header";
@@ -81,7 +81,7 @@ const formatExperience = (exp) => {
 // ─── Candidate Card ───────────────────────────────────────────────────────────
 
 const CandidateCard = ({ item, onPress }) => {
-  const isActive = item.candidate_status === "active" || item.is_active;
+  const isStatus = item.candidate_status || "Status Update";
   const name =
     item.candidate_name ||
     item.name ||
@@ -95,15 +95,8 @@ const CandidateCard = ({ item, onPress }) => {
     item.current_position ||
     (item.candidate && item.candidate.current_position) ||
     "-";
-  const status =
-    item.candidate_status_name ||
-    item.status_name ||
-    (isActive ? "Active" : "Inactive");
 
-  const statusIsActive =
-    status?.toLowerCase() === "active" ||
-    item.is_active === true ||
-    item.candidate_status === "active";
+  const isUpdate = !item.candidate_status;
 
   return (
     <TouchableOpacity
@@ -117,16 +110,19 @@ const CandidateCard = ({ item, onPress }) => {
         <View
           style={[
             styles.statusBadge,
-            { backgroundColor: statusIsActive ? "#DCFCE7" : "#FEE2E2" },
+            { backgroundColor: isUpdate ? "#DBEAFE" : "#107B1D1F" },
           ]}
         >
           <Text
             style={[
               styles.statusText,
-              { color: statusIsActive ? "#16A34A" : "#DC2626" },
+              { color: isUpdate ? "#2563EB" : "#065F46" },
             ]}
           >
-            {statusIsActive ? "Active" : "Inactive"}
+            {(isUpdate
+              ? "Update Status"
+              : item.candidate_status
+            )?.toUpperCase()}{" "}
           </Text>
         </View>
       </View>
@@ -169,11 +165,7 @@ const CandidateListing = () => {
 
       try {
         const endpoint = `${base_url}/career/career_candidate_cr/${userData.user_id}/${userData.branchid.companyid}/?branch=${userData.branchid.branchid}`;
-        const res = await axios.get(endpoint, {
-          headers: {
-            Authorization: `Token ${userData.token}`,
-          },
-        });
+        const res = await axiosInstance.get(endpoint);
 
         setCandidates(res.data || []);
       } catch (err) {
