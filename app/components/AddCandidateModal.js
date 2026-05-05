@@ -16,8 +16,7 @@ import Svg, { Path } from "react-native-svg";
 import { KeyboardAvoidingView } from "react-native";
 import { base_url } from "../constant/api";
 import axiosInstance from "../utils/axiosInstance";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { BottomNavigation } from "react-native-paper";
+import useStoredData from "@/app/hooks/useStoredData";
 
 const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   const { width } = Dimensions.get("window");
@@ -36,8 +35,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     source_of_hiring: null,
     budget_vs_finalctc: "",
   });
-
-  const [userData, setUserData] = useState(null);
+  const { userData, selectedCompany } = useStoredData();
   const [showDate, setShowDate] = useState(false);
   const [candidates, setCandidates] = useState([]);
   const [candidatesRaw, setCandidatesRaw] = useState([]);
@@ -66,18 +64,10 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     }
   }, [visible, job]);
 
-  useEffect(() => {
-    const getUser = async () => {
-      const data = await AsyncStorage.getItem("userData");
-      setUserData(JSON.parse(data));
-    };
-    getUser();
-  }, []);
-
   const fetchCandidateFilterList = async () => {
     try {
       const res = await axiosInstance.get(
-        `${base_url}/career/career_jobposnotcandidate_r/${userData?.user_id}/${userData?.branchid?.companyid}/?jobid=${jobId}`,
+        `${base_url}/career/career_jobposnotcandidate_r/${userData?.user_id}/${selectedCompany?.id}/?jobid=${jobId}`,
       );
       setCandidatesRaw(res.data);
       const formattedData = res.data.map((item) => ({
@@ -92,7 +82,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   };
 
   useEffect(() => {
-    if (userData?.user_id && userData?.branchid?.companyid && jobId) {
+    if (userData?.user_id && selectedCompany?.id && jobId) {
       fetchCandidateFilterList();
     }
   }, [userData, jobId]);
@@ -100,7 +90,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   const fetchCandidateStatus = async () => {
     try {
       const res = await axiosInstance.get(
-        `${base_url}/career/career_jobcandidate_status_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+        `${base_url}/career/career_jobcandidate_status_crud/${userData?.user_id}/${selectedCompany?.id}/`,
       );
       setCandidateStatus(
         res.data.map((item) => ({ label: item.name, value: item.id })),
@@ -111,14 +101,14 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   };
 
   useEffect(() => {
-    if (userData) fetchCandidateStatus();
+    if (userData && selectedCompany) fetchCandidateStatus();
   }, [userData]);
 
   useEffect(() => {
     const fetchReportTo = async () => {
       try {
         const res = await axiosInstance.get(
-          `${base_url}/core/cmp_user_list/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+          `${base_url}/core/cmp_user_list/${userData?.user_id}/${selectedCompany?.id}/`,
         );
         setReportTo(
           (res.data ?? []).map((item) => ({
@@ -130,14 +120,14 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
         console.log("ReportTo error", err);
       }
     };
-    if (userData) fetchReportTo();
+    if (userData && selectedCompany) fetchReportTo();
   }, [userData]);
 
   useEffect(() => {
     const fetchLevel = async () => {
       try {
         const res = await axiosInstance.get(
-          `${base_url}/career/career_level_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+          `${base_url}/career/career_level_crud/${userData?.user_id}/${selectedCompany?.id}/`,
         );
         setLevel(
           (res.data ?? []).map((item) => ({
@@ -156,7 +146,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     const fetchPayJV = async () => {
       try {
         const res = await axiosInstance.get(
-          `${base_url}/core/coreorgchild_list/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+          `${base_url}/core/coreorgchild_list/${userData?.user_id}/${selectedCompany?.id}/`,
         );
         const filtered = res.data.filter((item) => item.org_category === 1);
         setPayJVList(
@@ -176,7 +166,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     const fetchSourceOfHiring = async () => {
       try {
         const res = await axiosInstance.get(
-          `${base_url}/career/career_sourceofhiring_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+          `${base_url}/career/career_sourceofhiring_crud/${userData?.user_id}/${selectedCompany?.id}/`,
         );
         setSourceOfHiring(
           (res.data ?? []).map((item) => ({
@@ -195,7 +185,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     setIsSubmitting(true);
 
     try {
-      const endpoint = `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${userData?.branchid?.companyid}/`;
+      const endpoint = `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${selectedCompany?.id}/`;
 
       const payload = {
         jobposting: job?.id,
@@ -227,7 +217,6 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
         remarks: form.remarks,
       };
 
-      console.log("Submitting Payload:", payload);
       const formData = new FormData();
 
       formData.append("jobcandidate_payload", JSON.stringify(payload));
@@ -280,7 +269,6 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
     const budget = Number(job?.budget_from) || 0;
     const finalCtc = Number(v) || 0;
 
-    console.log();
     updateField("budget_vs_finalctc", String(budget - finalCtc));
   };
 

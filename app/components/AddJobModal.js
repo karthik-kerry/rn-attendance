@@ -35,7 +35,14 @@ const dropdownProps = {
   maxHeight: 260,
 };
 
-const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
+const AddJobModal = ({
+  visible,
+  onClose,
+  onSubmit,
+  candidate,
+  userData,
+  selectedCompany,
+}) => {
   const { width } = Dimensions.get("window");
 
   const [form, setForm] = useState({
@@ -93,7 +100,7 @@ const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
 
     const fetchAll = async () => {
       try {
-        const companyId = userData.branchid?.companyid;
+        const companyId = selectedCompany?.id;
         const userId = userData.user_id;
 
         const [jobsRes, statusRes, reportToRes, levelRes, jvRes, sourcesRes] =
@@ -229,13 +236,12 @@ const AddJobModal = ({ visible, onClose, onSubmit, candidate, userData }) => {
         createvia: "mobile app",
         remarks: form.remarks,
       };
-      console.log("Submitting Payload:", payload);
 
       const formData = new FormData();
       formData.append("jobcandidate_payload", JSON.stringify(payload));
 
       await axiosInstance.post(
-        `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${userData.branchid?.companyid}/`,
+        `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${selectedCompany?.id}/`,
         formData,
         {
           headers: {

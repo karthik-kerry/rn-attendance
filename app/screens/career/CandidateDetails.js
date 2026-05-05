@@ -9,13 +9,14 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosInstance from "../../utils/axiosInstance";
 import Svg, { Path, Circle } from "react-native-svg";
 import { base_url } from "../../constant/api";
 import AddJobModal from "../../components/AddJobModal";
 import JobCard from "../../components/JobCard";
 import { Linking, Alert } from "react-native";
+import useStoredData from "@/app/hooks/useStoredData";
+
 // ─── Icons ────────────────────────────────────────────────────────────────────
 
 const BackIcon = () => (
@@ -187,7 +188,7 @@ const CandidateDetails = () => {
   const navigation = useNavigation();
   const { candidate } = route.params;
 
-  const [userData, setUserData] = useState(null);
+  const { userData, selectedCompany } = useStoredData();
   const [jobList, setJobList] = useState([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -205,20 +206,11 @@ const CandidateDetails = () => {
   const phone = candidateData?.phone ?? "—";
   const email = candidateData?.email ?? "—";
 
-  useEffect(() => {
-    const getUser = async () => {
-      const data = await AsyncStorage.getItem("userData");
-      setUserData(JSON.parse(data));
-    };
-    getUser();
-  }, []);
-
-  const fetchJobList = async (ud = userData) => {
-    if (!ud) return;
+  const fetchJobList = async () => {
+    if (!userData || !selectedCompany) return;
     setLoading(true);
     try {
-      const endpoint = `${base_url}/career/career_jobcandidate_r/${ud.user_id}/${ud.branchid?.companyid}/?candidate=${candidateData?.id}`;
-
+      const endpoint = `${base_url}/career/career_jobcandidate_r/${userData.user_id}/${selectedCompany.id}/?candidate=${candidateData?.id}`;
       const res = await axiosInstance.get(endpoint);
       const formatted = (res.data || []).map((item) => ({
         id: item.jobposting?.id,
@@ -260,8 +252,8 @@ const CandidateDetails = () => {
   };
 
   useEffect(() => {
-    if (userData) fetchJobList(userData);
-  }, [userData]);
+    if (userData && selectedCompany) fetchJobList();
+  }, [userData, selectedCompany]);
 
   const filteredJobs = jobList.filter((j) =>
     (j.job_name ?? "").toLowerCase().includes(search.toLowerCase()),
@@ -412,6 +404,7 @@ const CandidateDetails = () => {
         onClose={() => setShowModal(false)}
         candidate={candidateData}
         userData={userData}
+        selectedCompany={selectedCompany}
         onSubmit={() => {
           setShowModal(false);
           fetchJobList();

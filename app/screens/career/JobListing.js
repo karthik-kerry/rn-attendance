@@ -14,28 +14,22 @@ import Svg, { Path } from "react-native-svg";
 import { ActivityIndicator } from "react-native-paper";
 import { base_url } from "../../constant/api";
 import axiosInstance from "@/app/utils/axiosInstance";
+import useStoredData from "@/app/hooks/useStoredData";
 
 const JobListing = () => {
   const navigation = useNavigation();
-  const [userData, setUserData] = useState(null);
+  const { userData, selectedCompany } = useStoredData();
   const [isLoading, setIsLoading] = useState(false);
   const [jobs, setJobs] = useState([]);
   const [searchText, setSearchText] = useState("");
 
   useEffect(() => {
-    const getUser = async () => {
-      const data = await AsyncStorage.getItem("userData");
-      setUserData(JSON.parse(data));
-    };
-    getUser();
-  }, []);
-
-  useEffect(() => {
+    if (!userData || !selectedCompany) return;
     const fetchJobList = async () => {
       setIsLoading(true);
 
       try {
-        const endpoint = `${base_url}/career/career_jobposting_crud/${userData?.user_id}/${userData?.branchid?.companyid}/?branch=${userData?.branchid?.branchid}`;
+        const endpoint = `${base_url}/career/career_jobposting_crud/${userData?.user_id}/${selectedCompany?.id}/?branch=${selectedCompany.branchid}`;
 
         const res = await axiosInstance.get(endpoint);
         setJobs([...res.data].reverse());
@@ -46,7 +40,7 @@ const JobListing = () => {
       }
     };
     if (userData) fetchJobList();
-  }, [userData]);
+  }, [userData, selectedCompany]);
 
   const filteredJobs = jobs.filter(
     (job) =>

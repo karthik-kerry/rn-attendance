@@ -12,10 +12,10 @@ import {
 } from "react-native";
 import { Dropdown } from "react-native-element-dropdown";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosInstance from "@/app/utils/axiosInstance";
 import { base_url } from "../../constant/api";
 import Header from "@/app/components/Header";
+import useStoredData from "@/app/hooks/useStoredData";
 
 export default function CandidateStatusScreen() {
   const route = useRoute();
@@ -24,7 +24,7 @@ export default function CandidateStatusScreen() {
   const { type, candidateId, jobId, selectedRecord, refreshCandidates } =
     route.params || {};
 
-  const [userData, setUserData] = useState(null);
+  const { userData, selectedCompany } = useStoredData();
   const [status, setStatus] = useState(null);
   const [feedback, setFeedback] = useState("");
   const [timelineData, setTimelineData] = useState([]);
@@ -34,7 +34,7 @@ export default function CandidateStatusScreen() {
   const fetchCandidateStatus = async () => {
     try {
       const res = await axiosInstance.get(
-        `${base_url}/career/career_jobcandidate_status_crud/${userData?.user_id}/${userData?.branchid?.companyid}/`,
+        `${base_url}/career/career_jobcandidate_status_crud/${userData?.user_id}/${selectedCompany?.id}/`,
       );
       setCandidateStatus(
         res.data.map((item) => ({ label: item.name, value: item.id })),
@@ -45,7 +45,7 @@ export default function CandidateStatusScreen() {
   };
 
   useEffect(() => {
-    if (userData) fetchCandidateStatus();
+    if (userData && selectedCompany) fetchCandidateStatus();
   }, [userData]);
 
   const formatDate = (date) => {
@@ -62,7 +62,7 @@ export default function CandidateStatusScreen() {
     try {
       if (!userData) return;
 
-      const companyId = userData.branchid.companyid;
+      const companyId = selectedCompany?.id;
       if (!companyId) return;
 
       let endpoint = "";
@@ -110,30 +110,18 @@ export default function CandidateStatusScreen() {
   };
 
   useEffect(() => {
-    const loadUserData = async () => {
-      const storedUser = await AsyncStorage.getItem("userData");
-      if (storedUser) {
-        setUserData(JSON.parse(storedUser));
-      }
-    };
-
-    loadUserData();
-  }, []);
-
-  useEffect(() => {
-    if (userData) {
+    if (userData && selectedCompany) {
       fetchStatusTimeline();
     }
-  }, [userData, type, candidateId, jobId]);
+  }, [userData, selectedCompany, type, candidateId, jobId]);
 
   const handleStatusUpdate = async () => {
-    // ── Guards (before setLoading to avoid spinner on validation fails) ──
     if (!userData) {
       Alert.alert("Error", "Missing user data.");
       return;
     }
 
-    const companyId = userData.branchid?.companyid;
+    const companyId = selectedCompany?.id;
     if (!companyId) {
       Alert.alert("Error", "Missing company information.");
       return;
@@ -180,7 +168,6 @@ export default function CandidateStatusScreen() {
         job_candidate_status: status,
         remarks: feedback,
       };
-      console.log("📦 Payload before sending:", payload);
       const formData = new FormData();
       formData.append("jobcandidate_payload", JSON.stringify(payload));
 

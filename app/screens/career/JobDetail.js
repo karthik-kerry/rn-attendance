@@ -9,18 +9,17 @@ import {
 import React, { useEffect, useState } from "react";
 import Header from "../../components/Header";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { base_url } from "../../constant/api";
 import Svg, { Path } from "react-native-svg";
 import AddCandidateModal from "../../components/AddCandidateModal";
 import axiosInstance from "@/app/utils/axiosInstance";
+import useStoredData from "@/app/hooks/useStoredData";
 
 const JobDetail = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const { job } = route.params;
-
-  const [userData, setUserData] = useState(null);
+  const { userData, selectedCompany } = useStoredData();
   const [candidates, setCandidates] = useState([]);
   const [search, setSearch] = useState("");
   const [showModal, setShowModal] = useState(false);
@@ -140,18 +139,10 @@ const JobDetail = () => {
     return `${num} Years Experience`;
   };
 
-  useEffect(() => {
-    const getUser = async () => {
-      const data = await AsyncStorage.getItem("userData");
-      setUserData(JSON.parse(data));
-    };
-    getUser();
-  }, []);
-
   const fetchCandidates = async () => {
     try {
       const res = await axiosInstance.get(
-        `${base_url}/career/career_jobcandidate_r/${userData?.user_id}/${userData?.branchid?.companyid}/?jobposting=${job.id}`,
+        `${base_url}/career/career_jobcandidate_r/${userData?.user_id}/${selectedCompany?.id}/?jobposting=${job.id}`,
       );
       setCandidates(res.data);
     } catch (err) {
@@ -160,8 +151,8 @@ const JobDetail = () => {
   };
 
   useEffect(() => {
-    if (userData) fetchCandidates();
-  }, [userData]);
+    if (userData && selectedCompany) fetchCandidates();
+  }, [userData, selectedCompany]);
 
   const filteredCandidates = candidates.filter((item) =>
     item?.candidate?.candidate_name

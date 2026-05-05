@@ -9,11 +9,11 @@ import {
   ActivityIndicator,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import axiosInstance from "../../utils/axiosInstance";
 import Svg, { Path, Circle } from "react-native-svg";
 import { base_url } from "../../constant/api";
 import Header from "@/app/components/Header";
+import useStoredData from "@/app/hooks/useStoredData";
 
 const SearchIcon = () => (
   <Svg width={20} height={20} viewBox="0 0 24 24" fill="none">
@@ -144,27 +144,18 @@ const CandidateCard = ({ item, onPress }) => {
 
 const CandidateListing = () => {
   const navigation = useNavigation();
-  const [userData, setUserData] = useState(null);
+  const { userData, selectedCompany } = useStoredData();
   const [candidates, setCandidates] = useState([]);
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    const getUser = async () => {
-      const data = await AsyncStorage.getItem("userData");
-      setUserData(JSON.parse(data));
-    };
-    getUser();
-  }, []);
-
-  useEffect(() => {
-    if (!userData?.user_id || !userData?.branchid?.companyid) return;
+    if (!userData?.user_id || !selectedCompany?.id) return;
 
     const fetchCandidates = async () => {
       setLoading(true);
-
       try {
-        const endpoint = `${base_url}/career/career_candidate_cr/${userData.user_id}/${userData.branchid.companyid}/?branch=${userData.branchid.branchid}`;
+        const endpoint = `${base_url}/career/career_candidate_cr/${userData.user_id}/${selectedCompany.id}/?branch=${selectedCompany.branchid}`;
         const res = await axiosInstance.get(endpoint);
 
         setCandidates(res.data || []);
@@ -176,7 +167,7 @@ const CandidateListing = () => {
     };
 
     fetchCandidates();
-  }, [userData]);
+  }, [userData, selectedCompany]);
 
   const filtered = candidates.filter((item) => {
     const name =

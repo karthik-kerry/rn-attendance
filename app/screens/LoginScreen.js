@@ -29,6 +29,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [companyList, setCompanyList] = useState([]);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -67,7 +68,6 @@ const LoginScreen = () => {
 
   //     if (csrfToken) {
   //       await saveCsrfToken(csrfToken);
-  //       console.log("✅ CSRF token saved:", csrfToken);
   //     }
   //   } catch (error) {
   //     console.log("Error fetching CSRF token:", error);
@@ -78,22 +78,53 @@ const LoginScreen = () => {
   //   }
   // };
 
+  const fetchCompanyList = async (userId) => {
+    try {
+      const res = await axiosInstance.get(
+        `${base_url}/core/user_company_list/${userId}/`,
+      );
+
+      const companyList = res.data || [];
+      return companyList;
+    } catch (error) {
+      console.log("Company fetch error:", error);
+      return [];
+    }
+  };
+
+  const fetchBranchList = async (userId) => {
+    try {
+      const res = await axiosInstance.get(
+        `${base_url}/core/userbranch_cmp_branch_list/${userId}/`,
+      );
+
+      const branchList = res.data || [];
+
+      return branchList;
+    } catch (error) {
+      console.log("Branch fetch error:", error);
+      return [];
+    }
+  };
+
   const handleLogin = async () => {
     if (!userName || !password) {
       Alert.alert("Please fill all fields");
       return;
     }
+
     setIsLoading(true);
 
     try {
       const endpoint = `${base_url}/core/login/`;
+
       const payload = {
         username: userName,
         password: password,
         countrycode: selectedCountry,
       };
 
-      const res = await axiosInstance.post(endpoint, payload, {});
+      const res = await axiosInstance.post(endpoint, payload);
       const userData = res.data;
 
       const { access, refresh, ...rest } = userData;
@@ -114,17 +145,63 @@ const LoginScreen = () => {
         (now + REFRESH_EXPIRY_DURATION).toString(),
       );
 
-      Alert.alert("Success", JSON.stringify(res.data.message));
-      // navigation.navigate("dashboard");
-      navigation.reset({
-        index: 0,
-        routes: [{ name: "dashboard" }],
-      });
+      const companies = await fetchCompanyList(userData?.user_id);
+      const branches = await fetchBranchList(userData?.user_id);
+
+      const defaultCompanyId = userData?.branchid?.companyid;
+      const defaultBranchId = userData?.branchid?.branchid;
+
+      const selectedCompanyObj = companies.find(
+        (c) => c.id === defaultCompanyId,
+      );
+      const selectedBranchObj = branches.find(
+        (b) => b.branchid === defaultBranchId,
+      );
+
+      if (selectedCompanyObj && selectedBranchObj) {
+        const formatted = {
+          id: selectedCompanyObj.id,
+          name: selectedCompanyObj.name,
+          company_shortname: selectedCompanyObj.company_shortname,
+          branchid: selectedBranchObj.branchid,
+          branch_name: selectedBranchObj.branch_name,
+          branch_shortname: selectedBranchObj.branch_shortname,
+        };
+
+        await AsyncStorage.setItem(
+          "selectedCompany",
+          JSON.stringify(formatted),
+        );
+
+        try {
+          const permRes = await axiosInstance.post(
+            `${base_url}/core/grant_cmpbranch_permission/${userData?.user_id}/${formatted.id}/`,
+            { branchid: formatted.branchid },
+          );
+
+          await AsyncStorage.setItem(
+            "modulePermissions",
+            JSON.stringify(permRes.data),
+          );
+        } catch (permError) {
+          console.log(" Permission update failed:", permError);
+        }
+      }
+
+      Alert.alert("Success", userData.message || "Login successful");
+
+      setTimeout(() => {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: "dashboard" }],
+        });
+      }, 100);
     } catch (error) {
       console.log("Error logging in:", error);
 
       const status = error?.response?.status;
       const data = error?.response?.data;
+
       const message =
         data?.message || data?.detail || error?.message || "Login failed";
 
