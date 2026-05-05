@@ -353,7 +353,7 @@ const CandidateDetails = () => {
               style={styles.addJobBtn}
               onPress={() => setShowModal(true)}
             >
-              <Text style={styles.addJobText}>Add Job</Text>
+              <Text style={styles.addJobText}>Add Job Position</Text>
             </TouchableOpacity>
           </View>
 
@@ -398,7 +398,7 @@ const CandidateDetails = () => {
         </View>
       </ScrollView>
 
-      {/* ── Add Job Modal ── */}
+      {/* ── Add Job Position Modal ── */}
       <AddJobModal
         visible={showModal}
         onClose={() => setShowModal(false)}

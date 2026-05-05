@@ -154,7 +154,7 @@ const Overview = () => {
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <ScrollView style={styles.container}>
         <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
-        <Header title="Job List" navigate={() => navigation.goBack()} />
+        <Header title="Overview" navigate={() => navigation.goBack()} />
 
         {/* Filters */}
         <View style={styles.filterRow}>

@@ -279,7 +279,7 @@ const AddJobModal = ({
               showsVerticalScrollIndicator={false}
               contentContainerStyle={{ paddingBottom: 16 }}
             >
-              <Text style={styles.title}>Add Job</Text>
+              <Text style={styles.title}>Add Job Position</Text>
 
               {/* ── Job Name ── */}
               <Text style={styles.label}>Job Name *</Text>
