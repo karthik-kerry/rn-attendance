@@ -145,8 +145,6 @@ export default function CandidateStatusScreen() {
     }
 
     setLoading(true);
-    console.log(selectedRecord.source_of_hiring, "ssos");
-    console.log(candidateSource, "another");
 
     try {
       const payload = {
@@ -178,13 +176,6 @@ export default function CandidateStatusScreen() {
       };
       const formData = new FormData();
       formData.append("jobcandidate_payload", JSON.stringify(payload));
-      console.log("Payload =>", payload);
-
-      for (let pair of formData.entries()) {
-        console.log("FormData =>", pair[0], pair[1]);
-      }
-
-      console.log("API Endpoint =>", endpoint);
 
       const endpoint = `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${companyId}/`;
 
