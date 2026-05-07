@@ -261,7 +261,11 @@ const CandidateDetails = () => {
 
   return (
     <View style={styles.container}>
-      <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
+      <StatusBar
+        backgroundColor="#F4F6F8"
+        barStyle="dark-content"
+        translucent={false}
+      />
 
       {/* ── Header ── */}
       <View style={styles.header}>
