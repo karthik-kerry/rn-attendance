@@ -21,8 +21,14 @@ export default function CandidateStatusScreen() {
   const route = useRoute();
   const navigation = useNavigation();
 
-  const { type, candidateId, jobId, selectedRecord, refreshCandidates } =
-    route.params || {};
+  const {
+    type,
+    candidateId,
+    jobId,
+    selectedRecord,
+    candidateSource,
+    refreshCandidates,
+  } = route.params || {};
 
   const { userData, selectedCompany } = useStoredData();
   const [status, setStatus] = useState(null);
@@ -139,13 +145,15 @@ export default function CandidateStatusScreen() {
     }
 
     setLoading(true);
+    console.log(selectedRecord.source_of_hiring, "ssos");
+    console.log(candidateSource, "another");
 
     try {
       const payload = {
         jobcan_updateid: selectedRecord?.id,
         jobposting: selectedRecord?.jobposting?.id,
         candidate: selectedRecord?.candidate,
-        source_of_hiring: selectedRecord?.source_of_hiring,
+        source_of_hiring: selectedRecord?.source_of_hiring || candidateSource,
         candidate_base_status: selectedRecord?.candidate_base_status,
         jobrelivedemp: selectedRecord?.jobrelivedemp,
         designation: selectedRecord?.designation,
@@ -170,6 +178,13 @@ export default function CandidateStatusScreen() {
       };
       const formData = new FormData();
       formData.append("jobcandidate_payload", JSON.stringify(payload));
+      console.log("Payload =>", payload);
+
+      for (let pair of formData.entries()) {
+        console.log("FormData =>", pair[0], pair[1]);
+      }
+
+      console.log("API Endpoint =>", endpoint);
 
       const endpoint = `${base_url}/career/career_jobcandidate_cu/${userData.user_id}/${companyId}/`;
 
@@ -188,12 +203,47 @@ export default function CandidateStatusScreen() {
       setFeedback("");
       fetchStatusTimeline();
       refreshCandidates?.();
+      // } catch (error) {
+      //   console.error("Status update error:", error?.response?.data ?? error);
+      //   Alert.alert(
+      //     "Error",
+      //     error?.response?.data?.message || "Update failed. Please try again.",
+      //   );
+      // }
     } catch (error) {
-      console.error("Status update error:", error?.response?.data ?? error);
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message || "Update failed. Please try again.",
-      );
+      console.error("Status update error:", error);
+
+      let errorMessage = "Update failed. Please try again.";
+
+      // Backend response errors
+      if (error?.response?.data) {
+        const data = error.response.data;
+
+        if (typeof data === "string") {
+          errorMessage = data;
+        } else if (data.message) {
+          errorMessage = data.message;
+        } else if (data.error) {
+          errorMessage = data.error;
+        } else {
+          // Convert validation object into readable text
+          errorMessage = Object.entries(data)
+            .map(([key, value]) => {
+              if (Array.isArray(value)) {
+                return `${key}: ${value.join(", ")}`;
+              }
+              return `${key}: ${value}`;
+            })
+            .join("\n");
+        }
+      }
+
+      // Network errors
+      else if (error?.message) {
+        errorMessage = error.message;
+      }
+
+      Alert.alert("Error", errorMessage);
     } finally {
       setLoading(false);
     }

@@ -47,7 +47,13 @@ const formatExperience = (exp) => {
   return `${num} Years`;
 };
 
-const JobCard = ({ item, styles, candidateId, onStatusUpdateSuccess }) => {
+const JobCard = ({
+  item,
+  styles,
+  candidateId,
+  candidateSource,
+  onStatusUpdateSuccess,
+}) => {
   const navigation = useNavigation();
   const isUpdate = !item.job_candidate_status_name;
   const record = item.raw ?? item;
@@ -60,6 +66,7 @@ const JobCard = ({ item, styles, candidateId, onStatusUpdateSuccess }) => {
       type: "job",
       jobId: record.jobposting?.id || item.jobposting_id || item.id,
       candidateId: candidateId,
+      candidateSource: candidateSource,
       selectedRecord: record,
       refreshCandidates: onStatusUpdateSuccess,
     });
@@ -80,7 +87,7 @@ const JobCard = ({ item, styles, candidateId, onStatusUpdateSuccess }) => {
         <Text style={styles.jobCardCompany}>
           {item.company_name || item.cmp_name || ""}
         </Text>
-        <View style={[styles.jobStatusBadge, { backgroundColor: statusBg }]}>
+        <View style={[styles.jobStatusBadge]}>
           <TouchableOpacity
             style={[styles.jobStatusBadge, { backgroundColor: statusBg }]}
             onPress={handleStatusClick}

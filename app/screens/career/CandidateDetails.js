@@ -194,6 +194,7 @@ const CandidateDetails = () => {
   const [showModal, setShowModal] = useState(false);
   const [loading, setLoading] = useState(false);
   const candidateData = candidate?.candidate ?? candidate;
+  const candidateSource = candidate?.source_or_hiring;
   const name = candidateData?.candidate_name ?? "—";
   const isActive =
     candidateData?.is_active ??
@@ -289,7 +290,7 @@ const CandidateDetails = () => {
         <View style={styles.infoCard}>
           <View style={styles.infoRow}>
             <Text style={styles.candidateName}>{name}</Text>
-            <View
+            {/* <View
               style={[
                 styles.statusBadge,
                 { backgroundColor: isActive ? "#DCFCE7" : "#FEE2E2" },
@@ -303,7 +304,7 @@ const CandidateDetails = () => {
               >
                 {isActive ? "Active" : "Inactive"}
               </Text>
-            </View>
+            </View> */}
           </View>
 
           <View style={styles.metaRow}>
@@ -393,6 +394,7 @@ const CandidateDetails = () => {
                 item={item}
                 styles={styles}
                 candidateId={candidateData?.id}
+                candidateSource={candidate?.source_or_hiring}
                 onStatusUpdateSuccess={() => fetchJobList()}
               />
             ))

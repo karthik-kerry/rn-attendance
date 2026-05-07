@@ -16,6 +16,7 @@ import { useNavigation } from "@react-navigation/native";
 import axiosInstance from "@/app/utils/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
+import Svg, { Path } from "react-native-svg";
 
 // ─── DATE HELPERS ─────────────────────────────────────────────────────────────
 const getToday = () => new Date();
@@ -279,7 +280,14 @@ const Overview = () => {
               {formatDisplay(activeDateRange.start)} →{" "}
               {formatDisplay(activeDateRange.end)}
             </Text>
-            <Text style={styles.icon}>📅</Text>
+
+            <Svg width={18} height={18} viewBox="0 0 24 24">
+              <Path
+                d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
+                stroke="#64748B"
+                strokeWidth={1.5}
+              />
+            </Svg>
           </TouchableOpacity>
 
           {/* Manual refresh */}
@@ -374,7 +382,14 @@ const Overview = () => {
               <Text style={styles.dateInputText}>
                 {formatDisplay(pendingStart)}
               </Text>
-              <Text style={styles.dateInputIcon}>📅</Text>
+
+              <Svg width={18} height={18} viewBox="0 0 24 24">
+                <Path
+                  d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
+                  stroke="#64748B"
+                  strokeWidth={1.5}
+                />
+              </Svg>
             </TouchableOpacity>
 
             {activePicker === "start" && (
@@ -407,7 +422,14 @@ const Overview = () => {
               <Text style={styles.dateInputText}>
                 {formatDisplay(pendingEnd)}
               </Text>
-              <Text style={styles.dateInputIcon}>📅</Text>
+
+              <Svg width={18} height={18} viewBox="0 0 24 24">
+                <Path
+                  d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
+                  stroke="#64748B"
+                  strokeWidth={1.5}
+                />
+              </Svg>
             </TouchableOpacity>
 
             {activePicker === "end" && (
