@@ -21,10 +21,9 @@ import Svg, { Path } from "react-native-svg";
 // ─── DATE HELPERS ─────────────────────────────────────────────────────────────
 const getToday = () => new Date();
 
-const getOneMonthAgo = () => {
+const getStartOfCurrentMonth = () => {
   const d = new Date();
-  d.setMonth(d.getMonth() - 1);
-  return d;
+  return new Date(d.getFullYear(), d.getMonth(), 1);
 };
 
 const formatDisplay = (date) => {
@@ -50,6 +49,62 @@ const getEndOfDayISO = (date) => {
   }
   selected.setHours(23, 59, 59, 999);
   return selected.toISOString();
+};
+
+const getMonthRange = (monthIndex) => {
+  const start = new Date();
+  start.setMonth(monthIndex, 1);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setMonth(monthIndex + 1, 0);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+};
+
+const getQuarterRange = (quarterIndex) => {
+  const start = new Date();
+  start.setMonth(quarterIndex * 3, 1);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setMonth(quarterIndex * 3 + 3, 0);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+};
+
+const getHalfYearRange = (halfIndex) => {
+  const start = new Date();
+  start.setMonth(halfIndex * 6, 1);
+  start.setHours(0, 0, 0, 0);
+
+  const end = new Date();
+  end.setMonth(halfIndex * 6 + 6, 0);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
+};
+
+const getFinancialYearRange = () => {
+  const d = new Date();
+
+  let start;
+  let end;
+
+  if (d.getMonth() >= 3) {
+    start = new Date(d.getFullYear(), 3, 1);
+    end = new Date(d.getFullYear() + 1, 2, 31);
+  } else {
+    start = new Date(d.getFullYear() - 1, 3, 1);
+    end = new Date(d.getFullYear(), 2, 31);
+  }
+
+  start.setHours(0, 0, 0, 0);
+  end.setHours(23, 59, 59, 999);
+
+  return { start, end };
 };
 
 // ─── STAT CARD TEMPLATE ───────────────────────────────────────────────────────
@@ -82,7 +137,6 @@ const Overview = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [branchModalVisible, setBranchModalVisible] = useState(false);
 
-  // Stats
   const [stats, setStats] = useState(
     STAT_CARD_TEMPLATE.map((t) => ({
       title: t.title,
@@ -93,20 +147,83 @@ const Overview = () => {
   );
   const [statsLoading, setStatsLoading] = useState(false);
 
-  // Active date range — drives the API call
-  // Default: from = 1 month ago, to = today
   const [activeDateRange, setActiveDateRange] = useState({
-    start: getOneMonthAgo(),
+    start: getStartOfCurrentMonth(),
     end: getToday(),
   });
 
-  // ── Date picker modal ─────────────────────────────────────────────────────
   const [dateModalVisible, setDateModalVisible] = useState(false);
-  // In-modal pending values (only committed when user taps Apply)
-  const [pendingStart, setPendingStart] = useState(getOneMonthAgo());
+  const [pendingStart, setPendingStart] = useState(getStartOfCurrentMonth());
   const [pendingEnd, setPendingEnd] = useState(getToday());
-  // Which inline picker is expanded: "start" | "end" | null
   const [activePicker, setActivePicker] = useState(null);
+
+  const FILTER_PRESETS = {
+    monthly: "Monthly",
+    quarterly: "Quarterly",
+    halfYearly: "Half Yearly",
+    financialYear: "Financial Year",
+    custom: "Custom",
+  };
+
+  const MONTHS = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const QUARTERS = ["Q1", "Q2", "Q3", "Q4"];
+  const HALF_YEARS = ["H1", "H2"];
+
+  const [filterType, setFilterType] = useState("monthly");
+  const [selectedPeriod, setSelectedPeriod] = useState(new Date().getMonth());
+
+  const applyMonthFilter = (monthIndex) => {
+    const range = getMonthRange(monthIndex);
+
+    setPendingStart(range.start);
+    setPendingEnd(range.end);
+
+    setSelectedPeriod(monthIndex);
+    setFilterType("monthly");
+  };
+
+  const applyQuarterFilter = (quarterIndex) => {
+    const range = getQuarterRange(quarterIndex);
+
+    setPendingStart(range.start);
+    setPendingEnd(range.end);
+
+    setSelectedPeriod(quarterIndex);
+    setFilterType("quarterly");
+  };
+
+  const applyHalfYearFilter = (halfIndex) => {
+    const range = getHalfYearRange(halfIndex);
+
+    setPendingStart(range.start);
+    setPendingEnd(range.end);
+
+    setSelectedPeriod(halfIndex);
+    setFilterType("halfYearly");
+  };
+
+  const applyFinancialYearFilter = () => {
+    const range = getFinancialYearRange();
+
+    setPendingStart(range.start);
+    setPendingEnd(range.end);
+
+    setFilterType("financialYear");
+  };
 
   const openDateModal = () => {
     setPendingStart(new Date(activeDateRange.start));
@@ -128,7 +245,6 @@ const Overview = () => {
   const isApplyDisabled =
     !pendingStart || !pendingEnd || pendingStart > pendingEnd;
 
-  // ── Load userData ─────────────────────────────────────────────────────────
   useEffect(() => {
     const getUser = async () => {
       const data = await AsyncStorage.getItem("userData");
@@ -137,7 +253,6 @@ const Overview = () => {
     getUser();
   }, []);
 
-  // ── Fetch KPI stats ───────────────────────────────────────────────────────
   const fetchStats = useCallback(async () => {
     if (!userData || !selectedCompany) return;
     setStatsLoading(true);
@@ -166,7 +281,6 @@ const Overview = () => {
     fetchStats();
   }, [fetchStats]);
 
-  // ── Fetch companies ───────────────────────────────────────────────────────
   const fetchCompanies = async () => {
     if (!userData) return;
     try {
@@ -208,7 +322,6 @@ const Overview = () => {
     if (userData) fetchCompanies();
   }, [userData]);
 
-  // ── Branch update ─────────────────────────────────────────────────────────
   const updateBranch = async (companyData) => {
     try {
       const res = await axiosInstance.post(
@@ -254,16 +367,13 @@ const Overview = () => {
     ]);
   };
 
-  // ─── RENDER ───────────────────────────────────────────────────────────────
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <ScrollView style={styles.container}>
         <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
         <Header title="Overview" navigate={() => navigation.goBack()} />
 
-        {/* ── Filter Row ── */}
         <View style={styles.filterRow}>
-          {/* Branch dropdown */}
           <TouchableOpacity
             style={styles.dropdown}
             onPress={() => setBranchModalVisible(true)}
@@ -274,7 +384,6 @@ const Overview = () => {
             <Text style={styles.icon}>⌄</Text>
           </TouchableOpacity>
 
-          {/* Date range chip → opens date picker modal */}
           <TouchableOpacity style={styles.dateBox} onPress={openDateModal}>
             <Text style={styles.dateText} numberOfLines={1}>
               {formatDisplay(activeDateRange.start)} →{" "}
@@ -290,13 +399,11 @@ const Overview = () => {
             </Svg>
           </TouchableOpacity>
 
-          {/* Manual refresh */}
-          <TouchableOpacity style={styles.filterIcon} onPress={fetchStats}>
+          {/* <TouchableOpacity style={styles.filterIcon} onPress={fetchStats}>
             <Text style={styles.refreshIcon}>↻</Text>
-          </TouchableOpacity>
+          </TouchableOpacity> */}
         </View>
 
-        {/* ── Stat Cards ── */}
         {statsLoading ? (
           <View style={styles.loaderWrapper}>
             <ActivityIndicator size="large" color="#2563EB" />
@@ -311,9 +418,7 @@ const Overview = () => {
         )}
       </ScrollView>
 
-      {/* ══════════════════════════════════════════════════
-          BRANCH MODAL
-      ══════════════════════════════════════════════════ */}
+      {/* BRANCH MODAL */}
       <Modal visible={branchModalVisible} animationType="fade" transparent>
         <TouchableOpacity
           style={styles.modalOverlay}
@@ -343,9 +448,7 @@ const Overview = () => {
         </TouchableOpacity>
       </Modal>
 
-      {/* ══════════════════════════════════════════════════
-          DATE RANGE MODAL
-      ══════════════════════════════════════════════════ */}
+      {/* DATE RANGE MODAL */}
       <Modal visible={dateModalVisible} animationType="slide" transparent>
         <TouchableOpacity
           style={styles.modalOverlay}
@@ -357,7 +460,6 @@ const Overview = () => {
             style={styles.dateModalCard}
             onPress={(e) => e.stopPropagation()}
           >
-            {/* Header */}
             <View style={styles.dateModalHeader}>
               <Text style={styles.dateModalTitle}>Select Date Range</Text>
               <TouchableOpacity
@@ -368,85 +470,225 @@ const Overview = () => {
               </TouchableOpacity>
             </View>
 
-            {/* ── FROM DATE ── */}
-            <Text style={styles.dateLabel}>From Date</Text>
-            <TouchableOpacity
-              style={[
-                styles.dateInputBtn,
-                activePicker === "start" && styles.dateInputBtnActive,
-              ]}
-              onPress={() =>
-                setActivePicker(activePicker === "start" ? null : "start")
-              }
-            >
-              <Text style={styles.dateInputText}>
-                {formatDisplay(pendingStart)}
-              </Text>
+            <Text style={styles.dateLabel}>Filter Type</Text>
 
-              <Svg width={18} height={18} viewBox="0 0 24 24">
-                <Path
-                  d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
-                  stroke="#64748B"
-                  strokeWidth={1.5}
-                />
-              </Svg>
-            </TouchableOpacity>
+            <View style={styles.filterTypeContainer}>
+              {Object.entries(FILTER_PRESETS).map(([key, label]) => (
+                <TouchableOpacity
+                  key={key}
+                  style={[
+                    styles.filterTypeBtn,
+                    filterType === key && styles.filterTypeBtnActive,
+                  ]}
+                  onPress={() => {
+                    setFilterType(key);
 
-            {activePicker === "start" && (
-              <DateTimePicker
-                value={pendingStart}
-                mode="date"
-                display={Platform.OS === "ios" ? "inline" : "calendar"}
-                maximumDate={pendingEnd}
-                onChange={(_, date) => {
-                  if (date) {
-                    setPendingStart(date);
-                    if (Platform.OS === "android") setActivePicker(null);
-                  }
-                }}
-                style={styles.datePicker}
-              />
+                    if (key === "financialYear") {
+                      applyFinancialYearFilter();
+                    }
+                  }}
+                >
+                  <Text
+                    style={[
+                      styles.filterTypeText,
+                      filterType === key && styles.filterTypeTextActive,
+                    ]}
+                  >
+                    {label}
+                  </Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* ── MONTHLY ── */}
+            {filterType === "monthly" && (
+              <>
+                <Text style={[styles.dateLabel, { marginTop: 18 }]}>
+                  Select Month
+                </Text>
+
+                <View style={styles.periodGrid}>
+                  {MONTHS.map((month, idx) => (
+                    <TouchableOpacity
+                      key={month}
+                      style={[
+                        styles.periodBtn,
+                        selectedPeriod === idx && styles.periodBtnActive,
+                      ]}
+                      onPress={() => applyMonthFilter(idx)}
+                    >
+                      <Text
+                        style={[
+                          styles.periodBtnText,
+                          selectedPeriod === idx && styles.periodBtnTextActive,
+                        ]}
+                      >
+                        {month}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
             )}
 
-            {/* ── TO DATE ── */}
-            <Text style={[styles.dateLabel, { marginTop: 18 }]}>To Date</Text>
-            <TouchableOpacity
-              style={[
-                styles.dateInputBtn,
-                activePicker === "end" && styles.dateInputBtnActive,
-              ]}
-              onPress={() =>
-                setActivePicker(activePicker === "end" ? null : "end")
-              }
-            >
-              <Text style={styles.dateInputText}>
-                {formatDisplay(pendingEnd)}
-              </Text>
+            {/* ── QUARTERLY ── */}
+            {filterType === "quarterly" && (
+              <>
+                <Text style={[styles.dateLabel, { marginTop: 18 }]}>
+                  Select Quarter
+                </Text>
 
-              <Svg width={18} height={18} viewBox="0 0 24 24">
-                <Path
-                  d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
-                  stroke="#64748B"
-                  strokeWidth={1.5}
-                />
-              </Svg>
-            </TouchableOpacity>
+                <View style={styles.periodGrid}>
+                  {QUARTERS.map((quarter, idx) => (
+                    <TouchableOpacity
+                      key={quarter}
+                      style={[
+                        styles.periodBtn,
+                        selectedPeriod === idx && styles.periodBtnActive,
+                      ]}
+                      onPress={() => applyQuarterFilter(idx)}
+                    >
+                      <Text
+                        style={[
+                          styles.periodBtnText,
+                          selectedPeriod === idx && styles.periodBtnTextActive,
+                        ]}
+                      >
+                        {quarter}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
 
-            {activePicker === "end" && (
-              <DateTimePicker
-                value={pendingEnd}
-                mode="date"
-                display={Platform.OS === "ios" ? "inline" : "calendar"}
-                minimumDate={pendingStart}
-                maximumDate={getToday()}
-                onChange={(_, date) => {
-                  if (date) {
-                    setPendingEnd(date);
-                    if (Platform.OS === "android") setActivePicker(null);
+            {/* ── HALF YEARLY ── */}
+            {filterType === "halfYearly" && (
+              <>
+                <Text style={[styles.dateLabel, { marginTop: 18 }]}>
+                  Select Half Year
+                </Text>
+
+                <View style={styles.periodGrid}>
+                  {HALF_YEARS.map((half, idx) => (
+                    <TouchableOpacity
+                      key={half}
+                      style={[
+                        styles.periodBtn,
+                        selectedPeriod === idx && styles.periodBtnActive,
+                      ]}
+                      onPress={() => applyHalfYearFilter(idx)}
+                    >
+                      <Text
+                        style={[
+                          styles.periodBtnText,
+                          selectedPeriod === idx && styles.periodBtnTextActive,
+                        ]}
+                      >
+                        {half}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </>
+            )}
+
+            {/* ── CUSTOM DATE ── */}
+            {filterType === "custom" && (
+              <>
+                {/* FROM DATE */}
+                <Text style={[styles.dateLabel, { marginTop: 18 }]}>
+                  From Date
+                </Text>
+
+                <TouchableOpacity
+                  style={[
+                    styles.dateInputBtn,
+                    activePicker === "start" && styles.dateInputBtnActive,
+                  ]}
+                  onPress={() =>
+                    setActivePicker(activePicker === "start" ? null : "start")
                   }
-                }}
-                style={styles.datePicker}
-              />
+                >
+                  <Text style={styles.dateInputText}>
+                    {formatDisplay(pendingStart)}
+                  </Text>
+
+                  <Svg width={18} height={18} viewBox="0 0 24 24">
+                    <Path
+                      d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
+                      stroke="#64748B"
+                      strokeWidth={1.5}
+                    />
+                  </Svg>
+                </TouchableOpacity>
+
+                {activePicker === "start" && (
+                  <DateTimePicker
+                    value={pendingStart}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "inline" : "calendar"}
+                    maximumDate={pendingEnd}
+                    onChange={(_, date) => {
+                      if (date) {
+                        setPendingStart(date);
+
+                        if (Platform.OS === "android") {
+                          setActivePicker(null);
+                        }
+                      }
+                    }}
+                    style={styles.datePicker}
+                  />
+                )}
+
+                {/* TO DATE */}
+                <Text style={[styles.dateLabel, { marginTop: 18 }]}>
+                  To Date
+                </Text>
+
+                <TouchableOpacity
+                  style={[
+                    styles.dateInputBtn,
+                    activePicker === "end" && styles.dateInputBtnActive,
+                  ]}
+                  onPress={() =>
+                    setActivePicker(activePicker === "end" ? null : "end")
+                  }
+                >
+                  <Text style={styles.dateInputText}>
+                    {formatDisplay(pendingEnd)}
+                  </Text>
+
+                  <Svg width={18} height={18} viewBox="0 0 24 24">
+                    <Path
+                      d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
+                      stroke="#64748B"
+                      strokeWidth={1.5}
+                    />
+                  </Svg>
+                </TouchableOpacity>
+
+                {activePicker === "end" && (
+                  <DateTimePicker
+                    value={pendingEnd}
+                    mode="date"
+                    display={Platform.OS === "ios" ? "inline" : "calendar"}
+                    minimumDate={pendingStart}
+                    maximumDate={getToday()}
+                    onChange={(_, date) => {
+                      if (date) {
+                        setPendingEnd(date);
+
+                        if (Platform.OS === "android") {
+                          setActivePicker(null);
+                        }
+                      }
+                    }}
+                    style={styles.datePicker}
+                  />
+                )}
+              </>
             )}
 
             {/* Validation hint */}
@@ -674,4 +916,63 @@ const styles = {
   },
   dateApplyBtnDisabled: { backgroundColor: "#93C5FD" },
   dateApplyText: { fontSize: 14, fontWeight: "600", color: "#fff" },
+  filterTypeContainer: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+
+  filterTypeBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+  },
+
+  filterTypeBtnActive: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#2563EB",
+  },
+
+  filterTypeText: {
+    fontSize: 13,
+    color: "#374151",
+    fontWeight: "500",
+  },
+
+  filterTypeTextActive: {
+    color: "#2563EB",
+  },
+
+  periodGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 8,
+  },
+
+  periodBtn: {
+    paddingVertical: 10,
+    paddingHorizontal: 12,
+    borderRadius: 10,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    backgroundColor: "#fff",
+  },
+
+  periodBtnActive: {
+    backgroundColor: "#EFF6FF",
+    borderColor: "#2563EB",
+  },
+
+  periodBtnText: {
+    fontSize: 12,
+    color: "#374151",
+  },
+
+  periodBtnTextActive: {
+    color: "#2563EB",
+    fontWeight: "600",
+  },
 };

@@ -284,7 +284,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
       >
         <View style={styles.overlay}>
           <View style={[styles.container, { width: width - 32 }]}>
-            <View style={styles.dragHandle} />
+            {/* <View style={styles.dragHandle} /> */}
 
             <ScrollView
               keyboardShouldPersistTaps="handled"

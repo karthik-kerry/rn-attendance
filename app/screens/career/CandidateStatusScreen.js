@@ -64,6 +64,24 @@ export default function CandidateStatusScreen() {
     });
   };
 
+  const formatDuration = (durationString) => {
+    if (!durationString) return "";
+    const parts = durationString.match(
+      /(\d+)\s+days?\s+(\d+)\s+hours?\s+(\d+)\s+minutes?\s+(\d+)\s+seconds?/,
+    );
+    if (!parts) return durationString;
+    const days = parseInt(parts[1]);
+    const hours = parseInt(parts[2]);
+    const minutes = parseInt(parts[3]);
+    const seconds = parseInt(parts[4]);
+    const result = [];
+    if (days > 0) result.push(`${days}d`);
+    if (hours > 0) result.push(`${hours}h`);
+    if (minutes > 0) result.push(`${minutes}m`);
+    if (seconds > 0) result.push(`${seconds}s`);
+    return result.join(" ") || "0s";
+  };
+
   const fetchStatusTimeline = async () => {
     try {
       if (!userData) return;
@@ -74,9 +92,9 @@ export default function CandidateStatusScreen() {
       let endpoint = "";
 
       if (type === "job") {
-        endpoint = `${base_url}/career/career_jobtravelling_canjob_r/${userData.user_id}/${companyId}/?jobposting=${jobId}`;
+        endpoint = `${base_url}/career/career_jobtravelling_canjob_r/${userData.user_id}/${companyId}/?candidate=${candidateId}&jobposting=${jobId}`;
       } else if (type === "candidate") {
-        endpoint = `${base_url}/career/career_jobtravelling_canjob_r/${userData.user_id}/${companyId}/?candidate=${candidateId}`;
+        endpoint = `${base_url}/career/career_jobtravelling_canjob_r/${userData.user_id}/${companyId}/?candidate=${candidateId}&jobposting=${jobId}`;
       }
 
       const res = await axiosInstance.get(endpoint);
@@ -106,6 +124,7 @@ export default function CandidateStatusScreen() {
           status: item.job_posting_status_name,
           date: item.updated_at,
           feedback: item.remarks,
+          duration: formatDuration(item.duration),
         }))
         .sort((a, b) => new Date(b.date) - new Date(a.date));
 
@@ -282,10 +301,9 @@ export default function CandidateStatusScreen() {
           {/* TIMELINE */}
           <Text style={styles.timelineTitle}>Status Timeline:</Text>
 
-          <ScrollView showsVerticalScrollIndicator={false}>
+          {/* <ScrollView showsVerticalScrollIndicator={false}>
             {timelineData.map((item, index) => (
               <View key={index} style={styles.timelineItem}>
-                {/* LEFT SIDE */}
                 <View style={styles.timelineLeft}>
                   <View style={styles.dot} />
                   {index !== timelineData.length - 1 && (
@@ -293,7 +311,6 @@ export default function CandidateStatusScreen() {
                   )}
                 </View>
 
-                {/* CONTENT */}
                 <View style={styles.timelineContent}>
                   <Text style={styles.timelineText}>
                     <Text style={styles.bold}>{item.status}</Text> –{" "}
@@ -308,6 +325,50 @@ export default function CandidateStatusScreen() {
                 </View>
               </View>
             ))}
+          </ScrollView> */}
+          <ScrollView showsVerticalScrollIndicator={false}>
+            {timelineData.map((item, index) => {
+              const isLast = index === timelineData.length - 1;
+
+              return (
+                <View key={index} style={styles.timelineRow}>
+                  {/* LEFT - DURATION */}
+                  <View style={styles.durationContainer}>
+                    {!isLast && item.duration && (
+                      <Text style={styles.durationText}>
+                        Duration: {item.duration}
+                      </Text>
+                    )}
+                  </View>
+
+                  {/* CENTER - LINE + DOT */}
+                  <View style={styles.centerContainer}>
+                    <View style={styles.dot} />
+
+                    {!isLast && <View style={styles.line} />}
+                  </View>
+
+                  {/* RIGHT - CONTENT */}
+                  <View style={styles.timelineContent}>
+                    {/* STATUS */}
+                    <Text style={styles.statusText}>{item.status}</Text>
+
+                    {/* DATE BELOW STATUS */}
+                    <Text style={styles.dateText}>{formatDate(item.date)}</Text>
+
+                    {/* FEEDBACK */}
+                    {item.feedback && (
+                      <View style={styles.feedbackBox}>
+                        <Text style={styles.feedbackText}>
+                          <Text style={styles.feedbackLabel}>Feedback:</Text>{" "}
+                          {item.feedback}
+                        </Text>
+                      </View>
+                    )}
+                  </View>
+                </View>
+              );
+            })}
           </ScrollView>
         </View>
 
@@ -415,20 +476,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
 
-  dot: {
-    width: 10,
-    height: 10,
-    borderRadius: 5,
-    backgroundColor: "#2563EB",
-  },
-
-  line: {
-    width: 2,
-    flex: 1,
-    backgroundColor: "#D1D5DB",
-    marginTop: 2,
-  },
-
   timelineContent: {
     flex: 1,
     paddingLeft: 10,
@@ -483,5 +530,84 @@ const styles = StyleSheet.create({
   updateText: {
     color: "#fff",
     fontWeight: "600",
+  },
+  timelineRow: {
+    flexDirection: "row",
+    minHeight: 110,
+  },
+
+  durationContainer: {
+    width: 95,
+    alignItems: "flex-end",
+    paddingTop: 35,
+    paddingRight: 10,
+    alignSelf: "center",
+  },
+
+  durationText: {
+    fontSize: 12,
+    color: "#6b7280",
+    fontWeight: "500",
+    textAlign: "right",
+  },
+
+  centerContainer: {
+    width: 30,
+    alignItems: "center",
+    position: "relative",
+  },
+
+  dot: {
+    width: 14,
+    height: 14,
+    borderRadius: 7,
+    backgroundColor: "#1677ff",
+    marginTop: 10,
+    zIndex: 2,
+    borderWidth: 3,
+    borderColor: "#fff",
+  },
+
+  line: {
+    position: "absolute",
+    top: 24,
+    width: 2,
+    bottom: 0,
+    backgroundColor: "#d1d5db",
+  },
+
+  timelineContent: {
+    flex: 1,
+    paddingBottom: 28,
+  },
+
+  statusText: {
+    fontSize: 15,
+    fontWeight: "700",
+    color: "#111827",
+  },
+
+  dateText: {
+    marginTop: 4,
+    fontSize: 12,
+    color: "#6b7280",
+  },
+
+  feedbackBox: {
+    marginTop: 8,
+    backgroundColor: "#f9fafb",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 8,
+    padding: 10,
+  },
+
+  feedbackText: {
+    fontSize: 13,
+    color: "#374151",
+  },
+
+  feedbackLabel: {
+    fontWeight: "700",
   },
 });

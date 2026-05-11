@@ -155,7 +155,7 @@ const CandidateListing = () => {
     const fetchCandidates = async () => {
       setLoading(true);
       try {
-        const endpoint = `${base_url}/career/career_candidate_cr/${userData.user_id}/${selectedCompany.id}/?branch=${selectedCompany.branchid}`;
+        const endpoint = `${base_url}/career/career_candidate_cru/${userData.user_id}/${selectedCompany.id}/?branch=${selectedCompany.branchid}`;
         const res = await axiosInstance.get(endpoint);
 
         setCandidates(res.data || []);
