@@ -341,9 +341,9 @@ const CandidateDetails = () => {
               <DownloadIcon />
               <Text style={styles.downloadText}>Download</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.updateBtn}>
+            {/* <TouchableOpacity style={styles.updateBtn}>
               <Text style={styles.updateText}>Update</Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
           </View>
         </View>
 

@@ -108,24 +108,24 @@ const JobDetail = () => {
     }
   };
 
-  const fields = [
-    {
-      label: "Closed Date",
-      value: job.closed_date?.split("T")[0],
-    },
-    {
-      label: "Openings",
-      value: String(job.no_of_posting),
-    },
-    {
-      label: "Priority",
-      value: job.priority,
-    },
-    {
-      label: "Status",
-      value: job.is_active ? "Active" : "Inactive",
-    },
-  ];
+  // const fields = [
+  //   {
+  //     label: "Closed Date",
+  //     value: job.closed_date?.split("T")[0],
+  //   },
+  //   {
+  //     label: "Openings",
+  //     value: String(job.no_of_posting),
+  //   },
+  //   {
+  //     label: "Priority",
+  //     value: job.priority,
+  //   },
+  //   {
+  //     label: "Status",
+  //     value: job.is_active ? "Active" : "Inactive",
+  //   },
+  // ];
 
   const formatExperience = (exp) => {
     const num = parseFloat(exp);
@@ -222,7 +222,7 @@ const JobDetail = () => {
         </View>
 
         {/* Fields */}
-        <View>
+        {/* <View>
           {fields
             .reduce((rows, item, index) => {
               if (index % 2 === 0) rows.push([item]);
@@ -264,7 +264,7 @@ const JobDetail = () => {
                 ))}
               </View>
             ))}
-        </View>
+        </View> */}
 
         {/* Candidate Section */}
         <View style={{ marginTop: 10 }}>
@@ -466,7 +466,7 @@ const JobDetail = () => {
       </ScrollView>
 
       {/* Footer Buttons */}
-      <View style={styles.footer}>
+      {/* <View style={styles.footer}>
         <TouchableOpacity style={styles.cancelBtn}>
           <Text>Cancel</Text>
         </TouchableOpacity>
@@ -474,7 +474,7 @@ const JobDetail = () => {
         <TouchableOpacity style={styles.updateBtn}>
           <Text style={{ color: "#fff" }}>Update</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
 
       {/* Modal */}
       <AddCandidateModal

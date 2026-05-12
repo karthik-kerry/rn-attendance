@@ -56,17 +56,36 @@ const Profile = () => {
   }, [userData]);
 
   const handleLogout = async () => {
-    try {
-      const endpoint = `${base_url}/core/logout/`;
+    Alert.alert("Confirm Logout", "Are you sure you want to logout?", [
+      {
+        text: "Cancel",
+        style: "cancel",
+      },
+      {
+        text: "Logout",
+        style: "destructive",
+        onPress: async () => {
+          try {
+            const endpoint = `${base_url}/core/logout/`;
 
-      await axiosInstance.post(endpoint, {});
-      await AsyncStorage.removeItem("userData");
-      Alert.alert("Logout successful");
-      navigation.navigate("login");
-    } catch (error) {
-      console.log("Error during logout:", error);
-      Alert.alert("Error during logout:", error.response.data.message);
-    }
+            await axiosInstance.post(endpoint, {});
+
+            await AsyncStorage.removeItem("userData");
+
+            Alert.alert("Logout successful");
+
+            navigation.navigate("login");
+          } catch (error) {
+            console.log("Error during logout:", error);
+
+            Alert.alert(
+              "Logout Failed",
+              error?.response?.data?.message || "Something went wrong",
+            );
+          }
+        },
+      },
+    ]);
   };
 
   return (

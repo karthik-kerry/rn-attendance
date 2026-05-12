@@ -390,11 +390,38 @@ const Overview = () => {
               {formatDisplay(activeDateRange.end)}
             </Text>
 
-            <Svg width={18} height={18} viewBox="0 0 24 24">
+            {/* <Svg width={18} height={18} viewBox="0 0 24 24">
               <Path
                 d="M7 2v2M17 2v2M3 10h18M5 6h14a2 2 0 012 2v12a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2z"
                 stroke="#64748B"
                 strokeWidth={1.5}
+              />
+            </Svg> */}
+            <Svg width={20} height={20} viewBox="0 0 24 30" fill="none">
+              <Path
+                d="M8 2V5"
+                stroke="#64748B"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+              />
+              <Path
+                d="M16 2V5"
+                stroke="#64748B"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+              />
+              <Path
+                d="M3 9H21"
+                stroke="#64748B"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+              />
+              <Path
+                d="M5 5H19C20.1046 5 21 5.89543 21 7V19C21 20.1046 20.1046 21 19 21H5C3.89543 21 3 20.1046 3 19V7C3 5.89543 3.89543 5 5 5Z"
+                stroke="#64748B"
+                strokeWidth={1.8}
+                strokeLinecap="round"
+                strokeLinejoin="round"
               />
             </Svg>
           </TouchableOpacity>
@@ -691,14 +718,12 @@ const Overview = () => {
               </>
             )}
 
-            {/* Validation hint */}
             {pendingStart > pendingEnd && (
               <Text style={styles.dateError}>
                 From date cannot be later than To date.
               </Text>
             )}
 
-            {/* Cancel / Apply */}
             <View style={styles.dateModalActions}>
               <TouchableOpacity
                 style={styles.dateCancelBtn}
@@ -724,7 +749,6 @@ const Overview = () => {
   );
 };
 
-// ─── STAT CARD ────────────────────────────────────────────────────────────────
 const StatCard = ({ item }) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
@@ -736,7 +760,16 @@ const StatCard = ({ item }) => (
       <Text
         style={[styles.changeText, { color: item.up ? "#16a34a" : "#dc2626" }]}
       >
-        {item.up ? "↑" : "↓"} {item.change}%
+        {item.title !== "Yet To Join" && (
+          <Text
+            style={[
+              styles.changeText,
+              { color: item.up ? "#16a34a" : "#dc2626" },
+            ]}
+          >
+            {item.up ? "↑" : "↓"} {String(item.change).replace(/[+-]/, "")}%
+          </Text>
+        )}
       </Text>
     </View>
   </View>
@@ -744,17 +777,16 @@ const StatCard = ({ item }) => (
 
 export default Overview;
 
-// ─── STYLES ───────────────────────────────────────────────────────────────────
 const styles = {
   container: { flex: 1, backgroundColor: "#f5f7fb" },
 
-  // ── Filter row ──
   filterRow: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
     marginTop: 20,
   },
+
   dropdown: {
     flex: 1,
     backgroundColor: "#fff",
@@ -766,6 +798,7 @@ const styles = {
     justifyContent: "space-between",
     marginRight: 8,
   },
+
   dropdownText: { fontSize: 14, color: "#333", flexShrink: 1, marginRight: 4 },
   dateBox: {
     flex: 1.4,
@@ -790,11 +823,9 @@ const styles = {
   refreshIcon: { fontSize: 20, color: "#2563EB" },
   icon: { fontSize: 14, color: "#888" },
 
-  // ── Loader ──
   loaderWrapper: { alignItems: "center", paddingVertical: 40 },
   loaderText: { fontSize: 14, color: "#888", marginTop: 12 },
 
-  // ── Stat cards ──
   cardContainer: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -827,7 +858,6 @@ const styles = {
   cardValue: { fontSize: 22, fontWeight: "bold", color: "#111" },
   changeText: { fontSize: 13, fontWeight: "500" },
 
-  // ── Shared modal overlay ──
   modalOverlay: {
     flex: 1,
     justifyContent: "center",
@@ -846,7 +876,6 @@ const styles = {
   },
   branchItemText: { fontSize: 14, color: "#333" },
 
-  // ── Date range modal ──
   dateModalCard: {
     backgroundColor: "#fff",
     borderRadius: 20,
