@@ -164,7 +164,10 @@ const JobDetail = () => {
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
 
-      <Header title="Job Details" navigate={() => navigation.goBack()} />
+      <Header
+        title="Job Position Details"
+        navigate={() => navigation.goBack()}
+      />
 
       <ScrollView
         style={{ marginVertical: 20 }}

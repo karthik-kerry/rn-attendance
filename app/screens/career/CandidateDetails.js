@@ -353,7 +353,7 @@ const CandidateDetails = () => {
         {/* ── Job List Section ── */}
         <View style={styles.section}>
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Job List</Text>
+            <Text style={styles.sectionTitle}>Job Position List</Text>
             <TouchableOpacity
               style={styles.addJobBtn}
               onPress={() => setShowModal(true)}

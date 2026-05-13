@@ -51,7 +51,7 @@ const JobListing = () => {
   return (
     <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
-      <Header title="Job List" navigate={() => navigation.goBack()} />
+      <Header title="Job Position List" navigate={() => navigation.goBack()} />
 
       {/* Search Bar */}
 

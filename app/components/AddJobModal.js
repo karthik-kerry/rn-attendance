@@ -250,7 +250,7 @@ const AddJobModal = ({
         },
       );
 
-      Alert.alert("Success", "Job added successfully");
+      Alert.alert("Success", "Job Position added successfully");
       onSubmit && onSubmit();
     } catch (err) {
       console.log("AddJobModal submit error", err);
@@ -502,7 +502,7 @@ const AddJobModal = ({
                 {loading ? (
                   <ActivityIndicator color="#fff" size="small" />
                 ) : (
-                  <Text style={styles.submitText}>Create Job</Text>
+                  <Text style={styles.submitText}>Submit</Text>
                 )}
               </TouchableOpacity>
             </View>
