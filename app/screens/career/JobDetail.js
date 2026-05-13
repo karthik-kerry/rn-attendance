@@ -189,21 +189,23 @@ const JobDetail = () => {
           >
             <Text
               style={{
-                backgroundColor: job?.is_active ? "#107B1D1F" : "#FF00001F",
+                backgroundColor: job?.job_staus_name
+                  ? "#107B1D1F"
+                  : "#FF00001F",
                 paddingHorizontal: 12,
                 paddingVertical: 3,
                 borderRadius: 40,
                 alignItems: "flex-start",
                 justifyContent: "center",
                 fontSize: 16,
-                color: job?.is_active ? "#107B1D" : "#FF0000",
+                color: job?.job_staus_name ? "#107B1D" : "#FF0000",
                 fontWeight: 600,
               }}
             >
-              {job?.is_active ? "Active" : "Inactive"}
+              {job?.job_staus_name ? job?.job_staus_name : "Update Status"}
             </Text>
             <Text style={{ fontSize: 14, color: "#4D5561", fontWeight: 400 }}>
-              {job?.cmp_name}{" "}
+              {job?.cmp_name}
             </Text>
           </View>
           {jobInfo.map((item, index) => (
