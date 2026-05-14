@@ -46,21 +46,43 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   const [sourceOfHiring, setSourceOfHiring] = useState([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const initialFormState = {
+    candidate: null,
+    status: null,
+    designation: "",
+    reportTo: null,
+    finalCTC: "",
+    doj: new Date(),
+    level: null,
+    payJV: null,
+    remarks: "",
+    max_days: "",
+    tat_date_start: "",
+    source_of_hiring: null,
+    budget_vs_finalctc: "",
+  };
+
   const updateField = (key, value) => {
     setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const resetForm = () => {
+    setForm({ ...initialFormState });
+    setShowDate(false);
+    setIsSubmitting(false);
   };
 
   useEffect(() => {
     if (visible && job) {
       setForm((prev) => ({
-        ...prev,
+        ...initialFormState,
         max_days: job.max_days ? String(job.max_days) : "",
         tat_date_start: job.tat_date
           ? new Date(job.tat_date).toLocaleDateString("en-GB")
           : "",
-        source_of_hiring: null,
-        budget_vs_finalctc: "",
       }));
+    } else if (!visible) {
+      resetForm();
     }
   }, [visible, job]);
 
@@ -278,7 +300,7 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
   return (
     <Modal transparent visible={visible} animationType="slide">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
         style={{ flex: 1 }}
       >
@@ -307,13 +329,12 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
                 searchPlaceholder="Search..."
                 value={form.candidate}
                 containerStyle={styles.dropdownContainer}
+                keyboardAvoiding={false}
                 renderItem={(item) => (
-                  <View style={styles.customItem}>
-                    <Text style={styles.customItemText}>{item.label}</Text>
+                  <View style={styles.dropdownItem}>
+                    <Text style={styles.dropdownItemText}>{item.label}</Text>
                   </View>
                 )}
-                activeColor="#E0F2FE"
-                maxHeight={300}
                 onChange={handleCandidateChange} // ← updated handler
               />
 
@@ -331,12 +352,10 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
                 onChange={(item) => updateField("status", item.value)}
                 containerStyle={styles.dropdownContainer}
                 renderItem={(item) => (
-                  <View style={styles.customItem}>
-                    <Text style={styles.customItemText}>{item.label}</Text>
+                  <View style={styles.dropdownItem}>
+                    <Text style={styles.dropdownItemText}>{item.label}</Text>
                   </View>
                 )}
-                activeColor="#E0F2FE"
-                maxHeight={300}
               />
 
               {/* Designation */}
@@ -362,12 +381,10 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
                 value={form.reportTo}
                 containerStyle={styles.dropdownContainer}
                 renderItem={(item) => (
-                  <View style={styles.customItem}>
-                    <Text style={styles.customItemText}>{item.label}</Text>
+                  <View style={styles.dropdownItem}>
+                    <Text style={styles.dropdownItemText}>{item.label}</Text>
                   </View>
                 )}
-                activeColor="#E0F2FE"
-                maxHeight={300}
                 onChange={(item) => updateField("reportTo", item.value)}
               />
 
@@ -420,12 +437,10 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
                 value={form.level}
                 containerStyle={styles.dropdownContainer}
                 renderItem={(item) => (
-                  <View style={styles.customItem}>
-                    <Text style={styles.customItemText}>{item.label}</Text>
+                  <View style={styles.dropdownItem}>
+                    <Text style={styles.dropdownItemText}>{item.label}</Text>
                   </View>
                 )}
-                activeColor="#E0F2FE"
-                maxHeight={300}
                 onChange={(item) => updateField("level", item.value)}
               />
 
@@ -444,12 +459,10 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
                 value={form.payJV}
                 containerStyle={styles.dropdownContainer}
                 renderItem={(item) => (
-                  <View style={styles.customItem}>
-                    <Text style={styles.customItemText}>{item.label}</Text>
+                  <View style={styles.dropdownItem}>
+                    <Text style={styles.dropdownItemText}>{item.label}</Text>
                   </View>
                 )}
-                activeColor="#E0F2FE"
-                maxHeight={300}
                 onChange={(item) => updateField("payJV", item.value)}
               />
 
@@ -499,16 +512,25 @@ const AddCandidateModal = ({ visible, onClose, onSubmit, jobId, job }) => {
 
             {/* Buttons */}
             <View style={styles.footer}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  resetForm();
+                  onClose && onClose();
+                }}
+              >
                 <Text>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
-                onPress={handleSubmit}
+                onPress={() => {
+                  resetForm();
+                  handleSubmit();
+                }}
                 disabled={isSubmitting}
               >
                 <Text style={{ color: "#fff" }}>
-                  {isSubmitting ? "Creating..." : "Create Candidate"}
+                  {isSubmitting ? "Creating..." : "Create"}
                 </Text>
               </TouchableOpacity>
             </View>
@@ -524,7 +546,7 @@ export default AddCandidateModal;
 const styles = {
   overlay: {
     flex: 1,
-    backgroundColor: "#00000060",
+    backgroundColor: "#00000050",
     justifyContent: "center",
     alignItems: "center",
   },
@@ -535,7 +557,7 @@ const styles = {
     paddingTop: 12,
     paddingBottom: 20,
     maxHeight: "92%",
-    flex: 1,
+    // flex: 1,
   },
   dragHandle: {
     width: 40,
@@ -569,7 +591,7 @@ const styles = {
     color: "#111827",
   },
   disabledInput: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#94acc42a",
     color: "#94A3B8",
   },
   dropdown: {
@@ -581,6 +603,28 @@ const styles = {
     borderWidth: 1,
     borderColor: "#E2E8F0",
   },
+  dropdownContainer: {
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    backgroundColor: "#F8FBFF",
+    elevation: 4,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    marginTop: -30,
+  },
+  dropdownItem: {
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+    backgroundColor: "#F8FBFF",
+  },
+  dropdownItemText: {
+    fontSize: 14,
+    color: "#111827",
+  },
+
   inputRow: {
     borderWidth: 1,
     borderColor: "#E2E8F0",
@@ -620,7 +664,7 @@ const styles = {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    marginTop: -30,
+    // marginTop: -30,
   },
   customItem: {
     paddingVertical: 10,

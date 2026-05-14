@@ -158,6 +158,7 @@ const JobListing = () => {
                       width: "100%",
                       alignItems: "center",
                       justifyContent: "space-between",
+                      flexWrap: "wrap",
                     }}
                   >
                     <Text

@@ -170,6 +170,7 @@ const JobDetail = () => {
       />
 
       <ScrollView
+        scrollEnabled={!showModal}
         style={{ marginVertical: 20 }}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ gap: 20 }}

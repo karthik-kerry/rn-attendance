@@ -45,7 +45,7 @@ const AddJobModal = ({
 }) => {
   const { width } = Dimensions.get("window");
 
-  const [form, setForm] = useState({
+  const initialFormState = {
     jobposting: null,
     job_candidate_status: null,
     designation: "",
@@ -55,12 +55,12 @@ const AddJobModal = ({
     level: null,
     page_jv: null,
     remarks: "",
-    // Auto-filled / disabled
     max_days: "",
     tat_date_start: "",
     source_of_hiring: candidate?.source_or_hiring ?? null,
     budget_vs_finialctc: "",
-  });
+  };
+  const [form, setForm] = useState(initialFormState);
 
   const [showDate, setShowDate] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -75,23 +75,18 @@ const AddJobModal = ({
   const updateField = (key, value) =>
     setForm((prev) => ({ ...prev, [key]: value }));
 
+  const resetForm = () => {
+    setForm({
+      ...initialFormState,
+      source_of_hiring: candidate?.source_or_hiring ?? null,
+    });
+    setShowDate(false);
+    setLoading(false);
+  };
+
   useEffect(() => {
     if (visible) {
-      setForm({
-        jobposting: null,
-        job_candidate_status: null,
-        designation: "",
-        report_to: null,
-        final_ctc: "",
-        doj: new Date(),
-        level: null,
-        page_jv: null,
-        remarks: "",
-        max_days: "",
-        tat_date_start: "",
-        source_of_hiring: candidate?.source_or_hiring ?? null,
-        budget_vs_finialctc: "",
-      });
+      resetForm();
     }
   }, [visible]);
 
@@ -266,13 +261,13 @@ const AddJobModal = ({
   return (
     <Modal transparent visible={visible} animationType="slide">
       <KeyboardAvoidingView
-        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        behavior={Platform.OS === "ios" ? "padding" : undefined}
         keyboardVerticalOffset={Platform.OS === "ios" ? 40 : 0}
         style={{ flex: 1 }}
       >
         <View style={styles.overlay}>
           <View style={[styles.container, { width: width - 32 }]}>
-            <View style={styles.dragHandle} />
+            {/* <View style={styles.dragHandle} /> */}
 
             <ScrollView
               keyboardShouldPersistTaps="handled"
@@ -491,12 +486,21 @@ const AddJobModal = ({
 
             {/* ── Footer Buttons ── */}
             <View style={styles.footer}>
-              <TouchableOpacity style={styles.cancelBtn} onPress={onClose}>
+              <TouchableOpacity
+                style={styles.cancelBtn}
+                onPress={() => {
+                  resetForm();
+                  onClose && onClose();
+                }}
+              >
                 <Text style={styles.cancelText}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.submitBtn, loading && { opacity: 0.7 }]}
-                onPress={handleSubmit}
+                onPress={async () => {
+                  await handleSubmit();
+                  resetForm();
+                }}
                 disabled={loading}
               >
                 {loading ? (
@@ -565,7 +569,7 @@ const styles = {
     color: "#111827",
   },
   disabledInput: {
-    backgroundColor: "#F8FAFC",
+    backgroundColor: "#94acc42a",
     color: "#94A3B8",
   },
   dropdown: {
@@ -587,7 +591,6 @@ const styles = {
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.08,
     shadowRadius: 8,
-    marginTop: -30,
   },
   dropdownItem: {
     paddingVertical: 10,
