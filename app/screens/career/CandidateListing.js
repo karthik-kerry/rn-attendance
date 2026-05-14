@@ -341,6 +341,7 @@ const styles = {
   cardRow: {
     flexDirection: "row",
     justifyContent: "space-between",
+    flexWrap: "wrap",
     alignItems: "center",
   },
   cardName: {
