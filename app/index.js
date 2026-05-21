@@ -31,6 +31,7 @@ import Dashboard from "./screens/Dashboard";
 import JobDetail from "./screens/career/JobDetail";
 import CandidateDetails from "./screens/career/CandidateDetails";
 import CandidateStatusScreen from "./screens/career/CandidateStatusScreen";
+import AddNewCandidateScreen from "./screens/career/AddNewCandidateScreen";
 import useSessionGuard from "./hooks/useSessionGuard";
 import { useNavigationContainerRef } from "@react-navigation/native";
 const Stack = createNativeStackNavigator();
@@ -76,9 +77,10 @@ export default function Index() {
         <Stack.Screen name="jobDetail" component={JobDetail} />
         <Stack.Screen name="candidateDetails" component={CandidateDetails} />
         <Stack.Screen
-          name="CandidateStatusScreen"
-          component={CandidateStatusScreen}
+          name="addNewCandidateScreen"
+          component={AddNewCandidateScreen}
         />
+        <Stack.Screen name="new" component={CandidateStatusScreen} />
         <Stack.Screen name="details" component={WorkDetails} />
         <Stack.Screen name="attendanceDetails" component={AttendanceDetails} />
         <Stack.Screen name="calendar" component={CalendarScreen} />
