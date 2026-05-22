@@ -70,7 +70,10 @@ const AddNewCandidateScreen = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
   const [sourceViaList, setSourceViaList] = useState([]);
-
+  const [selectedSource, setSelectedSource] = useState(null);
+  const [referenceList, setReferenceList] = useState([]);
+  const [vendorList, setVendorList] = useState([]);
+  const [internalRefList, setInternalRefList] = useState([]);
   const initialForm = {
     name: "",
     countryCode: "+91",
@@ -95,6 +98,7 @@ const AddNewCandidateScreen = () => {
     setShowMore(false);
     setIsSubmitting(false);
   };
+
   useEffect(() => {
     const getCountries = async () => {
       try {
@@ -102,11 +106,12 @@ const AddNewCandidateScreen = () => {
         const res = await axiosInstance.get(endpoint);
         setOptions(res.data);
       } catch (error) {
-        console.log("Error fetching country:".error);
+        console.log("Error fetching country:", error);
       }
     };
+
     getCountries();
-  });
+  }, []);
 
   useEffect(() => {
     const fetchSourceVia = async () => {
@@ -126,6 +131,73 @@ const AddNewCandidateScreen = () => {
     };
     if (userData && selectedCompany) fetchSourceVia();
   }, [userData, selectedCompany]);
+
+  const selectedSourceData = sourceViaList.find(
+    (item) => item.value === selectedSource,
+  );
+
+  const isVendor =
+    selectedSourceData?.label?.toLowerCase() === "portal" ||
+    selectedSourceData?.label?.toLowerCase() === "consultancy";
+
+  useEffect(() => {
+    if (userData?.user_id && selectedCompany?.id) {
+      fetchVendorList();
+      fetchInternalRef();
+    }
+  }, [userData, selectedCompany]);
+
+  const fetchVendorList = async () => {
+    try {
+      const endpoint = `${base_url}/core/coreorgchild_list/${userData?.user_id}/${selectedCompany?.id}/`;
+
+      console.log("Vendor Endpoint:", endpoint);
+
+      const res = await axiosInstance.get(endpoint);
+
+      const filtered = (res.data || []).filter(
+        (item) => item.org_category === 3,
+      );
+
+      setVendorList(
+        filtered.map((item) => ({
+          label: item.child_name,
+          value: item.id,
+        })),
+      );
+    } catch (error) {
+      console.log("Vendor STATUS:", error?.response?.status);
+      console.log("Vendor DATA:", error?.response?.data);
+    }
+  };
+
+  const fetchInternalRef = async () => {
+    try {
+      const endpoint = `${base_url}/core/cmp_user_list/${userData?.user_id}/${selectedCompany?.id}/`;
+
+      console.log("Internal Ref Endpoint:", endpoint);
+
+      const res = await axiosInstance.get(endpoint);
+
+      setInternalRefList(
+        (res.data || []).map((item) => ({
+          label: `${item.first_name} (${item.username})`,
+          value: item.userid,
+        })),
+      );
+    } catch (error) {
+      console.log("Internal STATUS:", error?.response?.status);
+      console.log("Internal DATA:", error?.response?.data);
+    }
+  };
+
+  useEffect(() => {
+    if (isVendor) {
+      setReferenceList(vendorList);
+    } else {
+      setReferenceList(internalRefList);
+    }
+  }, [selectedSource, vendorList, internalRefList]);
 
   const handlePickResume = async () => {
     try {
@@ -153,7 +225,7 @@ const AddNewCandidateScreen = () => {
     }
     setIsSubmitting(true);
     try {
-      const endpoint = `${base_url}/career/career_candidate_cru/${userData.user_id}/${selectedCompany?.id}/`;
+      const endpoint = `${base_url}/career/career_candidate_cru/${userData.user_id}/${selectedCompany?.id}/?branch=${selectedCompany?.branchid}`;
 
       const countryCodeValue =
         COUNTRY_CODES.find((c) => c.value === form.countryCode)?.code ||
@@ -171,16 +243,22 @@ const AddNewCandidateScreen = () => {
         industry: form.industry,
         createvia: "Mobile App",
       };
-
+      console.log("Payload:", payload);
       const formData = new FormData();
       formData.append("candidate_payload", JSON.stringify(payload));
 
       if (resumeFile) {
-        formData.append("resume", {
+        const resumePayload = {
           uri: resumeFile.uri,
           name: resumeFile.name,
           type: resumeFile.mimeType || "application/pdf",
-        });
+        };
+
+        console.log("Resume File:", resumePayload);
+
+        formData.append("resume", resumePayload);
+      } else {
+        console.log("No Resume Selected");
       }
 
       const res = await axiosInstance.post(endpoint, formData, {
@@ -194,6 +272,10 @@ const AddNewCandidateScreen = () => {
       );
       resetForm();
     } catch (error) {
+      console.log("STATUS:", error?.response?.status);
+      console.log("ERROR DATA:", error?.response?.data);
+      console.log("PAYLOAD SENT:", payload);
+      console.log("Full Error:", error?.response?.data);
       Alert.alert(
         "Error",
         error?.response?.data?.message ||
@@ -346,7 +428,11 @@ const AddNewCandidateScreen = () => {
                   valueField="value"
                   placeholder="Select"
                   value={form.sourceVia}
-                  onChange={(item) => updateField("sourceVia", item.value)}
+                  onChange={(item) => {
+                    updateField("sourceVia", item.value);
+                    updateField("refNameSource", null);
+                    setSelectedSource(item.value);
+                  }}
                   containerStyle={styles.dropdownContainer}
                   renderItem={(item) => (
                     <View style={styles.dropdownItem}>
@@ -357,12 +443,22 @@ const AddNewCandidateScreen = () => {
 
                 {/* Ref Name / Source */}
                 <Text style={styles.label}>Ref Name / Source</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter reference name or source"
-                  placeholderTextColor="#A0AEC0"
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={{ color: "#64748B" }}
+                  selectedTextStyle={{ color: "#111827" }}
+                  data={referenceList}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select Reference"
                   value={form.refNameSource}
-                  onChangeText={(v) => updateField("refNameSource", v)}
+                  onChange={(item) => updateField("refNameSource", item.value)}
+                  containerStyle={styles.dropdownContainer}
+                  renderItem={(item) => (
+                    <View style={styles.dropdownItem}>
+                      <Text style={styles.dropdownItemText}>{item.label}</Text>
+                    </View>
+                  )}
                 />
 
                 {/* Current CTC */}
