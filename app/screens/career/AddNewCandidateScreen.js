@@ -8,6 +8,7 @@ import {
   TextInput,
   Alert,
   Platform,
+  Image,
   KeyboardAvoidingView,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
@@ -64,7 +65,7 @@ const COUNTRY_CODES = [
 const AddNewCandidateScreen = () => {
   const navigation = useNavigation();
   const { userData, selectedCompany } = useStoredData();
-
+  const [options, setOptions] = useState([]);
   const [showMore, setShowMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [resumeFile, setResumeFile] = useState(null);
@@ -94,8 +95,19 @@ const AddNewCandidateScreen = () => {
     setShowMore(false);
     setIsSubmitting(false);
   };
+  useEffect(() => {
+    const getCountries = async () => {
+      try {
+        const endpoint = `${base_url}/core/country_code/`;
+        const res = await axiosInstance.get(endpoint);
+        setOptions(res.data);
+      } catch (error) {
+        console.log("Error fetching country:".error);
+      }
+    };
+    getCountries();
+  });
 
-  // Fetch Source Via list
   useEffect(() => {
     const fetchSourceVia = async () => {
       try {
@@ -202,203 +214,224 @@ const AddNewCandidateScreen = () => {
 
       <KeyboardAvoidingView
         style={{ flex: 1 }}
-        behavior={Platform.OS === "ios" ? "padding" : undefined}
-        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 0}
+        behavior={Platform.OS === "ios" ? "padding" : "height"}
+        keyboardVerticalOffset={Platform.OS === "ios" ? 80 : 20}
       >
-        <ScrollView
-          style={styles.scroll}
-          keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}
-          contentContainerStyle={styles.scrollContent}
-        >
-          {/* ── Name ── */}
-          <Text style={styles.label}>Name</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter full name"
-            placeholderTextColor="#A0AEC0"
-            value={form.name}
-            onChangeText={(v) => updateField("name", v)}
-          />
-
-          {/* ── Phone No ── */}
-          <Text style={styles.label}>Phone No.</Text>
-          <View style={styles.phoneRow}>
-            <Dropdown
-              style={styles.countryDropdown}
-              placeholderStyle={{ color: "#64748B", fontSize: 13 }}
-              selectedTextStyle={{ color: "#111827", fontSize: 13 }}
-              data={COUNTRY_CODES}
-              labelField="label"
-              valueField="value"
-              value={form.countryCode}
-              onChange={(item) => updateField("countryCode", item.value)}
-              containerStyle={styles.countryDropdownContainer}
-              renderItem={(item) => (
-                <View style={styles.dropdownItem}>
-                  <Text style={styles.dropdownItemText}>{item.label}</Text>
-                </View>
-              )}
-            />
+        <View style={{ flex: 1 }}>
+          <ScrollView
+            style={styles.scroll}
+            keyboardShouldPersistTaps="handled"
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={[
+              styles.scrollContent,
+              { paddingBottom: 80 },
+            ]}
+          >
+            {/* ── Name ── */}
+            <Text style={styles.label}>Name</Text>
             <TextInput
-              style={styles.phoneInput}
-              placeholder="Enter phone number"
+              style={styles.input}
+              placeholder="Enter full name"
               placeholderTextColor="#A0AEC0"
-              keyboardType="phone-pad"
-              value={form.phone}
-              onChangeText={(v) => updateField("phone", v)}
+              value={form.name}
+              onChangeText={(v) => updateField("name", v)}
             />
-          </View>
-
-          {/* ── Email ── */}
-          <Text style={styles.label}>Email</Text>
-          <TextInput
-            style={styles.input}
-            placeholder="Enter email address"
-            placeholderTextColor="#A0AEC0"
-            keyboardType="email-address"
-            autoCapitalize="none"
-            value={form.email}
-            onChangeText={(v) => updateField("email", v)}
-          />
-
-          {/* ── Upload Resume ── */}
-          <Text style={styles.label}>Upload Resume</Text>
-          <TouchableOpacity
-            style={styles.uploadBox}
-            onPress={handlePickResume}
-            activeOpacity={0.7}
-          >
-            <UploadIcon />
-            <Text style={styles.uploadText} numberOfLines={1}>
-              {resumeFile ? (
-                resumeFile.name
-              ) : (
-                <>
-                  <Text style={{ fontWeight: "700", color: "#2563EB" }}>
-                    Upload
-                  </Text>
-                  <Text style={{ color: "#64748B" }}>
-                    {" "}
-                    (max 2mb file – pdf, png)
-                  </Text>
-                </>
-              )}
-            </Text>
-          </TouchableOpacity>
-
-          {/* ── Remarks ── */}
-          <Text style={styles.label}>Remarks</Text>
-          <TextInput
-            style={[styles.input, styles.textArea]}
-            placeholder="Add remarks..."
-            placeholderTextColor="#A0AEC0"
-            multiline
-            value={form.remarks}
-            onChangeText={(v) => updateField("remarks", v)}
-          />
-
-          {/* ── Show More / Less ── */}
-          <TouchableOpacity
-            onPress={() => setShowMore((prev) => !prev)}
-            style={styles.toggleBtn}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.toggleText}>
-              {showMore ? "Show Less" : "Show More"}
-            </Text>
-          </TouchableOpacity>
-
-          {/* ── Extended Fields ── */}
-          {showMore && (
-            <View style={styles.extendedSection}>
-              {/* Source Via */}
-              <Text style={styles.label}>Source Via</Text>
+            {/* ── Phone No ── */}
+            <Text style={styles.label}>Phone No.</Text>
+            <View style={styles.phoneRow}>
               <Dropdown
-                style={styles.dropdown}
-                placeholderStyle={{ color: "#64748B" }}
-                selectedTextStyle={{ color: "#111827" }}
-                data={sourceViaList}
-                labelField="label"
-                valueField="value"
-                placeholder="Select"
-                value={form.sourceVia}
-                onChange={(item) => updateField("sourceVia", item.value)}
-                containerStyle={styles.dropdownContainer}
+                style={styles.countryDropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                data={options}
+                labelField="dial_code"
+                valueField="dial_code"
+                placeholder="+91"
+                value={form.countryCode}
+                onChange={(item) => updateField("countryCode", item.dial_code)}
+                containerStyle={styles.countryDropdownContainer}
                 renderItem={(item) => (
-                  <View style={styles.dropdownItem}>
-                    <Text style={styles.dropdownItemText}>{item.label}</Text>
+                  <View style={styles.countryItem}>
+                    <Image
+                      source={{
+                        uri: `https://flagcdn.com/w40/${item.code.toLowerCase()}.png`,
+                      }}
+                      style={styles.flag}
+                    />
+
+                    <Text style={styles.countryCodeText}>{item.dial_code}</Text>
                   </View>
                 )}
+                renderLeftIcon={() => {
+                  const selectedCountry = options.find(
+                    (c) => c.dial_code === form.countryCode,
+                  );
+
+                  return selectedCountry ? (
+                    <Image
+                      source={{
+                        uri: `https://flagcdn.com/w40/${selectedCountry.code.toLowerCase()}.png`,
+                      }}
+                      style={styles.flag}
+                    />
+                  ) : null;
+                }}
               />
 
-              {/* Ref Name / Source */}
-              <Text style={styles.label}>Ref Name / Source</Text>
               <TextInput
-                style={styles.input}
-                placeholder="Enter reference name or source"
+                style={styles.phoneInput}
+                placeholder="Enter phone number"
                 placeholderTextColor="#A0AEC0"
-                value={form.refNameSource}
-                onChangeText={(v) => updateField("refNameSource", v)}
-              />
-
-              {/* Current CTC */}
-              <Text style={styles.label}>Current CTC</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter current CTC"
-                placeholderTextColor="#A0AEC0"
-                keyboardType="numeric"
-                value={form.currentCTC}
-                onChangeText={(v) => updateField("currentCTC", v)}
-              />
-
-              {/* Expected CTC */}
-              <Text style={styles.label}>Expected CTC</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter expected CTC"
-                placeholderTextColor="#A0AEC0"
-                keyboardType="numeric"
-                value={form.expectedCTC}
-                onChangeText={(v) => updateField("expectedCTC", v)}
-              />
-
-              {/* Industry */}
-              <Text style={styles.label}>Industry</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter industry"
-                placeholderTextColor="#A0AEC0"
-                value={form.industry}
-                onChangeText={(v) => updateField("industry", v)}
+                keyboardType="phone-pad"
+                value={form.phone}
+                onChangeText={(v) => updateField("phone", v)}
               />
             </View>
-          )}
-        </ScrollView>
+            {/* ── Email ── */}
+            <Text style={styles.label}>Email</Text>
+            <TextInput
+              style={styles.input}
+              placeholder="Enter email address"
+              placeholderTextColor="#A0AEC0"
+              keyboardType="email-address"
+              autoCapitalize="none"
+              value={form.email}
+              onChangeText={(v) => updateField("email", v)}
+            />
+            {/* ── Upload Resume ── */}
+            <Text style={styles.label}>Upload Resume</Text>
+            <TouchableOpacity
+              style={styles.uploadBox}
+              onPress={handlePickResume}
+              activeOpacity={0.7}
+            >
+              <UploadIcon />
+              <Text style={styles.uploadText} numberOfLines={1}>
+                {resumeFile ? (
+                  resumeFile.name
+                ) : (
+                  <>
+                    <Text style={{ fontWeight: "700", color: "#2563EB" }}>
+                      Upload
+                    </Text>
+                    <Text style={{ color: "#64748B" }}>
+                      {" "}
+                      (max 2mb file – pdf, png)
+                    </Text>
+                  </>
+                )}
+              </Text>
+            </TouchableOpacity>
+            {/* ── Remarks ── */}
+            <Text style={styles.label}>Remarks</Text>
+            <TextInput
+              style={[styles.input, styles.textArea]}
+              placeholder="Add remarks..."
+              placeholderTextColor="#A0AEC0"
+              multiline
+              value={form.remarks}
+              onChangeText={(v) => updateField("remarks", v)}
+            />
+            {/* ── Extended Fields ── */}
+            {showMore && (
+              <View>
+                {/* Source Via */}
+                <Text style={styles.label}>Source Via</Text>
+                <Dropdown
+                  style={styles.dropdown}
+                  placeholderStyle={{ color: "#64748B" }}
+                  selectedTextStyle={{ color: "#111827" }}
+                  data={sourceViaList}
+                  labelField="label"
+                  valueField="value"
+                  placeholder="Select"
+                  value={form.sourceVia}
+                  onChange={(item) => updateField("sourceVia", item.value)}
+                  containerStyle={styles.dropdownContainer}
+                  renderItem={(item) => (
+                    <View style={styles.dropdownItem}>
+                      <Text style={styles.dropdownItemText}>{item.label}</Text>
+                    </View>
+                  )}
+                />
 
-        {/* ── Footer Buttons ── */}
-        <View style={styles.footer}>
-          <TouchableOpacity
-            style={styles.cancelBtn}
-            onPress={() => {
-              resetForm();
-              navigation.goBack();
-            }}
-            activeOpacity={0.75}
-          >
-            <Text style={styles.cancelBtnText}>Cancel</Text>
-          </TouchableOpacity>
-          <TouchableOpacity
-            style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
-            onPress={handleSubmit}
-            disabled={isSubmitting}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.submitBtnText}>
-              {isSubmitting ? "Submitting..." : "Submit"}
-            </Text>
-          </TouchableOpacity>
+                {/* Ref Name / Source */}
+                <Text style={styles.label}>Ref Name / Source</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter reference name or source"
+                  placeholderTextColor="#A0AEC0"
+                  value={form.refNameSource}
+                  onChangeText={(v) => updateField("refNameSource", v)}
+                />
+
+                {/* Current CTC */}
+                <Text style={styles.label}>Current CTC</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter current CTC"
+                  placeholderTextColor="#A0AEC0"
+                  keyboardType="numeric"
+                  value={form.currentCTC}
+                  onChangeText={(v) => updateField("currentCTC", v)}
+                />
+
+                {/* Expected CTC */}
+                <Text style={styles.label}>Expected CTC</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter expected CTC"
+                  placeholderTextColor="#A0AEC0"
+                  keyboardType="numeric"
+                  value={form.expectedCTC}
+                  onChangeText={(v) => updateField("expectedCTC", v)}
+                />
+
+                {/* Industry */}
+                <Text style={styles.label}>Industry</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter industry"
+                  placeholderTextColor="#A0AEC0"
+                  value={form.industry}
+                  onChangeText={(v) => updateField("industry", v)}
+                />
+              </View>
+            )}
+            {/* ── Show More / Less ── */}
+            <TouchableOpacity
+              onPress={() => setShowMore((prev) => !prev)}
+              style={styles.toggleBtn}
+              activeOpacity={0.7}
+            >
+              <Text style={styles.toggleText}>
+                {showMore ? "Show Less" : "Show More"}
+              </Text>
+            </TouchableOpacity>
+          </ScrollView>
+
+          {/* ── Footer Buttons ── */}
+          <View style={styles.footer}>
+            <TouchableOpacity
+              style={styles.cancelBtn}
+              onPress={() => {
+                resetForm();
+                navigation.goBack();
+              }}
+            >
+              <Text style={styles.cancelBtnText}>Cancel</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
+              onPress={handleSubmit}
+              disabled={isSubmitting}
+            >
+              <Text style={styles.submitBtnText}>
+                {isSubmitting ? "Submitting..." : "Submit"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </KeyboardAvoidingView>
     </View>
@@ -517,13 +550,6 @@ const styles = {
     fontWeight: "700",
   },
 
-  // Extended section separator
-  extendedSection: {
-    borderTopWidth: 1,
-    borderTopColor: "#E2E8F0",
-    paddingTop: 14,
-  },
-
   // Dropdowns
   dropdown: {
     backgroundColor: "#FFFFFF",
@@ -554,8 +580,37 @@ const styles = {
     fontSize: 14,
     color: "#111827",
   },
+  placeholderStyle: {
+    color: "#64748B",
+    fontSize: 13,
+  },
 
-  // Footer
+  selectedTextStyle: {
+    color: "#111827",
+    fontSize: 13,
+    marginLeft: 4,
+  },
+
+  countryItem: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingVertical: 10,
+    paddingHorizontal: 14,
+  },
+
+  flag: {
+    width: 22,
+    height: 16,
+    borderRadius: 2,
+    marginRight: 8,
+  },
+
+  countryCodeText: {
+    fontSize: 14,
+    color: "#111827",
+    fontWeight: "500",
+  },
+
   footer: {
     flexDirection: "row",
     gap: 12,
