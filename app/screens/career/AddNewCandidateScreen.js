@@ -68,15 +68,17 @@ const AddNewCandidateScreen = () => {
   const [options, setOptions] = useState([]);
   const [showMore, setShowMore] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [resumeFile, setResumeFile] = useState(null);
   const [sourceViaList, setSourceViaList] = useState([]);
   const [selectedSource, setSelectedSource] = useState(null);
   const [referenceList, setReferenceList] = useState([]);
   const [vendorList, setVendorList] = useState([]);
   const [internalRefList, setInternalRefList] = useState([]);
+  const [docs, setDocs] = useState([]);
+  const [selectedDocType, setSelectedDocType] = useState(null);
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const initialForm = {
     name: "",
-    countryCode: "+91",
+    countryCode: "IN",
     phone: "",
     email: "",
     remarks: "",
@@ -94,9 +96,115 @@ const AddNewCandidateScreen = () => {
 
   const resetForm = () => {
     setForm({ ...initialForm });
-    setResumeFile(null);
+    setSelectedDocType(null);
+    setUploadedFiles([]);
     setShowMore(false);
     setIsSubmitting(false);
+  };
+
+  useEffect(() => {
+    const getDocTypes = async () => {
+      try {
+        const endpoint = `${base_url}/documentrepo/document_repodocumentname_r/${userData?.user_id}/?cmpid=None`;
+
+        const res = await axiosInstance.get(endpoint);
+
+        setDocs(res.data || []);
+      } catch (error) {
+        console.log("Doc Type Error:", error);
+      }
+    };
+
+    if (userData?.user_id) {
+      getDocTypes();
+    }
+  }, [userData]);
+
+  const selectedDocMeta = docs.find((doc) => doc.id === selectedDocType);
+
+  const formatFileSize = (size) => {
+    if (!size) return "0 KB";
+
+    const units = ["B", "KB", "MB", "GB"];
+
+    let i = 0;
+
+    while (size >= 1024 && i < units.length - 1) {
+      size /= 1024;
+      i++;
+    }
+
+    return `${size.toFixed(2)} ${units[i]}`;
+  };
+
+  const handlePickResume = async () => {
+    try {
+      if (!selectedDocType) {
+        Alert.alert("Validation", "Please select document type.");
+        return;
+      }
+
+      const result = await DocumentPicker.getDocumentAsync({
+        type: "*/*",
+        multiple: false,
+        copyToCacheDirectory: true,
+      });
+
+      if (!result.canceled && result.assets?.length > 0) {
+        const file = result.assets[0];
+
+        // FILE SIZE VALIDATION
+
+        const maxSize = (selectedDocMeta?.file_size_mb || 2) * 1024 * 1024;
+
+        if (file.size > maxSize) {
+          Alert.alert(
+            "File too large",
+            `Please upload file below ${selectedDocMeta?.file_size_mb || 2} MB`,
+          );
+
+          return;
+        }
+
+        // FILE TYPE VALIDATION
+
+        const extension = file.name?.split(".")?.pop()?.toLowerCase();
+
+        const allowedTypes =
+          selectedDocMeta?.file_type?.map((item) =>
+            item.replace(".", "").toLowerCase(),
+          ) || [];
+
+        if (allowedTypes.length > 0 && !allowedTypes.includes(extension)) {
+          Alert.alert(
+            "Invalid File",
+            `Allowed Types : ${allowedTypes.join(", ")}`,
+          );
+
+          return;
+        }
+
+        // FILE OBJECT
+
+        const newFile = {
+          id: Date.now(),
+          name: file.name,
+          uri: file.uri,
+          mimeType: file.mimeType,
+          size: file.size,
+          document_id: selectedDocMeta?.id,
+          doc_name: selectedDocMeta?.document_name,
+        };
+
+        setUploadedFiles((prev) => [...prev, newFile]);
+      }
+    } catch (error) {
+      console.log("Document Picker Error:", error);
+    }
+  };
+
+  const handleRemoveFile = (id) => {
+    setUploadedFiles((prev) => prev.filter((item) => item.id !== id));
   };
 
   useEffect(() => {
@@ -199,41 +307,21 @@ const AddNewCandidateScreen = () => {
     }
   }, [selectedSource, vendorList, internalRefList]);
 
-  const handlePickResume = async () => {
-    try {
-      const result = await DocumentPicker.getDocumentAsync({
-        type: ["application/pdf", "image/png"],
-        copyToCacheDirectory: true,
-      });
-      if (!result.canceled && result.assets?.length > 0) {
-        const file = result.assets[0];
-        if (file.size > 2 * 1024 * 1024) {
-          Alert.alert("File too large", "Please upload a file under 2MB.");
-          return;
-        }
-        setResumeFile(file);
-      }
-    } catch (err) {
-      console.log("Document picker error", err);
-    }
-  };
-
-  const handleSubmit = async () => {
+  const onSubmit = async () => {
     if (!form.name.trim()) {
       Alert.alert("Validation", "Please enter candidate name.");
       return;
     }
+
     setIsSubmitting(true);
+
     try {
       const endpoint = `${base_url}/career/career_candidate_cru/${userData.user_id}/${selectedCompany?.id}/?branch=${selectedCompany?.branchid}`;
 
-      const countryCodeValue =
-        COUNTRY_CODES.find((c) => c.value === form.countryCode)?.code ||
-        form.countryCode;
-
       const payload = {
         candidate_name: form.name,
-        phone: form.phone ? `${countryCodeValue}${form.phone}` : "",
+        country_code: form.countryCode,
+        phone: form.phone || "",
         email: form.email,
         remarks: form.remarks,
         source_or_hiring: form.sourceVia,
@@ -243,24 +331,22 @@ const AddNewCandidateScreen = () => {
         industry: form.industry,
         createvia: "Mobile App",
       };
-      console.log("Payload:", payload);
+
       const formData = new FormData();
+
       formData.append("candidate_payload", JSON.stringify(payload));
 
-      if (resumeFile) {
-        const resumePayload = {
-          uri: resumeFile.uri,
-          name: resumeFile.name,
-          type: resumeFile.mimeType || "application/pdf",
-        };
-
-        console.log("Resume File:", resumePayload);
-
-        formData.append("resume", resumePayload);
-      } else {
-        console.log("No Resume Selected");
+      if (uploadedFiles?.length > 0) {
+        uploadedFiles.forEach((file) => {
+          formData.append("resume_upload", {
+            uri: file.uri,
+            name: file.name || "resume.pdf",
+            type: file.mimeType || "application/octet-stream",
+          });
+        });
       }
-
+      console.log(payload, "payload");
+      console.log("Uploaded Files:", uploadedFiles);
       const res = await axiosInstance.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
@@ -270,18 +356,10 @@ const AddNewCandidateScreen = () => {
         res?.data?.message || "Candidate added successfully.",
         [{ text: "OK", onPress: () => navigation.goBack() }],
       );
+
       resetForm();
     } catch (error) {
-      console.log("STATUS:", error?.response?.status);
-      console.log("ERROR DATA:", error?.response?.data);
-      console.log("PAYLOAD SENT:", payload);
-      console.log("Full Error:", error?.response?.data);
-      Alert.alert(
-        "Error",
-        error?.response?.data?.message ||
-          error.message ||
-          "Something went wrong.",
-      );
+      console.error("Candidate Creation Error:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -327,10 +405,10 @@ const AddNewCandidateScreen = () => {
                 selectedTextStyle={styles.selectedTextStyle}
                 data={options}
                 labelField="dial_code"
-                valueField="dial_code"
-                placeholder="+91"
+                valueField="code"
+                placeholder="IN"
                 value={form.countryCode}
-                onChange={(item) => updateField("countryCode", item.dial_code)}
+                onChange={(item) => updateField("countryCode", item.code)}
                 containerStyle={styles.countryDropdownContainer}
                 renderItem={(item) => (
                   <View style={styles.countryItem}>
@@ -346,9 +424,8 @@ const AddNewCandidateScreen = () => {
                 )}
                 renderLeftIcon={() => {
                   const selectedCountry = options.find(
-                    (c) => c.dial_code === form.countryCode,
+                    (c) => c.code === form.countryCode,
                   );
-
                   return selectedCountry ? (
                     <Image
                       source={{
@@ -381,29 +458,75 @@ const AddNewCandidateScreen = () => {
               onChangeText={(v) => updateField("email", v)}
             />
             {/* ── Upload Resume ── */}
+            {/* DOCUMENT TYPE */}
+
+            <Text style={styles.label}>Document Type</Text>
+
+            <Dropdown
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              data={docs.map((doc) => ({
+                label: doc.document_name,
+                value: doc.id,
+              }))}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Document Type"
+              value={selectedDocType}
+              onChange={(item) => setSelectedDocType(item.value)}
+              containerStyle={styles.dropdownContainer}
+            />
+
+            {/* UPLOAD */}
+
             <Text style={styles.label}>Upload Resume</Text>
+
             <TouchableOpacity
-              style={styles.uploadBox}
-              onPress={handlePickResume}
+              style={[
+                styles.uploadBox,
+                !selectedDocType && {
+                  opacity: 0.5,
+                },
+              ]}
               activeOpacity={0.7}
+              disabled={!selectedDocType}
+              onPress={handlePickResume}
             >
               <UploadIcon />
-              <Text style={styles.uploadText} numberOfLines={1}>
-                {resumeFile ? (
-                  resumeFile.name
-                ) : (
-                  <>
-                    <Text style={{ fontWeight: "700", color: "#2563EB" }}>
-                      Upload
-                    </Text>
-                    <Text style={{ color: "#64748B" }}>
-                      {" "}
-                      (max 2mb file – pdf, png)
-                    </Text>
-                  </>
-                )}
-              </Text>
+
+              <View style={{ flex: 1 }}>
+                <Text style={styles.uploadPrimary}>Upload File</Text>
+
+                <Text style={styles.uploadSecondary}>
+                  {selectedDocMeta
+                    ? `${selectedDocMeta.file_type.join(", ")} • Max ${
+                        selectedDocMeta.file_size_mb
+                      } MB`
+                    : "Select document type first"}
+                </Text>
+              </View>
             </TouchableOpacity>
+
+            {/* FILE LIST */}
+
+            {uploadedFiles.map((file) => (
+              <View key={file.id} style={styles.fileCard}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.fileName}>
+                    {file.doc_name} - {file.name}
+                  </Text>
+
+                  <Text style={styles.fileSize}>
+                    {formatFileSize(file.size)}
+                  </Text>
+                </View>
+
+                <TouchableOpacity onPress={() => handleRemoveFile(file.id)}>
+                  <Text style={styles.removeText}>Remove</Text>
+                </TouchableOpacity>
+              </View>
+            ))}
             {/* ── Remarks ── */}
             <Text style={styles.label}>Remarks</Text>
             <TextInput
@@ -520,7 +643,7 @@ const AddNewCandidateScreen = () => {
 
             <TouchableOpacity
               style={[styles.submitBtn, isSubmitting && { opacity: 0.6 }]}
-              onPress={handleSubmit}
+              onPress={onSubmit}
               disabled={isSubmitting}
             >
               <Text style={styles.submitBtnText}>
@@ -741,5 +864,47 @@ const styles = {
     color: "#FFFFFF",
     fontWeight: "600",
     fontSize: 15,
+  },
+  uploadPrimary: {
+    fontSize: 14,
+    fontWeight: "700",
+    color: "#2563EB",
+  },
+
+  uploadSecondary: {
+    marginTop: 2,
+    fontSize: 12,
+    color: "#64748B",
+  },
+
+  fileCard: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    borderWidth: 1,
+    borderColor: "#E2E8F0",
+    borderRadius: 12,
+    backgroundColor: "#FFFFFF",
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    marginBottom: 10,
+  },
+
+  fileName: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#111827",
+  },
+
+  fileSize: {
+    fontSize: 12,
+    color: "#64748B",
+    marginTop: 4,
+  },
+
+  removeText: {
+    color: "#DC2626",
+    fontWeight: "700",
+    fontSize: 13,
   },
 };

@@ -342,7 +342,7 @@ const ChangePassword = () => {
               }}
             >
               {"\u2022"} Password should contain upper case, lower case, numbers
-              and special characters &,&,(,),$,%,>,#,@
+              and special characters &,&,(,),$,%,#,@
             </Text>
           </View>
         </View>
