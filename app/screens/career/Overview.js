@@ -670,7 +670,6 @@ const Overview = () => {
       const startISO = getStartOfDayISO(activeDateRange.start);
       const endISO = getEndOfDayISO(activeDateRange.end);
       const endpoint = `${base_url}/career/total_applicant/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`;
-      console.log("Fetching dashboard with endpoint:", endpoint);
 
       const formData = new FormData();
 

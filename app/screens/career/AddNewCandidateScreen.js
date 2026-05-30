@@ -259,8 +259,6 @@ const AddNewCandidateScreen = () => {
     try {
       const endpoint = `${base_url}/core/coreorgchild_list/${userData?.user_id}/${selectedCompany?.id}/`;
 
-      console.log("Vendor Endpoint:", endpoint);
-
       const res = await axiosInstance.get(endpoint);
 
       const filtered = (res.data || []).filter(
@@ -282,8 +280,6 @@ const AddNewCandidateScreen = () => {
   const fetchInternalRef = async () => {
     try {
       const endpoint = `${base_url}/core/cmp_user_list/${userData?.user_id}/${selectedCompany?.id}/`;
-
-      console.log("Internal Ref Endpoint:", endpoint);
 
       const res = await axiosInstance.get(endpoint);
 
@@ -345,8 +341,7 @@ const AddNewCandidateScreen = () => {
           });
         });
       }
-      console.log(payload, "payload");
-      console.log("Uploaded Files:", uploadedFiles);
+
       const res = await axiosInstance.post(endpoint, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
