@@ -583,7 +583,7 @@ const Overview = () => {
         pendingSubIdx,
         selectedFYStart,
         sd,
-      );
+      ); // ✅
       setPendingStart(range.start);
       setPendingEnd(range.end);
     }
@@ -973,7 +973,6 @@ const Overview = () => {
       </Modal>
 
       {/* DATE RANGE MODAL */}
-      {/* DATE RANGE MODAL */}
       <Modal
         visible={dateModalVisible}
         animationType="slide"
@@ -1002,10 +1001,9 @@ const Overview = () => {
             </View>
 
             <ScrollView
+              nestedScrollEnabled={true}
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              // contentContainerStyle={{ paddingBottom: 8 }}
-              nestedScrollEnabled={true}
             >
               {/* ── Custom Range Toggle ── */}
               <View style={styles.toggleRow}>
@@ -1162,45 +1160,50 @@ const Overview = () => {
                       </TouchableOpacity>
                       {activePicker === "filterType" && (
                         <View style={styles.dropdownList}>
-                          {FILTER_TYPE_OPTIONS.map((opt) => {
-                            const isDisabled =
-                              opt.value === "current_month" &&
-                              selectedFYStart !== getCurrentFYStart();
-                            return (
-                              <TouchableOpacity
-                                key={opt.value}
-                                style={[
-                                  styles.dropdownItem,
-                                  pendingFilterType === opt.value &&
-                                    styles.dropdownItemActive,
-                                  isDisabled && styles.dropdownItemDisabled,
-                                ]}
-                                onPress={() => {
-                                  if (isDisabled) return;
-                                  handleFilterTypeChange(opt.value);
-                                  setActivePicker(null);
-                                }}
-                                activeOpacity={isDisabled ? 1 : 0.7}
-                              >
-                                <Text
+                          <ScrollView
+                            nestedScrollEnabled
+                            showsVerticalScrollIndicator={false}
+                          >
+                            {FILTER_TYPE_OPTIONS.map((opt) => {
+                              const isDisabled =
+                                opt.value === "current_month" &&
+                                selectedFYStart !== getCurrentFYStart();
+                              return (
+                                <TouchableOpacity
+                                  key={opt.value}
                                   style={[
-                                    styles.dropdownItemText,
+                                    styles.dropdownItem,
                                     pendingFilterType === opt.value &&
-                                      styles.dropdownItemTextActive,
-                                    isDisabled &&
-                                      styles.dropdownItemTextDisabled,
+                                      styles.dropdownItemActive,
+                                    isDisabled && styles.dropdownItemDisabled,
                                   ]}
+                                  onPress={() => {
+                                    if (isDisabled) return;
+                                    handleFilterTypeChange(opt.value);
+                                    setActivePicker(null);
+                                  }}
+                                  activeOpacity={isDisabled ? 1 : 0.7}
                                 >
-                                  {opt.label}
-                                </Text>
-                                {pendingFilterType === opt.value && (
-                                  <Text style={styles.dropdownItemCheck}>
-                                    ✓
+                                  <Text
+                                    style={[
+                                      styles.dropdownItemText,
+                                      pendingFilterType === opt.value &&
+                                        styles.dropdownItemTextActive,
+                                      isDisabled &&
+                                        styles.dropdownItemTextDisabled,
+                                    ]}
+                                  >
+                                    {opt.label}
                                   </Text>
-                                )}
-                              </TouchableOpacity>
-                            );
-                          })}
+                                  {pendingFilterType === opt.value && (
+                                    <Text style={styles.dropdownItemCheck}>
+                                      ✓
+                                    </Text>
+                                  )}
+                                </TouchableOpacity>
+                              );
+                            })}
+                          </ScrollView>
                         </View>
                       )}
                     </View>
@@ -1426,7 +1429,7 @@ const StatCard = ({ item }) => (
 export default Overview;
 
 const styles = {
-  container: { flex: 1 },
+  container: { flex: 1, backgroundColor: "#f5f7fb" },
 
   filterRow: {
     flexDirection: "row",
@@ -1786,16 +1789,15 @@ const styles = {
     marginLeft: 4,
   },
 
+  // Dropdown list (renders inline below the trigger, like a popover)
   dropdownList: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 8,
     backgroundColor: "#fff",
     marginTop: 4,
-    minHeight: 50,
     maxHeight: 220,
   },
-
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
@@ -1834,15 +1836,14 @@ const styles = {
     fontWeight: "600",
   },
 
-  // Side-by-side two-column row
   rowTwo: {
     flexDirection: "row",
-    gap: 12,
     marginTop: 16,
   },
 
   halfCol: {
     flex: 1,
+    marginHorizontal: 2,
   },
 
   // Disabled date display box (mirrors React's disabled DatePicker)
