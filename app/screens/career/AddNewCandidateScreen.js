@@ -366,7 +366,7 @@ const AddNewCandidateScreen = () => {
   };
 
   return (
-    <View style={styles.screen}>
+    <View style={{ flex: 1, paddingHorizontal: 20 }}>
       <StatusBar backgroundColor="#F4F6F8" barStyle="dark-content" />
 
       {/* Header */}
@@ -668,7 +668,6 @@ const styles = {
   },
   scroll: {
     flex: 1,
-    paddingHorizontal: 20,
   },
   scrollContent: {
     paddingTop: 8,

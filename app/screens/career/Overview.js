@@ -583,7 +583,7 @@ const Overview = () => {
         pendingSubIdx,
         selectedFYStart,
         sd,
-      ); // ✅
+      );
       setPendingStart(range.start);
       setPendingEnd(range.end);
     }
@@ -1004,7 +1004,8 @@ const Overview = () => {
             <ScrollView
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
-              contentContainerStyle={{ paddingBottom: 8 }}
+              // contentContainerStyle={{ paddingBottom: 8 }}
+              nestedScrollEnabled={true}
             >
               {/* ── Custom Range Toggle ── */}
               <View style={styles.toggleRow}>
@@ -1246,7 +1247,10 @@ const Overview = () => {
                       </TouchableOpacity>
                       {activePicker === "subPeriod" && !subDisabled && (
                         <View style={styles.dropdownList}>
-                          <ScrollView showsVerticalScrollIndicator={false}>
+                          <ScrollView
+                            showsVerticalScrollIndicator={false}
+                            nestedScrollEnabled={true}
+                          >
                             {subOptions.map((opt) => (
                               <TouchableOpacity
                                 key={opt.idx}
@@ -1422,7 +1426,7 @@ const StatCard = ({ item }) => (
 export default Overview;
 
 const styles = {
-  container: { flex: 1, backgroundColor: "#f5f7fb" },
+  container: { flex: 1 },
 
   filterRow: {
     flexDirection: "row",
@@ -1782,15 +1786,16 @@ const styles = {
     marginLeft: 4,
   },
 
-  // Dropdown list (renders inline below the trigger, like a popover)
   dropdownList: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
     borderRadius: 8,
     backgroundColor: "#fff",
     marginTop: 4,
-    maxHeight: 320,
+    minHeight: 50,
+    maxHeight: 220,
   },
+
   dropdownItem: {
     flexDirection: "row",
     alignItems: "center",
