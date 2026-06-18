@@ -13,6 +13,19 @@ import {
   Switch,
 } from "react-native";
 import { base_url } from "../../constant/api";
+import { Dimensions } from "react-native";
+import { PieChart, Pie, Cell } from "react-native-svg-charts";
+import {
+  VictoryPie,
+  VictoryBar,
+  VictoryChart,
+  VictoryLine,
+  VictoryAxis,
+  VictoryArea,
+  VictoryGroup,
+  VictoryTheme,
+  VictoryLabel,
+} from "victory-native";
 import { useNavigation } from "@react-navigation/native";
 import axiosInstance from "@/app/utils/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -291,47 +304,9 @@ const getDefaultSubIdx = (filterType) => {
   return opts.length > 0 ? String(opts[0].idx) : "";
 };
 
-const buildFYYearOptions = () => {
-  const currentYear = new Date().getFullYear();
-  const years = [];
-
-  for (let y = currentYear - 6; y <= currentYear + 5; y++) {
-    years.push({
-      label: `FY ${String(y).slice(-2)}-${String(y + 1).slice(-2)}`,
-      value: y,
-    });
-  }
-
-  return years;
-};
-
-const getWeekOptions = (fyStart = getCurrentFYStart()) => {
-  const fyBegin = new Date(fyStart, 3, 1);
-  const fyEnd = new Date(fyStart + 1, 2, 31);
-  const weeks = [];
-  let cursor = new Date(fyBegin);
-  const dow = cursor.getDay();
-  if (dow !== 1) cursor.setDate(cursor.getDate() - ((dow + 6) % 7));
-  let wNum = 1;
-  while (cursor <= fyEnd) {
-    const wStart = new Date(cursor);
-    const wEnd = new Date(cursor);
-    wEnd.setDate(wEnd.getDate() + 6);
-    weeks.push({
-      label: `W${wNum} (${wStart.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}–${wEnd.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })})`,
-      start: wStart.toISOString().split("T")[0],
-      end: wEnd.toISOString().split("T")[0],
-      idx: wNum,
-    });
-    cursor.setDate(cursor.getDate() + 7);
-    wNum++;
-  }
-  return weeks;
-};
-
 const formatDisplayDate = (dateStr) => {
   if (!dateStr) return "";
-  const d = parseLocalDate(dateStr); // ✅ was new Date(dateStr)
+  const d = parseLocalDate(dateStr);
   return d.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -437,7 +412,473 @@ const YearPickerModal = ({ visible, selectedYear, onSelect, onClose }) => {
   );
 };
 
-// ─── OVERVIEW SCREEN ──────────────────────────────────────────────────────────
+const { width: SCREEN_W } = Dimensions.get("window");
+const CHART_W = SCREEN_W - 40;
+
+const C = {
+  blue: "#4E9FFF",
+  blueDark: "#185FA5",
+  grey: "#A5A5A5",
+  blueLight: "#C3DDFF",
+  green: "#36AC00",
+  red: "#EB0505",
+  violet: "#8979FF",
+  orange: "#FF928A",
+  amber: "#ED7D31",
+  navy: "#1E3A5F",
+  teal: "#2BBFBF",
+};
+
+const KPI_CARDS_INIT = [
+  { label: "Total Openings", change: "+5%", up: true, value: "-" },
+  { label: "Total Applicants", change: "+20%", up: true, value: "-" },
+  { label: "Screening", change: "+40%", up: true, value: "-" },
+  { label: "Interviews", change: "+20%", up: true, value: "-" },
+  { label: "Offered", change: "-8%", up: false, value: "-" },
+  { label: "Yet To Join", change: "-12%", up: false, value: "-" },
+  { label: "Offer Declined", change: "+20%", up: true, value: "-" },
+  { label: "Hired", change: "+40%", up: true, value: "-" },
+];
+
+const RANGE_FIELD_MAP = {
+  Monthly: {
+    labelKey: "month_label",
+    startKey: "month_start",
+    endKey: "month_end",
+  },
+  "Current Month": {
+    labelKey: "current_month_label",
+    startKey: "current_month_start",
+    endKey: "current_month_end",
+  },
+  "Half-Yearly": {
+    labelKey: "half_label",
+    startKey: "half_start",
+    endKey: "half_end",
+  },
+  Quarterly: {
+    labelKey: "quarter_label",
+    startKey: "quarter_start",
+    endKey: "quarter_end",
+  },
+  Weekly: {
+    labelKey: "week_label",
+    startKey: "week_start",
+    endKey: "week_end",
+  },
+  "Financial Year": {
+    labelKey: "month_label",
+    startKey: "month_start",
+    endKey: "month_end",
+  },
+};
+
+const normalizeRangeSplit = (response = {}) => {
+  const rangeSplit = Array.isArray(response.range_split)
+    ? response.range_split
+    : [];
+  const cycleType = response.cycle_type || "Monthly";
+  const mapping = RANGE_FIELD_MAP[cycleType] || RANGE_FIELD_MAP.Monthly;
+  return rangeSplit.map((item) => ({
+    label: item[mapping.labelKey] || "",
+    start: item[mapping.startKey] || "",
+    end: item[mapping.endKey] || "",
+    applicant_count: item.applicant_count || 0,
+    jobpostingcount: item.jobpostingcount || 0,
+    screening_count: item.screening_count || 0,
+    interviews_count: item.interviews_count || 0,
+    offered_count: item.offered_count || 0,
+    offered_declined_count: item.offered_declined_count || 0,
+    yet_to_join_count: item.yet_to_join_count || 0,
+    hired_count: item.hired_count || 0,
+    hired_jobposting: item.hired_jobposting || [],
+  }));
+};
+
+const SHORT_MONTHS = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+// ─── Dot ──────────────────────────────────────────────────────────────────────
+const RNDot = ({ color, size = 8 }) => (
+  <View
+    style={{
+      width: size,
+      height: size,
+      borderRadius: size / 2,
+      backgroundColor: color,
+      flexShrink: 0,
+    }}
+  />
+);
+
+// ─── Legend Item ──────────────────────────────────────────────────────────────
+const LegendItem = ({ color, label }) => (
+  <View style={{ flexDirection: "row", alignItems: "center", gap: 4 }}>
+    <RNDot color={color} size={10} />
+    <Text style={{ fontSize: 11, color: "#19213D" }}>{label}</Text>
+  </View>
+);
+
+// ─── ChartCard ────────────────────────────────────────────────────────────────
+const ChartCard = ({ title, legend, children }) => (
+  <View style={chartStyles.card}>
+    <View style={chartStyles.cardHeader}>
+      <Text style={chartStyles.cardTitle}>{title}</Text>
+      {legend && <View style={chartStyles.legendRow}>{legend}</View>}
+    </View>
+    {children}
+  </View>
+);
+
+// ─── DonutChart (Victory Native) ──────────────────────────────────────────────
+const RNDonutChart = ({ data, center }) => {
+  const total = data.reduce((s, d) => s + d.value, 0);
+  const pieData =
+    total === 0
+      ? [{ value: 1, color: "#E5E7EB", name: "empty" }]
+      : data.map((d) => ({ ...d, key: d.name }));
+
+  return (
+    <View style={{ alignItems: "center", paddingVertical: 8 }}>
+      <View style={{ position: "relative", width: 160, height: 160 }}>
+        <VictoryPie
+          standalone={false}
+          width={160}
+          height={160}
+          data={pieData}
+          x="name"
+          y="value"
+          innerRadius={55}
+          cornerRadius={5}
+          padAngle={2}
+          colorScale={pieData.map((d) => d.color)}
+          labels={() => null}
+        />
+        <View style={chartStyles.donutCenter}>
+          <Text style={chartStyles.donutValue}>{center.value}</Text>
+          <Text style={chartStyles.donutLabel}>{center.label}</Text>
+        </View>
+      </View>
+      <View style={chartStyles.donutLegend}>
+        {data.map((d) => (
+          <View key={d.name} style={chartStyles.donutLegendItem}>
+            <RNDot color={d.color} size={10} />
+            <View>
+              <Text style={chartStyles.donutLegendValue}>{d.value}</Text>
+              <Text style={chartStyles.donutLegendName}>{d.name}</Text>
+            </View>
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+};
+
+// ─── Simple Bar Chart (Victory) ───────────────────────────────────────────────
+const RNBarChart = ({ data, color, xKey = "name", yKey = "value", title }) => {
+  if (!data || data.length === 0) return null;
+  return (
+    <VictoryChart
+      width={CHART_W}
+      height={220}
+      domainPadding={{ x: 20 }}
+      theme={VictoryTheme.material}
+    >
+      <VictoryAxis
+        tickFormat={(t) => (t.length > 6 ? t.slice(0, 6) + "…" : t)}
+        style={{
+          tickLabels: { fontSize: 8, fill: "#888" },
+          axis: { stroke: "none" },
+          grid: { stroke: "none" },
+        }}
+      />
+      <VictoryAxis
+        dependentAxis
+        style={{
+          tickLabels: { fontSize: 9, fill: "#888" },
+          axis: { stroke: "none" },
+          grid: { stroke: "#F0F0F0" },
+        }}
+      />
+      <VictoryBar
+        data={data}
+        x={xKey}
+        y={yKey}
+        style={{ data: { fill: color, borderRadius: 3 } }}
+        cornerRadius={{ top: 3 }}
+      />
+    </VictoryChart>
+  );
+};
+
+// ─── Grouped Bar Chart ────────────────────────────────────────────────────────
+const RNGroupedBarChart = ({ data, groups }) => {
+  if (!data || data.length === 0) return null;
+  return (
+    <VictoryChart width={CHART_W} height={240} domainPadding={{ x: 30 }}>
+      <VictoryAxis
+        tickFormat={(t) => (t.length > 5 ? t.slice(0, 5) + "…" : t)}
+        style={{
+          tickLabels: { fontSize: 8, fill: "#888" },
+          axis: { stroke: "none" },
+          grid: { stroke: "none" },
+        }}
+      />
+      <VictoryAxis
+        dependentAxis
+        style={{
+          tickLabels: { fontSize: 9, fill: "#888" },
+          axis: { stroke: "none" },
+          grid: { stroke: "#F0F0F0" },
+        }}
+      />
+      <VictoryGroup offset={14} colorScale={groups.map((g) => g.color)}>
+        {groups.map((g) => (
+          <VictoryBar
+            key={g.key}
+            data={data}
+            x="name"
+            y={g.key}
+            cornerRadius={{ top: 3 }}
+          />
+        ))}
+      </VictoryGroup>
+    </VictoryChart>
+  );
+};
+
+// ─── Line Chart ───────────────────────────────────────────────────────────────
+const RNLineChart = ({ data, lines }) => {
+  if (!data || data.length === 0) return null;
+  return (
+    <VictoryChart width={CHART_W} height={200}>
+      <VictoryAxis
+        tickFormat={(t) => (t.length > 5 ? t.slice(0, 5) + "…" : t)}
+        style={{
+          tickLabels: { fontSize: 8, fill: "#888" },
+          axis: { stroke: "none" },
+          grid: { stroke: "none" },
+        }}
+      />
+      <VictoryAxis
+        dependentAxis
+        style={{
+          tickLabels: { fontSize: 9, fill: "#888" },
+          axis: { stroke: "none" },
+          grid: { stroke: "#F0F0F0" },
+        }}
+      />
+      {lines.map((l) => (
+        <VictoryLine
+          key={l.key}
+          data={data}
+          x="name"
+          y={l.key}
+          style={{ data: { stroke: l.color, strokeWidth: 2 } }}
+        />
+      ))}
+    </VictoryChart>
+  );
+};
+
+// ─── Simple data table ────────────────────────────────────────────────────────
+const DataTable = ({ columns, rows }) => (
+  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+    <View>
+      {/* Header */}
+      <View style={[chartStyles.tableRow, { backgroundColor: C.navy }]}>
+        {columns.map((col, i) => (
+          <Text
+            key={i}
+            style={[
+              chartStyles.tableHeader,
+              i === 0 && { textAlign: "left", minWidth: 90 },
+            ]}
+          >
+            {col}
+          </Text>
+        ))}
+      </View>
+      {/* Rows */}
+      {rows.map((row, ri) => (
+        <View
+          key={ri}
+          style={[
+            chartStyles.tableRow,
+            { backgroundColor: ri % 2 === 0 ? "#fff" : "#F7F9FF" },
+          ]}
+        >
+          {row.map((cell, ci) => (
+            <Text
+              key={ci}
+              style={[
+                chartStyles.tableCell,
+                ci === 0 && { textAlign: "left", minWidth: 90 },
+              ]}
+            >
+              {cell}
+            </Text>
+          ))}
+        </View>
+      ))}
+    </View>
+  </ScrollView>
+);
+
+// ─── Case2 Table ──────────────────────────────────────────────────────────────
+const Case2Table = ({ title, periods, deptIds, deptNames, subRows }) => {
+  const getPeriodLabel = (p) => {
+    const dStart = p.start ? new Date(p.start) : null;
+    const dEnd = p.end ? new Date(p.end) : null;
+    if (!dStart) return p.label || "—";
+    const startStr = `${SHORT_MONTHS[dStart.getMonth()]} ${dStart.getFullYear()}`;
+    if (
+      dEnd &&
+      !(
+        dStart.getMonth() === dEnd.getMonth() &&
+        dStart.getFullYear() === dEnd.getFullYear()
+      )
+    ) {
+      return `${startStr} – ${SHORT_MONTHS[dEnd.getMonth()]} ${dEnd.getFullYear()}`;
+    }
+    return startStr;
+  };
+
+  // Build bar chart data: one entry per dept, one bar per period
+  const barData = deptIds.map((deptId, di) => {
+    const entry = { name: deptNames[di] };
+    periods.forEach((period, pi) => {
+      subRows.forEach((sr) => {
+        const key = subRows.length > 1 ? `p${pi}_${sr.label}` : `p${pi}`;
+        entry[key] = sr.getter(period._raw, deptId) || 0;
+      });
+    });
+    return entry;
+  });
+
+  const PERIOD_COLORS = [C.blue, C.orange, C.green, C.amber, C.violet, C.teal];
+
+  // Flatten columns for the table
+  const headerCols = [
+    "S.No",
+    "Month",
+    ...deptNames.map((n) => n.slice(0, 10)),
+    "Total",
+  ];
+  const tableRows = periods.map((period, pi) => {
+    const rowCells = [
+      String(pi + 1),
+      getPeriodLabel(period),
+      ...deptIds.map((deptId) =>
+        String(
+          subRows.reduce(
+            (sum, sr) => sum + (sr.getter(period._raw, deptId) || 0),
+            0,
+          ),
+        ),
+      ),
+      String(
+        subRows.reduce(
+          (sum, sr) =>
+            sum +
+            deptIds.reduce(
+              (s2, id) => s2 + (sr.getter(period._raw, id) || 0),
+              0,
+            ),
+          0,
+        ),
+      ),
+    ];
+    return rowCells;
+  });
+
+  // Total row
+  const totalRow = [
+    "",
+    "Total",
+    ...deptIds.map((deptId) =>
+      String(
+        periods.reduce(
+          (sum, p) =>
+            sum +
+            subRows.reduce(
+              (s2, sr) => s2 + (sr.getter(p._raw, deptId) || 0),
+              0,
+            ),
+          0,
+        ),
+      ),
+    ),
+    String(
+      periods.reduce(
+        (sum, p) =>
+          sum +
+          deptIds.reduce(
+            (s2, id) =>
+              s2 +
+              subRows.reduce((s3, sr) => s3 + (sr.getter(p._raw, id) || 0), 0),
+            0,
+          ),
+        0,
+      ),
+    ),
+  ];
+
+  // Simple bar groups for Case2
+  const barGroups = periods.slice(0, 4).map((_, pi) => ({
+    key: `p${pi}`,
+    color: PERIOD_COLORS[pi % PERIOD_COLORS.length],
+  }));
+
+  const simplifiedBarData = deptIds.map((deptId, di) => {
+    const entry = { name: deptNames[di] };
+    periods.forEach((period, pi) => {
+      entry[`p${pi}`] = subRows.reduce(
+        (sum, sr) => sum + (sr.getter(period._raw, deptId) || 0),
+        0,
+      );
+    });
+    return entry;
+  });
+
+  return (
+    <ChartCard title={title}>
+      {/* Legend */}
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 8 }}
+      >
+        <View style={{ flexDirection: "row", gap: 10 }}>
+          {periods.slice(0, 4).map((p, pi) => (
+            <LegendItem
+              key={pi}
+              color={PERIOD_COLORS[pi % PERIOD_COLORS.length]}
+              label={getPeriodLabel(p)}
+            />
+          ))}
+        </View>
+      </ScrollView>
+      {/* Bar chart */}
+      <RNGroupedBarChart data={simplifiedBarData} groups={barGroups} />
+      {/* Table */}
+      <DataTable columns={headerCols} rows={[...tableRows, totalRow]} />
+    </ChartCard>
+  );
+};
+
 const Overview = () => {
   const navigation = useNavigation();
   const [companyCalendar, setCompanyCalendar] = useState(null);
@@ -447,6 +888,15 @@ const Overview = () => {
   const [selectedCompany, setSelectedCompany] = useState(null);
   const [branchModalVisible, setBranchModalVisible] = useState(false);
   const [activeSubIdx, setActiveSubIdx] = useState(new Date().getMonth());
+  const [kpiCards, setKpiCards] = useState(KPI_CARDS_INIT);
+  const [chartData, setChartData] = useState(null);
+  const [chartLoading, setChartLoading] = useState(false);
+  const [activeVerticals, setActiveVerticals] = useState([]);
+  const [pendingVerticals, setPendingVerticals] = useState([]);
+  const [allVerticals, setAllVerticals] = useState([]);
+  const [customFilterType, setCustomFilterType] = useState("monthly");
+  const [view, setView] = useState("overall"); // "overall" | "vertical"
+  const isCase2 = activeFilterType === "custom" && activeVerticals.length > 0;
   const [stats, setStats] = useState(
     STAT_CARD_TEMPLATE.map((t) => ({
       title: t.title,
@@ -617,6 +1067,7 @@ const Overview = () => {
     setActiveFilterType(fType);
     setActiveDateRange({ start: pendingStart, end: pendingEnd });
     setActiveSubIdx(pendingSubIdx);
+    setActiveVerticals(pendingVerticals); // ← add
     closeDateModal();
   };
 
@@ -715,6 +1166,358 @@ const Overview = () => {
   useEffect(() => {
     fetchStats();
   }, [fetchStats]);
+
+  useEffect(() => {
+    if (!userData || !selectedCompany || !companyCalendar) return;
+    if (!activeDateRange.start || !activeDateRange.end) return;
+
+    const fetchChartData = async () => {
+      setChartLoading(true);
+      try {
+        const startISO = getStartOfDayISO(activeDateRange.start);
+        const endISO = getEndOfDayISO(activeDateRange.end);
+
+        const formData = new FormData();
+        if (activeVerticals.length > 0) {
+          formData.append(
+            "departmenservicestids",
+            JSON.stringify(activeVerticals),
+          );
+        }
+        if (activeFilterType === "custom" && activeVerticals.length > 0) {
+          const { key, value } =
+            FILTER_FORM_FIELDS[customFilterType] ||
+            FILTER_FORM_FIELDS.current_month;
+          formData.append(key, value);
+        }
+
+        const res = await axiosInstance.post(
+          `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
+          formData,
+          { headers: { "Content-Type": "multipart/form-data" } },
+        );
+
+        const apiData = res.data || {};
+        const fullRangeSplit = apiData.range_split || [];
+        const rangeData = fullRangeSplit[0];
+
+        setChartData({
+          chart1: rangeData?.chart1 || [],
+          chart2: rangeData?.chart2 || [],
+          chart356: rangeData?.chart356 || [],
+          rangeSplit: fullRangeSplit,
+          cycleType: apiData.cycle_type || "Monthly",
+        });
+
+        // Cache verticals
+        if (activeVerticals.length === 0) {
+          const seen = new Set();
+          const opts = [];
+          fullRangeSplit.forEach((period) => {
+            [
+              ...(period.chart1 || []),
+              ...(period.chart2 || []),
+              ...(period.chart356 || []),
+            ].forEach((d) => {
+              const id = d.department_services ?? d.department;
+              const name =
+                d.department_services_short_name ||
+                d.department_name ||
+                "Unknown";
+              if (id !== undefined && !seen.has(id)) {
+                seen.add(id);
+                opts.push({ label: name, value: id });
+              }
+            });
+          });
+          if (opts.length > 0) setAllVerticals(opts);
+        }
+      } catch (err) {
+        console.error("Chart fetch failed:", err);
+      } finally {
+        setChartLoading(false);
+      }
+    };
+
+    fetchChartData();
+  }, [
+    activeDateRange,
+    userData,
+    selectedCompany,
+    companyCalendar,
+    activeVerticals,
+    activeFilterType,
+    customFilterType,
+  ]);
+
+  const filteredChart1 = useMemo(() => {
+    if (!chartData?.chart1) return [];
+    if (activeVerticals.length === 0) return chartData.chart1;
+    return chartData.chart1.filter((d) =>
+      activeVerticals.includes(d.department_services ?? d.department),
+    );
+  }, [chartData, activeVerticals]);
+
+  const filteredChart2 = useMemo(() => {
+    if (!chartData?.chart2) return [];
+    if (activeVerticals.length === 0) return chartData.chart2;
+    return chartData.chart2.filter((d) =>
+      activeVerticals.includes(d.department_services ?? d.department),
+    );
+  }, [chartData, activeVerticals]);
+
+  const filteredChart356 = useMemo(() => {
+    if (!chartData?.chart356) return [];
+    if (activeVerticals.length === 0) return chartData.chart356;
+    return chartData.chart356.filter((d) =>
+      activeVerticals.includes(d.department_services ?? d.department),
+    );
+  }, [chartData, activeVerticals]);
+
+  const overallNewVsRep = useMemo(
+    () => ({
+      totalNew: filteredChart1.reduce(
+        (s, d) => s + (d.new_employee_count ?? 0),
+        0,
+      ),
+      totalRep: filteredChart1.reduce(
+        (s, d) => s + (d.replacement_employee_count ?? 0),
+        0,
+      ),
+    }),
+    [filteredChart1],
+  );
+
+  const overallGender = useMemo(
+    () => ({
+      male: filteredChart356.reduce(
+        (s, d) => s + (d.gender_counts?.male ?? 0),
+        0,
+      ),
+      female: filteredChart356.reduce(
+        (s, d) => s + (d.gender_counts?.female ?? 0),
+        0,
+      ),
+    }),
+    [filteredChart356],
+  );
+
+  const overallPriority = useMemo(
+    () => ({
+      high: filteredChart2.reduce(
+        (s, d) => s + (d.priority_high_count ?? 0),
+        0,
+      ),
+      low: filteredChart2.reduce((s, d) => s + (d.priority_low_count ?? 0), 0),
+    }),
+    [filteredChart2],
+  );
+
+  const overallHired = useMemo(
+    () => filteredChart356.reduce((s, d) => s + (d.hired_count ?? 0), 0),
+    [filteredChart356],
+  );
+
+  const overallSource = useMemo(
+    () => ({
+      consultancy: filteredChart356.reduce(
+        (s, d) => s + (d.source_of_hiring_counts?.consultancy ?? 0),
+        0,
+      ),
+      internal: filteredChart356.reduce(
+        (s, d) => s + (d.source_of_hiring_counts?.internal ?? 0),
+        0,
+      ),
+      portal: filteredChart356.reduce(
+        (s, d) => s + (d.source_of_hiring_counts?.portal ?? 0),
+        0,
+      ),
+      website: filteredChart356.reduce(
+        (s, d) => s + (d.source_of_hiring_counts?.website ?? 0),
+        0,
+      ),
+    }),
+    [filteredChart356],
+  );
+
+  const newVsRepVertData = useMemo(
+    () =>
+      filteredChart1.map((d) => ({
+        name: d.department_services_short_name || d.department_name || "—",
+        new: d.new_employee_count ?? 0,
+        rep: d.replacement_employee_count ?? 0,
+      })),
+    [filteredChart1],
+  );
+
+  const hireGenderData = useMemo(
+    () =>
+      filteredChart356.map((d) => ({
+        name: d.department_services_short_name || d.department_name || "—",
+        male: d.gender_counts?.male ?? 0,
+        female: d.gender_counts?.female ?? 0,
+      })),
+    [filteredChart356],
+  );
+
+  const sourceData = useMemo(
+    () =>
+      filteredChart356.map((d) => ({
+        name: d.department_services_short_name || d.department_name || "—",
+        consultancy: d.source_of_hiring_counts?.consultancy ?? 0,
+        internal: d.source_of_hiring_counts?.internal ?? 0,
+        portal: d.source_of_hiring_counts?.portal ?? 0,
+        website: d.source_of_hiring_counts?.website ?? 0,
+      })),
+    [filteredChart356],
+  );
+
+  const priorityTableData = useMemo(
+    () =>
+      filteredChart2.map((d) => ({
+        name: d.department_services_short_name || d.department_name || "—",
+        high: d.priority_high_count ?? 0,
+        low: d.priority_low_count ?? 0,
+      })),
+    [filteredChart2],
+  );
+
+  const case2TableData = useMemo(() => {
+    if (!isCase2 || !chartData?.rangeSplit?.length) return null;
+    const { rangeSplit, cycleType } = chartData;
+    const mapping = RANGE_FIELD_MAP[cycleType] || RANGE_FIELD_MAP.Monthly;
+
+    const seen = new Set();
+    const uniquePeriods = [];
+    rangeSplit.forEach((item) => {
+      const start = item[mapping.startKey] || "";
+      if (!seen.has(start)) {
+        seen.add(start);
+        uniquePeriods.push({
+          label: item[mapping.labelKey] || "",
+          start,
+          end: item[mapping.endKey] || "",
+          _raw: item,
+        });
+      }
+    });
+
+    const allDeptIds = new Set();
+    const allDeptNames = {};
+    rangeSplit.forEach((period) => {
+      [
+        ...(period.chart1 || []),
+        ...(period.chart2 || []),
+        ...(period.chart356 || []),
+      ].forEach((d) => {
+        const id = d.department_services ?? d.department;
+        if (id !== undefined) {
+          allDeptIds.add(id);
+          allDeptNames[id] =
+            d.department_services_short_name || d.department_name || "Unknown";
+        }
+      });
+    });
+
+    const deptIds =
+      activeVerticals.length > 0
+        ? activeVerticals.filter((id) => allDeptIds.has(id))
+        : [...allDeptIds];
+    const deptNames = deptIds.map((id) => allDeptNames[id] || String(id));
+
+    const val = (arr = [], deptId, getter) => {
+      const row = arr.find(
+        (d) => (d.department_services ?? d.department) === deptId,
+      );
+      return row ? (getter(row) ?? 0) : 0;
+    };
+
+    const tables = [
+      {
+        title: "New vs Replacement Hiring",
+        subRows: [
+          {
+            label: "New",
+            color: C.orange,
+            getter: (p, id) => val(p.chart1, id, (d) => d.new_employee_count),
+          },
+          {
+            label: "Replacement",
+            color: C.blue,
+            getter: (p, id) =>
+              val(p.chart1, id, (d) => d.replacement_employee_count),
+          },
+        ],
+      },
+      {
+        title: "Open Position",
+        subRows: [
+          {
+            label: "High Priority",
+            color: C.blue,
+            getter: (p, id) => val(p.chart2, id, (d) => d.priority_high_count),
+          },
+          {
+            label: "Low Priority",
+            color: C.blueLight,
+            getter: (p, id) => val(p.chart2, id, (d) => d.priority_low_count),
+          },
+        ],
+      },
+      {
+        title: "Hire - Gender Wise",
+        subRows: [
+          {
+            label: "Male",
+            color: C.violet,
+            getter: (p, id) =>
+              val(p.chart356, id, (d) => d.gender_counts?.male),
+          },
+          {
+            label: "Female",
+            color: C.orange,
+            getter: (p, id) =>
+              val(p.chart356, id, (d) => d.gender_counts?.female),
+          },
+        ],
+      },
+      {
+        title: "Source of Hiring",
+        subRows: [
+          {
+            label: "Consultancy",
+            color: C.blue,
+            getter: (p, id) =>
+              val(
+                p.chart356,
+                id,
+                (d) => d.source_of_hiring_counts?.consultancy,
+              ),
+          },
+          {
+            label: "Internal",
+            color: C.orange,
+            getter: (p, id) =>
+              val(p.chart356, id, (d) => d.source_of_hiring_counts?.internal),
+          },
+          {
+            label: "Portal",
+            color: C.grey,
+            getter: (p, id) =>
+              val(p.chart356, id, (d) => d.source_of_hiring_counts?.portal),
+          },
+          {
+            label: "Website",
+            color: C.amber,
+            getter: (p, id) =>
+              val(p.chart356, id, (d) => d.source_of_hiring_counts?.website),
+          },
+        ],
+      },
+    ];
+
+    return { periods: uniquePeriods, deptIds, deptNames, tables };
+  }, [isCase2, chartData, activeVerticals]);
 
   const fetchCompanies = async () => {
     if (!userData) return;
@@ -927,6 +1730,7 @@ const Overview = () => {
           </TouchableOpacity> */}
         </View>
 
+        {/* ── KPI Cards ── */}
         {statsLoading ? (
           <View style={styles.loaderWrapper}>
             <ActivityIndicator size="large" color="#2563EB" />
@@ -937,6 +1741,290 @@ const Overview = () => {
             {stats.map((item, index) => (
               <StatCard key={index} item={item} />
             ))}
+          </View>
+        )}
+
+        {/* ── View Toggle (only when not Case2) ── */}
+        {!isCase2 && (
+          <View style={localStyles.viewToggle}>
+            {["overall", "vertical"].map((v) => (
+              <TouchableOpacity
+                key={v}
+                onPress={() => setView(v)}
+                style={[
+                  localStyles.viewToggleBtn,
+                  view === v && localStyles.viewToggleBtnActive,
+                ]}
+              >
+                <Text
+                  style={[
+                    localStyles.viewToggleTxt,
+                    view === v && localStyles.viewToggleTxtActive,
+                  ]}
+                >
+                  {v === "overall" ? "Overall" : "Vertical Wise"}
+                </Text>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* ── Charts ── */}
+        {chartLoading ? (
+          <View style={styles.loaderWrapper}>
+            <ActivityIndicator size="large" color="#2563EB" />
+            <Text style={styles.loaderText}>Loading charts…</Text>
+          </View>
+        ) : isCase2 ? (
+          /* ── Case 2: Period × Vertical tables ── */
+          case2TableData ? (
+            <View>
+              {case2TableData.tables.map((tbl) => (
+                <Case2Table
+                  key={tbl.title}
+                  title={tbl.title}
+                  periods={case2TableData.periods}
+                  deptIds={case2TableData.deptIds}
+                  deptNames={case2TableData.deptNames}
+                  subRows={tbl.subRows}
+                />
+              ))}
+            </View>
+          ) : (
+            <View style={localStyles.emptyBox}>
+              <Text style={localStyles.emptyTxt}>
+                No data for selected range and verticals.
+              </Text>
+            </View>
+          )
+        ) : view === "overall" ? (
+          /* ── Overall view ── */
+          <View>
+            {/* New vs Replacement donut */}
+            <ChartCard
+              title="New vs Replacement Hiring"
+              legend={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <LegendItem color={C.blueLight} label="Replacement" />
+                  <LegendItem color={C.blue} label="New" />
+                </View>
+              }
+            >
+              <RNDonutChart
+                data={[
+                  {
+                    name: "Replacement",
+                    value: overallNewVsRep.totalRep,
+                    color: C.blueLight,
+                  },
+                  {
+                    name: "New",
+                    value: overallNewVsRep.totalNew,
+                    color: C.blue,
+                  },
+                ]}
+                center={{
+                  value: overallNewVsRep.totalNew + overallNewVsRep.totalRep,
+                  label: "Total Hiring",
+                }}
+              />
+            </ChartCard>
+
+            {/* Hire Gender donut */}
+            <ChartCard
+              title="Hire - Gender Wise"
+              legend={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <LegendItem color={C.violet} label="Male" />
+                  <LegendItem color={C.orange} label="Female" />
+                </View>
+              }
+            >
+              <RNDonutChart
+                data={[
+                  { name: "Male", value: overallGender.male, color: C.violet },
+                  {
+                    name: "Female",
+                    value: overallGender.female,
+                    color: C.orange,
+                  },
+                ]}
+                center={{
+                  value: overallGender.male + overallGender.female,
+                  label: "Total Hired",
+                }}
+              />
+            </ChartCard>
+
+            {/* Open Position donut */}
+            <ChartCard
+              title="Open Position"
+              legend={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <LegendItem color={C.blue} label="High Priority" />
+                  <LegendItem color={C.blueLight} label="Low Priority" />
+                </View>
+              }
+            >
+              <RNDonutChart
+                data={[
+                  {
+                    name: "High Priority",
+                    value: overallPriority.high,
+                    color: C.blue,
+                  },
+                  {
+                    name: "Low Priority",
+                    value: overallPriority.low,
+                    color: C.blueLight,
+                  },
+                ]}
+                center={{
+                  value: overallPriority.high + overallPriority.low,
+                  label: "Total Positions",
+                }}
+              />
+            </ChartCard>
+
+            {/* Source of Hiring bar */}
+            <ChartCard
+              title="Source of Hiring"
+              legend={
+                <View
+                  style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
+                >
+                  {[
+                    ["Consultancy", C.blueLight],
+                    ["Internal", C.blue],
+                    ["Portal", C.blueDark],
+                    ["Website", C.blueDark1],
+                  ].map(([l, c]) => (
+                    <LegendItem key={l} color={c} label={l} />
+                  ))}
+                </View>
+              }
+            >
+              <RNBarChart
+                data={[
+                  { name: "Consultancy", value: overallSource.consultancy },
+                  { name: "Internal", value: overallSource.internal },
+                  { name: "Portal", value: overallSource.portal },
+                  { name: "Website", value: overallSource.website },
+                ]}
+                color={C.blue}
+              />
+            </ChartCard>
+          </View>
+        ) : (
+          /* ── Vertical Wise view ── */
+          <View>
+            {/* New vs Replacement line */}
+            <ChartCard
+              title="New vs Replacement Hiring by Vertical"
+              legend={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <LegendItem color={C.orange} label="New" />
+                  <LegendItem color={C.blue} label="Replacement" />
+                </View>
+              }
+            >
+              <RNLineChart
+                data={newVsRepVertData}
+                lines={[
+                  { key: "new", color: C.orange },
+                  { key: "rep", color: C.blue },
+                ]}
+              />
+              <DataTable
+                columns={[
+                  "",
+                  ...newVsRepVertData.map((d) => d.name.slice(0, 6)),
+                ]}
+                rows={[
+                  ["New", ...newVsRepVertData.map((d) => String(d.new))],
+                  ["Rep", ...newVsRepVertData.map((d) => String(d.rep))],
+                ]}
+              />
+            </ChartCard>
+
+            {/* Open Position table */}
+            <ChartCard title="Open Position">
+              <DataTable
+                columns={["Department", "High Priority", "Low Priority"]}
+                rows={[
+                  ...priorityTableData.map((r) => [
+                    r.name.slice(0, 12),
+                    String(r.high),
+                    String(r.low),
+                  ]),
+                  [
+                    "Total",
+                    String(priorityTableData.reduce((s, r) => s + r.high, 0)),
+                    String(priorityTableData.reduce((s, r) => s + r.low, 0)),
+                  ],
+                ]}
+              />
+            </ChartCard>
+
+            {/* Hire Vertical grouped bar */}
+            <ChartCard
+              title="Hire - Vertical Wise"
+              legend={
+                <View style={{ flexDirection: "row", gap: 10 }}>
+                  <LegendItem color={C.violet} label="Male" />
+                  <LegendItem color={C.orange} label="Female" />
+                </View>
+              }
+            >
+              <RNGroupedBarChart
+                data={hireGenderData}
+                groups={[
+                  { key: "male", color: C.violet },
+                  { key: "female", color: C.orange },
+                ]}
+              />
+              <DataTable
+                columns={["", ...hireGenderData.map((d) => d.name.slice(0, 6))]}
+                rows={[
+                  ["Male", ...hireGenderData.map((d) => String(d.male))],
+                  ["Female", ...hireGenderData.map((d) => String(d.female))],
+                ]}
+              />
+            </ChartCard>
+
+            {/* Source of Hiring grouped bar */}
+            <ChartCard
+              title="Source of Hiring"
+              legend={
+                <View
+                  style={{ flexDirection: "row", flexWrap: "wrap", gap: 8 }}
+                >
+                  <LegendItem color={C.blue} label="Consultancy" />
+                  <LegendItem color={C.orange} label="Internal" />
+                  <LegendItem color={C.grey} label="Portal" />
+                  <LegendItem color={C.amber} label="Website" />
+                </View>
+              }
+            >
+              <RNGroupedBarChart
+                data={sourceData}
+                groups={[
+                  { key: "consultancy", color: C.blue },
+                  { key: "internal", color: C.orange },
+                  { key: "portal", color: C.grey },
+                  { key: "website", color: C.amber },
+                ]}
+              />
+              <DataTable
+                columns={["", ...sourceData.map((d) => d.name.slice(0, 6))]}
+                rows={[
+                  ["Cons.", ...sourceData.map((d) => String(d.consultancy))],
+                  ["Int.", ...sourceData.map((d) => String(d.internal))],
+                  ["Portal", ...sourceData.map((d) => String(d.portal))],
+                  ["Web", ...sourceData.map((d) => String(d.website))],
+                ]}
+              />
+            </ChartCard>
           </View>
         )}
       </ScrollView>
@@ -1004,6 +2092,89 @@ const Overview = () => {
               showsVerticalScrollIndicator={false}
               keyboardShouldPersistTaps="handled"
             >
+              {/* ── Vertical Filter ── */}
+              {allVerticals.length > 0 && (
+                <View style={{ marginBottom: 16 }}>
+                  <Text style={styles.fieldLabel}>Vertical</Text>
+                  <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+                    <View
+                      style={{
+                        flexDirection: "row",
+                        flexWrap: "nowrap",
+                        gap: 8,
+                      }}
+                    >
+                      {allVerticals.map((opt) => {
+                        const selected = pendingVerticals.includes(opt.value);
+                        return (
+                          <TouchableOpacity
+                            key={opt.value}
+                            onPress={() => {
+                              setPendingVerticals((prev) =>
+                                selected
+                                  ? prev.filter((v) => v !== opt.value)
+                                  : [...prev, opt.value],
+                              );
+                            }}
+                            style={[
+                              styles.filterTypeBtn,
+                              selected && styles.filterTypeBtnActive,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.filterTypeText,
+                                selected && styles.filterTypeTextActive,
+                              ]}
+                            >
+                              {opt.label}
+                            </Text>
+                          </TouchableOpacity>
+                        );
+                      })}
+                    </View>
+                  </ScrollView>
+                  {/* Custom filter type picker when custom + verticals */}
+                  {isCustom && pendingVerticals.length > 0 && (
+                    <View style={{ marginTop: 10 }}>
+                      <Text style={styles.fieldLabel}>Segmentation</Text>
+                      <View
+                        style={{
+                          flexDirection: "row",
+                          gap: 8,
+                          flexWrap: "wrap",
+                        }}
+                      >
+                        {[
+                          { label: "Monthly", value: "monthly" },
+                          { label: "Quarterly", value: "quarterly" },
+                          { label: "Half Yearly", value: "half_yearly" },
+                        ].map((opt) => (
+                          <TouchableOpacity
+                            key={opt.value}
+                            onPress={() => setCustomFilterType(opt.value)}
+                            style={[
+                              styles.filterTypeBtn,
+                              customFilterType === opt.value &&
+                                styles.filterTypeBtnActive,
+                            ]}
+                          >
+                            <Text
+                              style={[
+                                styles.filterTypeText,
+                                customFilterType === opt.value &&
+                                  styles.filterTypeTextActive,
+                              ]}
+                            >
+                              {opt.label}
+                            </Text>
+                          </TouchableOpacity>
+                        ))}
+                      </View>
+                    </View>
+                  )}
+                </View>
+              )}
               {/* ── Custom Range Toggle ── */}
               <View style={styles.toggleRow}>
                 <Switch
@@ -1976,3 +3147,68 @@ const styles = {
     fontWeight: "700",
   },
 };
+
+const chartStyles = StyleSheet.create({
+  card: {
+    backgroundColor: "#fff",
+    borderRadius: 12,
+    padding: 14,
+    marginBottom: 14,
+    elevation: 2,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.07,
+    shadowRadius: 4,
+  },
+  cardHeader: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 10,
+    flexWrap: "wrap",
+    gap: 6,
+  },
+  cardTitle: { fontSize: 13, fontWeight: "600", color: "#1B1B1B" },
+  legendRow: { flexDirection: "row", flexWrap: "wrap", gap: 8 },
+  donutCenter: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  donutValue: { fontSize: 22, fontWeight: "700", color: "#1B1B1B" },
+  donutLabel: { fontSize: 10, color: "#9CA3AF", marginTop: 2 },
+  donutLegend: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: 12,
+    marginTop: 10,
+    justifyContent: "center",
+  },
+  donutLegendItem: { flexDirection: "row", alignItems: "center", gap: 6 },
+  donutLegendValue: { fontSize: 14, fontWeight: "700", color: "#1B1B1B" },
+  donutLegendName: { fontSize: 10, color: "#888" },
+  tableRow: { flexDirection: "row" },
+  tableHeader: {
+    minWidth: 60,
+    padding: 6,
+    fontSize: 10,
+    fontWeight: "600",
+    color: "#fff",
+    textAlign: "center",
+    borderWidth: 0.5,
+    borderColor: "#152D4A",
+  },
+  tableCell: {
+    minWidth: 60,
+    padding: 6,
+    fontSize: 10,
+    color: "#1B1B1B",
+    textAlign: "center",
+    borderWidth: 0.5,
+    borderColor: "#E8EEFF",
+  },
+});
