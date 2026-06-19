@@ -1,6 +1,12 @@
 import Header from "@/app/components/Header";
 import { StatusBar } from "expo-status-bar";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  useMemo,
+} from "react";
 import {
   View,
   Text,
@@ -11,10 +17,10 @@ import {
   Modal,
   Platform,
   Switch,
+  StyleSheet,
 } from "react-native";
 import { base_url } from "../../constant/api";
 import { Dimensions } from "react-native";
-import { PieChart, Pie, Cell } from "react-native-svg-charts";
 import {
   VictoryPie,
   VictoryBar,
