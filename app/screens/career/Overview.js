@@ -23,12 +23,11 @@ import { useNavigation } from "@react-navigation/native";
 import axiosInstance from "@/app/utils/axiosInstance";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import DateTimePicker from "@react-native-community/datetimepicker";
-import Svg, { Path } from "react-native-svg";
 import dayjs from "dayjs";
 import { Dimensions } from "react-native";
-import * as FileSystem from "expo-file-system";
-import * as Sharing from "expo-sharing";
-import XLSX from "xlsx";
+// import * as FileSystem from "expo-file-system";
+// import * as Sharing from "expo-sharing";
+// import XLSX from "xlsx";
 import Svg, {
   Path,
   Circle,
@@ -1398,12 +1397,12 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
     backgroundColor: "#FAFBFF",
   };
 
+  // NEW — matches the always-unique key format
   const barData = deptIds.map((deptId, di) => {
     const entry = { name: deptNames[di] };
     periods.forEach((p, pi) => {
       subRows.forEach((sr) => {
-        const key =
-          subRows.length > 1 ? `P${pi + 1}__${sr.label}` : `P${pi + 1}`;
+        const key = `P${pi + 1}__${sr.label}`;
         entry[key] = sr.getter(p._raw, deptId) || 0;
       });
     });
@@ -1414,7 +1413,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
   const barColors = [];
   periods.forEach((p, pi) => {
     subRows.forEach((sr, si) => {
-      const key = subRows.length > 1 ? `P${pi + 1}__${sr.label}` : `P${pi + 1}`;
+      const key = `P${pi + 1}__${sr.label}`; // always unique: period + subrow
       barKeys.push(key);
       barColors.push(
         subRows.length > 1
@@ -2037,6 +2036,7 @@ const Overview = () => {
     if (!activeDateRange.start || !activeDateRange.end) return;
 
     const fetchChartData = async () => {
+      if (!userData?.user_id || !selectedCompany?.id) return; // ← ADD THIS LINE
       setChartLoading(true);
       try {
         const startISO = getStartOfDayISO(activeDateRange.start);
@@ -2049,9 +2049,17 @@ const Overview = () => {
             JSON.stringify(activeVerticals),
           );
         }
-        if (activeFilterType === "custom" && activeVerticals.length > 0) {
+
+        if (activeFilterType === "custom") {
+          if (activeVerticals.length > 0) {
+            const { key, value } =
+              FILTER_FORM_FIELDS[customFilterType] ||
+              FILTER_FORM_FIELDS.monthly;
+            chartFormData.append(key, value);
+          }
+        } else if (activeVerticals.length === 0) {
           const { key, value } =
-            FILTER_FORM_FIELDS[customFilterType] ||
+            FILTER_FORM_FIELDS[activeFilterType] ||
             FILTER_FORM_FIELDS.current_month;
           chartFormData.append(key, value);
         }
@@ -2060,10 +2068,10 @@ const Overview = () => {
           `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
           chartFormData,
         );
+        console.log(response, "res");
         const apiData = response.data || {};
         const rangeData = apiData.range_split?.[0];
         const fullRangeSplit = apiData.range_split || [];
-
         setChartData({
           chart1: rangeData?.chart1 || [],
           chart2: rangeData?.chart2 || [],
