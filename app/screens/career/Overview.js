@@ -783,7 +783,8 @@ const BarChartSVG = ({ data, keys, colors, height = 200, yLabel }) => {
         const val = Math.round((maxVal / yTicks) * (yTicks - i));
         const y = PAD_T + (i / yTicks) * chartH;
         return (
-          <G key={i}>
+          <G key={`grid-${i}`}>
+            {" "}
             <Line
               x1={PAD_L}
               y1={y}
@@ -876,7 +877,7 @@ const LineChartSVG = ({ data, keys, colors, height = 180 }) => {
         const val = Math.round((maxVal / yTicks) * (yTicks - i));
         const y = PAD_T + (i / yTicks) * chartH;
         return (
-          <G key={i}>
+          <G key={`grid-${i}`}>
             <Line
               x1={PAD_L}
               y1={y}
@@ -968,7 +969,8 @@ const AreaChartSVG = ({ data, keys, colors, height = 180 }) => {
         const val = Math.round((maxVal / yTicks) * (yTicks - i));
         const y = PAD_T + (i / yTicks) * chartH;
         return (
-          <G key={i}>
+          <G key={`grid-${i}`}>
+            {" "}
             <Line
               x1={PAD_L}
               y1={y}
@@ -1158,7 +1160,7 @@ const BudgetBarChartSVG = ({ data }) => {
         const val = Math.round((maxVal / yTicks) * (yTicks - i));
         const y = PAD_T + (i / yTicks) * chartH;
         return (
-          <G key={i}>
+          <G key={`grid-${i}`}>
             <Line
               x1={PAD_L}
               y1={y}
@@ -2067,8 +2069,12 @@ const Overview = () => {
         const response = await axiosInstance.post(
           `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
           chartFormData,
+          {
+            headers: {
+              "Content-Type": "multipart/form-data",
+            },
+          },
         );
-        console.log(response, "res");
         const apiData = response.data || {};
         const rangeData = apiData.range_split?.[0];
         const fullRangeSplit = apiData.range_split || [];
