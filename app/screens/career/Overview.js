@@ -397,47 +397,9 @@ const getDefaultSubIdx = (filterType) => {
   return opts.length > 0 ? String(opts[0].idx) : "";
 };
 
-const buildFYYearOptions = () => {
-  const currentYear = new Date().getFullYear();
-  const years = [];
-
-  for (let y = currentYear - 6; y <= currentYear + 5; y++) {
-    years.push({
-      label: `FY ${String(y).slice(-2)}-${String(y + 1).slice(-2)}`,
-      value: y,
-    });
-  }
-
-  return years;
-};
-
-const getWeekOptions = (fyStart = getCurrentFYStart()) => {
-  const fyBegin = new Date(fyStart, 3, 1);
-  const fyEnd = new Date(fyStart + 1, 2, 31);
-  const weeks = [];
-  let cursor = new Date(fyBegin);
-  const dow = cursor.getDay();
-  if (dow !== 1) cursor.setDate(cursor.getDate() - ((dow + 6) % 7));
-  let wNum = 1;
-  while (cursor <= fyEnd) {
-    const wStart = new Date(cursor);
-    const wEnd = new Date(cursor);
-    wEnd.setDate(wEnd.getDate() + 6);
-    weeks.push({
-      label: `W${wNum} (${wStart.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })}–${wEnd.toLocaleDateString("en-IN", { day: "2-digit", month: "short" })})`,
-      start: wStart.toISOString().split("T")[0],
-      end: wEnd.toISOString().split("T")[0],
-      idx: wNum,
-    });
-    cursor.setDate(cursor.getDate() + 7);
-    wNum++;
-  }
-  return weeks;
-};
-
 const formatDisplayDate = (dateStr) => {
   if (!dateStr) return "";
-  const d = parseLocalDate(dateStr); // ✅ was new Date(dateStr)
+  const d = parseLocalDate(dateStr);
   return d.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
@@ -784,7 +746,6 @@ const BarChartSVG = ({ data, keys, colors, height = 200, yLabel }) => {
         const y = PAD_T + (i / yTicks) * chartH;
         return (
           <G key={`grid-${i}`}>
-            {" "}
             <Line
               x1={PAD_L}
               y1={y}
@@ -901,7 +862,7 @@ const LineChartSVG = ({ data, keys, colors, height = 180 }) => {
       {keys.map((k, ki) => {
         const pts = data.map((d, i) => `${xOf(i)},${yOf(d[k] || 0)}`).join(" ");
         return (
-          <G key={ki}>
+          <G key={`line-${ki}`}>
             <Polyline
               points={pts}
               fill="none"
@@ -970,7 +931,6 @@ const AreaChartSVG = ({ data, keys, colors, height = 180 }) => {
         const y = PAD_T + (i / yTicks) * chartH;
         return (
           <G key={`grid-${i}`}>
-            {" "}
             <Line
               x1={PAD_L}
               y1={y}
@@ -1001,7 +961,7 @@ const AreaChartSVG = ({ data, keys, colors, height = 180 }) => {
           data.map((d, i) => `${xOf(i)},${yOf(d[k] || 0)}`).join(" ") +
           ` ${xOf(n - 1)},${baseY}`;
         return (
-          <G key={ki}>
+          <G key={`area-${ki}`}>
             <Polygon points={fillPts} fill={colors[ki]} fillOpacity={0.18} />
             <Polyline
               points={linePts}
@@ -1061,8 +1021,8 @@ const BulletBarChartSVG = ({ data, mainKey, subKey, mainColor, subColor }) => {
 
   return (
     <Svg width={svgW} height={svgH}>
-      {xTicks.map((t) => (
-        <G key={t}>
+      {xTicks.map((t, ti) => (
+        <G key={`tick-${ti}`}>
           <Line
             x1={toX(t)}
             y1={0}
@@ -1090,7 +1050,7 @@ const BulletBarChartSVG = ({ data, mainKey, subKey, mainColor, subColor }) => {
         const label = d.name || "";
         const words = label.split(" ");
         return (
-          <G key={i}>
+          <G key={`row-${i}`}>
             {words.map((w, wi) => (
               <SvgText
                 key={wi}
@@ -1186,7 +1146,7 @@ const BudgetBarChartSVG = ({ data }) => {
         const budH = ((d.budget || 0) / maxVal) * chartH;
         const finH = ((d.final || 0) / maxVal) * chartH;
         return (
-          <G key={di}>
+          <G key={`bar-${di}`}>
             <Rect
               x={cx - barW - 1}
               y={toY(d.budget || 0)}
@@ -1219,6 +1179,99 @@ const BudgetBarChartSVG = ({ data }) => {
         );
       })}
     </Svg>
+  );
+};
+
+// ─── PYRAMID (SVG) ────────────────────────────────────────────────────────────
+const PYRAMID_LEVELS_FALLBACK = [
+  { label: "TM - 2", color: "#0B045A", widthPct: 20 },
+  { label: "Sm - 11", color: "#C35A12", widthPct: 40 },
+  { label: "MM - 41", color: "#B28D00", widthPct: 60 },
+  { label: "JM - 66", color: "#305898", widthPct: 80 },
+  { label: "LM - 4", color: "#3A5525", widthPct: 100 },
+];
+
+const PYRAMID_COLORS = [
+  "#0B045A",
+  "#C35A12",
+  "#B28D00",
+  "#305898",
+  "#3A5525",
+  "#1E3A5F",
+  "#ED7D31",
+];
+
+const PyramidSVG = ({ levelCounts }) => {
+  // Build levels from real data (sorted descending → largest tier at bottom),
+  // falling back to the static demo levels if no data is available.
+  const levels = levelCounts
+    ? (() => {
+        const entries = Object.entries(levelCounts).sort((a, b) => a[1] - b[1]); // ascending → smallest first (apex)
+        const maxCount = Math.max(...entries.map(([, c]) => c), 1);
+        return entries.map(([label, count], i) => ({
+          label: `${label} - ${count}`,
+          color: PYRAMID_COLORS[i % PYRAMID_COLORS.length],
+          widthPct: Math.max((count / maxCount) * 100, 15),
+        }));
+      })()
+    : PYRAMID_LEVELS_FALLBACK;
+
+  const SEG_H = 48;
+  const SVG_W = 200;
+  const CX = SVG_W / 2;
+  const LABEL_W = 90;
+  const GAP = 10;
+  const totalH = levels.length * SEG_H;
+  const totalW = LABEL_W + GAP + SVG_W;
+  const px = LABEL_W + GAP;
+
+  if (levels.length === 0) return null;
+
+  return (
+    <View style={{ alignItems: "center", paddingVertical: 10 }}>
+      <Svg
+        width={Math.min(totalW, SCREEN_W - 60)}
+        height={totalH}
+        viewBox={`0 0 ${totalW} ${totalH}`}
+      >
+        {levels.map((l, i) => {
+          const botW = (l.widthPct / 100) * SVG_W;
+          const topW = i === 0 ? 0 : (levels[i - 1].widthPct / 100) * SVG_W;
+          const y = i * SEG_H;
+          const midY = y + SEG_H / 2;
+          const topL = px + CX - topW / 2;
+          const botL = px + CX - botW / 2;
+          const leftEdgeMid = (topL + botL) / 2;
+
+          return (
+            <G key={l.label}>
+              <Polygon
+                points={`${topL},${y} ${topL + topW},${y} ${botL + botW},${y + SEG_H} ${botL},${y + SEG_H}`}
+                fill={l.color}
+                fillOpacity={0.9}
+              />
+              <Line
+                x1={LABEL_W}
+                y1={midY}
+                x2={leftEdgeMid - 2}
+                y2={midY}
+                stroke="#C0C0C0"
+                strokeWidth={0.8}
+              />
+              <SvgText
+                x={LABEL_W - 6}
+                y={midY + 4}
+                fontSize={11}
+                fill="#444"
+                textAnchor="end"
+              >
+                {l.label}
+              </SvgText>
+            </G>
+          );
+        })}
+      </Svg>
+    </View>
   );
 };
 
@@ -1388,18 +1441,15 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
     padding: 6,
     borderWidth: 0.5,
     borderColor: "#E8EEFF",
-    minWidth: 50,
   };
   const tdTxt = { fontSize: 10, textAlign: "center", color: "#1B1B1B" };
   const tdLabelStyle = {
     padding: 6,
     borderWidth: 0.5,
     borderColor: "#E8EEFF",
-    minWidth: 120,
     backgroundColor: "#FAFBFF",
   };
 
-  // NEW — matches the always-unique key format
   const barData = deptIds.map((deptId, di) => {
     const entry = { name: deptNames[di] };
     periods.forEach((p, pi) => {
@@ -1415,7 +1465,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
   const barColors = [];
   periods.forEach((p, pi) => {
     subRows.forEach((sr, si) => {
-      const key = `P${pi + 1}__${sr.label}`; // always unique: period + subrow
+      const key = `P${pi + 1}__${sr.label}`;
       barKeys.push(key);
       barColors.push(
         subRows.length > 1
@@ -1424,6 +1474,10 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
       );
     });
   });
+
+  const SNO_W = 36;
+  const MONTH_W = 120;
+  const CELL_W = 70;
 
   return (
     <ChartCard title={title}>
@@ -1435,66 +1489,83 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
       >
         <View
           style={{
-            flexDirection: "row",
-            flexWrap: "wrap",
+            flex: 1,
+            flexDirection: "column",
             gap: 6,
-            marginBottom: 6,
           }}
         >
-          {(subRows.length > 1
-            ? subRows.map((sr) => ({ label: sr.label, color: sr.color }))
-            : periods.map((p, pi) => ({
-                label: getPeriodLabel(p),
-                color: PERIOD_COLORS[pi % PERIOD_COLORS.length],
-              }))
-          ).map((l, i) => (
-            <RNLegendItem key={i} color={l.color} label={l.label} />
-          ))}
+          <View
+            style={{
+              flexDirection: "row",
+              flexWrap: "wrap",
+              gap: 6,
+            }}
+          >
+            {(subRows.length > 1
+              ? subRows.map((sr) => ({ label: sr.label, color: sr.color }))
+              : periods.map((p, pi) => ({
+                  label: getPeriodLabel(p),
+                  color: PERIOD_COLORS[pi % PERIOD_COLORS.length],
+                }))
+            ).map((l, i) => (
+              <RNLegendItem key={i} color={l.color} label={l.label} />
+            ))}
+          </View>
+          <BarChartSVG
+            data={barData}
+            keys={barKeys}
+            colors={barColors}
+            height={200}
+          />
         </View>
-        <BarChartSVG
-          data={barData}
-          keys={barKeys}
-          colors={barColors}
-          height={200}
-        />
       </ScrollView>
 
       {/* Table */}
-      <ScrollView horizontal showsHorizontalScrollIndicator={false}>
-        <View>
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        style={{ marginBottom: 10 }}
+      >
+        <View
+          style={{
+            width:
+              SNO_W +
+              MONTH_W +
+              (deptIds.length * subRows.length + subRows.length) * CELL_W,
+          }}
+        >
           {/* Header row 1 */}
           <View style={{ flexDirection: "row" }}>
-            <View style={[thStyle, { minWidth: 36 }]}>
+            <View style={[thStyle, { width: SNO_W }]}>
               <Text style={thTxt}>S.No</Text>
             </View>
-            <View style={[thStyle, { minWidth: 120 }]}>
+            <View style={[thStyle, { width: MONTH_W }]}>
               <Text style={thTxt}>Month</Text>
             </View>
             {deptNames.map((name) => (
               <View
                 key={name}
-                style={[thStyle, { minWidth: 50 * subRows.length }]}
+                style={[thStyle, { width: CELL_W * subRows.length }]}
               >
                 <Text style={thTxt} numberOfLines={2}>
                   {name}
                 </Text>
               </View>
             ))}
-            <View style={[thStyle, { minWidth: 50 * subRows.length }]}>
+            <View style={[thStyle, { width: CELL_W * subRows.length }]}>
               <Text style={thTxt}>Total</Text>
             </View>
           </View>
-
           {/* Header row 2 — sub rows */}
           {subRows.length > 1 && (
             <View style={{ flexDirection: "row" }}>
-              <View style={{ width: 36 }} />
-              <View style={{ width: 120 }} />
+              <View style={{ width: SNO_W }} />
+              <View style={{ width: MONTH_W }} />
               {deptNames.map((name) =>
                 subRows.map((sr) => (
                   <View
                     key={`${name}-${sr.label}`}
-                    style={[thLightStyle, { minWidth: 50 }]}
+                    style={[thLightStyle, { width: CELL_W }]}
                   >
                     <View
                       style={{
@@ -1513,7 +1584,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
               {subRows.map((sr) => (
                 <View
                   key={`tot-${sr.label}`}
-                  style={[thLightStyle, { minWidth: 50 }]}
+                  style={[thLightStyle, { width: CELL_W }]}
                 >
                   <View
                     style={{
@@ -1530,7 +1601,6 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
               ))}
             </View>
           )}
-
           {/* Data rows */}
           {periods.map((period, pi) => (
             <View
@@ -1538,12 +1608,13 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
               style={{
                 flexDirection: "row",
                 backgroundColor: pi % 2 === 0 ? "#fff" : "#F7F9FF",
+                minWidth: SCREEN_W - 40,
               }}
             >
-              <View style={[tdStyle, { minWidth: 36 }]}>
+              <View style={[tdStyle, { width: SNO_W }]}>
                 <Text style={{ ...tdTxt, color: "#888" }}>{pi + 1}</Text>
               </View>
-              <View style={[tdLabelStyle]}>
+              <View style={[tdLabelStyle, { width: MONTH_W }]}>
                 <Text
                   style={{ fontSize: 10, fontWeight: "600", color: "#374151" }}
                 >
@@ -1559,7 +1630,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
                 subRows.map((sr) => (
                   <View
                     key={`${deptId}-${sr.label}`}
-                    style={[tdStyle, { minWidth: 50 }]}
+                    style={[tdStyle, { width: CELL_W }]}
                   >
                     <Text style={tdTxt}>{sr.getter(period._raw, deptId)}</Text>
                   </View>
@@ -1575,7 +1646,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
                     key={`row-tot-${sr.label}`}
                     style={[
                       tdStyle,
-                      { minWidth: 50, backgroundColor: "#EEF4FF" },
+                      { width: CELL_W, backgroundColor: "#EEF4FF" },
                     ]}
                   >
                     <Text style={{ ...tdTxt, fontWeight: "600" }}>
@@ -1586,13 +1657,23 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
               })}
             </View>
           ))}
-
           {/* Total row */}
-          <View style={{ flexDirection: "row", backgroundColor: "#F0F5FF" }}>
-            <View style={[tdStyle, { minWidth: 36 }]}>
+          <View
+            style={{
+              flexDirection: "row",
+              backgroundColor: "#F0F5FF",
+              minWidth: SCREEN_W - 40,
+            }}
+          >
+            <View style={[tdStyle, { width: SNO_W }]}>
               <Text style={tdTxt} />
             </View>
-            <View style={[tdLabelStyle, { backgroundColor: "#F0F5FF" }]}>
+            <View
+              style={[
+                tdLabelStyle,
+                { width: MONTH_W, backgroundColor: "#F0F5FF" },
+              ]}
+            >
               <Text
                 style={{ fontSize: 10, fontWeight: "700", color: "#1E3A5F" }}
               >
@@ -1610,7 +1691,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
                     key={`col-tot-${deptId}-${sr.label}`}
                     style={[
                       tdStyle,
-                      { minWidth: 50, backgroundColor: "#F0F5FF" },
+                      { width: CELL_W, backgroundColor: "#F0F5FF" },
                     ]}
                   >
                     <Text
@@ -1637,7 +1718,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
                   key={`grand-${sr.label}`}
                   style={[
                     tdStyle,
-                    { minWidth: 50, backgroundColor: "#D6E4FF" },
+                    { width: CELL_W, backgroundColor: "#D6E4FF" },
                   ]}
                 >
                   <Text
@@ -1733,7 +1814,7 @@ const Overview = () => {
       setPendingStart(activeDateRange.start);
       setPendingEnd(activeDateRange.end);
     } else {
-      const range = computeRangeForFilter(fType, subToUse, selectedFYStart, sd); // ✅
+      const range = computeRangeForFilter(fType, subToUse, selectedFYStart, sd);
       setPendingStart(range.start);
       setPendingEnd(range.end);
     }
@@ -1755,7 +1836,7 @@ const Overview = () => {
     setPendingFilterType(val);
     const defSub = getDefaultSubIdx(val);
     setPendingSubIdx(defSub);
-    const range = computeRangeForFilter(val, defSub, selectedFYStart, sd); // ✅
+    const range = computeRangeForFilter(val, defSub, selectedFYStart, sd);
     setPendingStart(range.start);
     setPendingEnd(range.end);
     setActivePicker(null);
@@ -1769,7 +1850,7 @@ const Overview = () => {
       val,
       selectedFYStart,
       sd,
-    ); // ✅
+    );
     setPendingStart(range.start);
     setPendingEnd(range.end);
   };
@@ -1784,7 +1865,7 @@ const Overview = () => {
       setPendingFilterType("monthly");
       const defSub = getDefaultSubIdx("monthly");
       setPendingSubIdx(defSub);
-      const range = computeRangeForFilter("monthly", defSub, fyYear, sd); // ✅
+      const range = computeRangeForFilter("monthly", defSub, fyYear, sd);
       setPendingStart(range.start);
       setPendingEnd(range.end);
     } else {
@@ -1793,7 +1874,7 @@ const Overview = () => {
         pendingSubIdx,
         fyYear,
         sd,
-      ); // ✅
+      );
       setPendingStart(range.start);
       setPendingEnd(range.end);
     }
@@ -1808,7 +1889,7 @@ const Overview = () => {
         pendingSubIdx,
         selectedFYStart,
         sd,
-      ); // ✅
+      );
       setPendingStart(range.start);
       setPendingEnd(range.end);
     }
@@ -1826,15 +1907,25 @@ const Overview = () => {
     setSelectedFYStart(getCurrentFYStart());
     setPendingVerticals([]);
     setActivePicker(null);
+    setActiveFilterType("current_month");
+    setActiveDateRange(range);
+    setActiveSubIdx("");
+    setActiveVerticals([]);
+    setView("overall");
+    closeDateModal();
   };
 
   const clearActiveFilter = () => {
     const sd = startDayRef.current;
-    const range = getCurrentMonthRange(sd); // ✅
-    setActiveFilterType("current_month");
-    setActiveDateRange(range);
-    setActiveSubIdx("");
+    const range = getCurrentMonthRange(sd);
+    setIsCustom(false);
+    setPendingFilterType("current_month");
+    setPendingSubIdx("");
+    setPendingStart(range.start);
+    setPendingEnd(range.end);
     setSelectedFYStart(getCurrentFYStart());
+    setPendingVerticals([]);
+    setActivePicker(null);
   };
 
   const applyDateRange = () => {
@@ -2045,6 +2136,27 @@ const Overview = () => {
         const endISO = getEndOfDayISO(activeDateRange.end);
         const chartFormData = new FormData();
 
+        // if (activeVerticals.length > 0) {
+        //   chartFormData.append(
+        //     "departmenservicestids",
+        //     JSON.stringify(activeVerticals),
+        //   );
+        // }
+
+        // if (activeFilterType === "custom") {
+        //   if (activeVerticals.length > 0) {
+        //     const { key, value } =
+        //       FILTER_FORM_FIELDS[customFilterType] ||
+        //       FILTER_FORM_FIELDS.monthly;
+        //     chartFormData.append(key, value);
+        //   }
+        // } else if (activeVerticals.length === 0) {
+        //   const { key, value } =
+        //     FILTER_FORM_FIELDS[activeFilterType] ||
+        //     FILTER_FORM_FIELDS.current_month;
+        //   chartFormData.append(key, value);
+        // }
+
         if (activeVerticals.length > 0) {
           chartFormData.append(
             "departmenservicestids",
@@ -2052,19 +2164,37 @@ const Overview = () => {
           );
         }
 
-        if (activeFilterType === "custom") {
-          if (activeVerticals.length > 0) {
-            const { key, value } =
-              FILTER_FORM_FIELDS[customFilterType] ||
-              FILTER_FORM_FIELDS.monthly;
-            chartFormData.append(key, value);
-          }
+        if (activeFilterType === "custom" && activeVerticals.length > 0) {
+          const { key, value } =
+            FILTER_FORM_FIELDS[customFilterType] || FILTER_FORM_FIELDS.monthly;
+          chartFormData.append(key, value);
+        } else if (
+          activeFilterType === "custom" &&
+          activeVerticals.length === 0
+        ) {
+          // RN's multipart body builder fails on a zero-field FormData — always
+          // write at least one part so a valid boundary gets sent.
+          chartFormData.append("filter", "");
         } else if (activeVerticals.length === 0) {
           const { key, value } =
             FILTER_FORM_FIELDS[activeFilterType] ||
             FILTER_FORM_FIELDS.current_month;
           chartFormData.append(key, value);
         }
+
+        console.log(
+          "Chart fetch — activeFilterType:",
+          activeFilterType,
+          "activeVerticals:",
+          activeVerticals,
+        );
+        for (let pair of chartFormData.entries()) {
+          console.log("Chart FORMDATA =>", pair[0], pair[1]);
+        }
+        console.log(
+          "Chart REQUEST URL =>",
+          `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
+        );
 
         const response = await axiosInstance.post(
           `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
@@ -2075,6 +2205,7 @@ const Overview = () => {
             },
           },
         );
+
         const apiData = response.data || {};
         const rangeData = apiData.range_split?.[0];
         const fullRangeSplit = apiData.range_split || [];
@@ -2112,7 +2243,10 @@ const Overview = () => {
           }
         }
       } catch (err) {
-        console.error("Chart fetch failed:", err);
+        // console.error("Chart fetch failed:", err);
+        console.log("Chart Error =>", err);
+        console.log("Chart Error Response =>", err?.response?.data);
+        console.log("Chart Error Status =>", err?.response?.status);
       } finally {
         setChartLoading(false);
       }
@@ -2681,14 +2815,14 @@ const Overview = () => {
 
           <View style={styles.dateBadge}>
             <Text style={styles.dateBadgeTxt} numberOfLines={1}>
-              {formatShortDate(activeDateRange.start)} –{" "}
+              {formatShortDate(activeDateRange.start)} –
               {formatShortDate(activeDateRange.end)}
             </Text>
           </View>
 
           {!isDefault && (
             <TouchableOpacity
-              onPress={clearActiveFilter}
+              onPress={handleClearFilter}
               style={styles.clearIcon}
             >
               <Text style={{ fontSize: 17, color: "#dc2626" }}>✕</Text>
@@ -2709,7 +2843,7 @@ const Overview = () => {
 
           <TouchableOpacity style={styles.dateBox} onPress={openDateModal}>
             <Text style={styles.dateText} numberOfLines={1}>
-              {formatDisplay(activeDateRange.start)} →{" "}
+              {formatDisplay(activeDateRange.start)} →
               {formatDisplay(activeDateRange.end)}
             </Text>
 
@@ -2909,56 +3043,8 @@ const Overview = () => {
             </ChartCard>
 
             {overallLevelCounts && (
-              <ChartCard title="Job Levels">
-                <View style={{ paddingVertical: 8 }}>
-                  {Object.entries(overallLevelCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([level, count], i, arr) => {
-                      const widthPct = Math.max(
-                        (count / (arr[0][1] || 1)) * 100,
-                        8,
-                      );
-                      const colors = [
-                        C.navy,
-                        C.amber,
-                        C.blueDark,
-                        C.teal,
-                        C.violet,
-                        C.orange,
-                        C.green,
-                      ];
-                      return (
-                        <View
-                          key={level}
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 8,
-                            marginBottom: 6,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 10,
-                              color: "#555",
-                              width: 90,
-                              textAlign: "right",
-                            }}
-                          >
-                            {level} – {count}
-                          </Text>
-                          <View
-                            style={{
-                              height: 18,
-                              width: `${widthPct}%`,
-                              backgroundColor: colors[i % colors.length],
-                              borderRadius: 3,
-                            }}
-                          />
-                        </View>
-                      );
-                    })}
-                </View>
+              <ChartCard title="Job Levels (Pyramid)">
+                <PyramidSVG levelCounts={overallLevelCounts} />
               </ChartCard>
             )}
 
@@ -3253,56 +3339,8 @@ const Overview = () => {
             </ChartCard>
 
             {overallLevelCounts && (
-              <ChartCard title="Job Levels">
-                <View style={{ paddingVertical: 8 }}>
-                  {Object.entries(overallLevelCounts)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([level, count], i, arr) => {
-                      const widthPct = Math.max(
-                        (count / (arr[0][1] || 1)) * 100,
-                        8,
-                      );
-                      const colors = [
-                        C.navy,
-                        C.amber,
-                        C.blueDark,
-                        C.teal,
-                        C.violet,
-                        C.orange,
-                        C.green,
-                      ];
-                      return (
-                        <View
-                          key={level}
-                          style={{
-                            flexDirection: "row",
-                            alignItems: "center",
-                            gap: 8,
-                            marginBottom: 6,
-                          }}
-                        >
-                          <Text
-                            style={{
-                              fontSize: 10,
-                              color: "#555",
-                              width: 90,
-                              textAlign: "right",
-                            }}
-                          >
-                            {level} – {count}
-                          </Text>
-                          <View
-                            style={{
-                              height: 18,
-                              width: `${widthPct}%`,
-                              backgroundColor: colors[i % colors.length],
-                              borderRadius: 3,
-                            }}
-                          />
-                        </View>
-                      );
-                    })}
-                </View>
+              <ChartCard title="Job Levels (Pyramid)">
+                <PyramidSVG levelCounts={overallLevelCounts} />
               </ChartCard>
             )}
 
@@ -3783,8 +3821,8 @@ const Overview = () => {
                               end.setDate(start.getDate() + 6);
                               end.setHours(23, 59, 59, 999);
 
-                              setPendingStart(toLocalDateStr(start)); // ✅ was toISOString
-                              setPendingEnd(toLocalDateStr(end)); // ✅ was toISOString
+                              setPendingStart(toLocalDateStr(start));
+                              setPendingEnd(toLocalDateStr(end));
                             }
                           }}
                         />
@@ -3984,7 +4022,7 @@ const StatCard = ({ item }) => (
 export default Overview;
 
 const styles = {
-  container: { flex: 1, backgroundColor: "#f5f7fb" },
+  container: { flex: 1 },
 
   filterRow: {
     flexDirection: "row",
@@ -4025,6 +4063,18 @@ const styles = {
   fyBadgeTxt: { fontSize: 12, fontWeight: "600", color: "#6B7280" },
 
   chevron: { fontSize: 14, color: "#9CA3AF" },
+  toggleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+    paddingVertical: 4,
+    marginBottom: 4,
+  },
+  toggleLabel: {
+    fontSize: 14,
+    color: "#374151",
+    fontWeight: "500",
+  },
 
   dateBadge: {
     backgroundColor: "#F8FAFC",
@@ -4034,6 +4084,7 @@ const styles = {
     borderWidth: 1,
     borderColor: "#E5E7EB",
     flex: 1,
+    width: "fit-content",
   },
 
   dateBadgeTxt: { fontSize: 12, fontWeight: "600", color: "#6B7280" },
@@ -4259,7 +4310,6 @@ const styles = {
     color: "#2563EB",
     fontWeight: "600",
   },
-  // New styles to add — drop-in alongside existing ones
 
   filterModalOverlay: {
     flex: 1,
@@ -4267,7 +4317,6 @@ const styles = {
     backgroundColor: "rgba(0,0,0,0.5)",
   },
 
-  // Replace dateModalCard with this:
   dateModalCard: {
     backgroundColor: "#fff",
     borderTopLeftRadius: 20,
@@ -4310,7 +4359,6 @@ const styles = {
     color: "#2563EB",
   },
 
-  // Reusable select button (mimics Ant Design Select)
   selectBtn: {
     flexDirection: "row",
     alignItems: "center",
@@ -4344,7 +4392,6 @@ const styles = {
     marginLeft: 4,
   },
 
-  // Dropdown list (renders inline below the trigger, like a popover)
   dropdownList: {
     borderWidth: 1,
     borderColor: "#E5E7EB",
@@ -4401,7 +4448,6 @@ const styles = {
     marginHorizontal: 2,
   },
 
-  // Disabled date display box (mirrors React's disabled DatePicker)
   disabledDateBox: {
     flexDirection: "row",
     alignItems: "center",
