@@ -92,7 +92,10 @@ const JobListing = () => {
             />
           </Svg>
           <TextInput
-            placeholder="Search"
+            placeholder="Search..."
+            placeholderTextColor="#A0AEC0"
+            cursorColor="#000000"
+            selectionColor="#000000"
             value={searchText}
             onChangeText={setSearchText}
             style={{
@@ -101,7 +104,7 @@ const JobListing = () => {
               color: "#000000",
               paddingVertical: 10,
             }}
-            underlineColorAndroid="transparent"
+            // underlineColorAndroid="transparent"
           />
         </View>
       </View>
