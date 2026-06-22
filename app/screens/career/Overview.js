@@ -435,7 +435,6 @@ const YearPickerModal = ({ visible, selectedYear, onSelect, onClose }) => {
         onPress={onClose}
       >
         <TouchableOpacity activeOpacity={1} style={styles.yearPickerCard}>
-          {/* Header */}
           <View style={styles.yearPickerHeader}>
             <Text style={styles.yearPickerTitle}>Select Year</Text>
 
@@ -444,7 +443,6 @@ const YearPickerModal = ({ visible, selectedYear, onSelect, onClose }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Navigation */}
           <View style={styles.yearPickerNav}>
             <TouchableOpacity
               style={styles.yearPickerNavBtn}
@@ -465,7 +463,6 @@ const YearPickerModal = ({ visible, selectedYear, onSelect, onClose }) => {
             </TouchableOpacity>
           </View>
 
-          {/* Grid */}
           <View style={styles.yearPickerGrid}>
             {years.map((year) => {
               const isSelected = selectedYear === year;
@@ -625,13 +622,13 @@ const DonutChart = ({ data, center, size = 160 }) => {
   );
 };
 
-// ─── SPIRAL CHART (SVG half-arcs) ────────────────────────────────────────────
+// ─── SPIRAL CHART  ────────────────────────────────────────────
 const SpiralChart = ({ data, center }) => {
   const svgW = 220;
   const svgH = 140;
   const cx = svgW * 0.45;
   const cy = svgH * 0.95;
-  const baseInner = 18;
+  const baseInner = 20;
   const thickness = 16;
   const gap = 5;
   const total = center.value || 1;
@@ -721,10 +718,29 @@ const SpiralChart = ({ data, center }) => {
   );
 };
 
+// ─── SHARED TICK HELPER ───────────────────────────────────────────────────────
+const generateYTicks = (maxVal, tickCount = 5) => {
+  if (maxVal === 0) return [0];
+  const intMax = Math.ceil(maxVal);
+  if (intMax <= tickCount) {
+    return Array.from({ length: intMax + 1 }, (_, i) => i);
+  }
+  const rawStep = intMax / tickCount;
+  const magnitude = Math.pow(10, Math.floor(Math.log10(rawStep)));
+  const niceStep = Math.ceil(rawStep / magnitude) * magnitude || 1;
+  const niceMax = Math.ceil(intMax / niceStep) * niceStep;
+
+  const ticks = [];
+  for (let v = 0; v <= niceMax; v += niceStep) {
+    ticks.push(Math.round(v));
+  }
+  return ticks;
+};
+
 // ─── BAR CHART (SVG) ─────────────────────────────────────────────────────────
-const BarChartSVG = ({ data, keys, colors, height = 200, yLabel }) => {
-  const svgW = SCREEN_W - 80;
-  const PAD_L = 32,
+const BarChartSVG = ({ data, keys, colors, height = 200, fixedWidth }) => {
+  const svgW = fixedWidth ?? SCREEN_W - 80;
+  const PAD_L = 36,
     PAD_R = 8,
     PAD_T = 12,
     PAD_B = 50;
@@ -734,18 +750,21 @@ const BarChartSVG = ({ data, keys, colors, height = 200, yLabel }) => {
     ...data.flatMap((d) => keys.map((k) => d[k] || 0)),
     1,
   );
-  const groupW = chartW / data.length;
+
+  // ✅ unique, evenly-spaced ticks
+  const yTicks = generateYTicks(maxVal);
+  const niceMax = yTicks[yTicks.length - 1];
+
+  const groupW = chartW / Math.max(data.length, 1);
   const barW = Math.max(groupW / (keys.length + 1) - 2, 4);
-  const yTicks = 4;
 
   return (
     <Svg width={svgW} height={height}>
-      {/* Y gridlines */}
-      {Array.from({ length: yTicks + 1 }, (_, i) => {
-        const val = Math.round((maxVal / yTicks) * (yTicks - i));
-        const y = PAD_T + (i / yTicks) * chartH;
+      {/* Y gridlines + labels */}
+      {yTicks.map((val) => {
+        const y = PAD_T + chartH - (val / niceMax) * chartH;
         return (
-          <G key={`grid-${i}`}>
+          <G key={`grid-${val}`}>
             <Line
               x1={PAD_L}
               y1={y}
@@ -771,7 +790,7 @@ const BarChartSVG = ({ data, keys, colors, height = 200, yLabel }) => {
         const groupX = PAD_L + di * groupW + groupW * 0.1;
         return keys.map((k, ki) => {
           const val = d[k] || 0;
-          const barH = (val / maxVal) * chartH;
+          const barH = (val / niceMax) * chartH;
           const x = groupX + ki * (barW + 2);
           const y = PAD_T + chartH - barH;
           return (
@@ -815,9 +834,9 @@ const BarChartSVG = ({ data, keys, colors, height = 200, yLabel }) => {
 };
 
 // ─── LINE CHART (SVG) ─────────────────────────────────────────────────────────
-const LineChartSVG = ({ data, keys, colors, height = 180 }) => {
-  const svgW = SCREEN_W - 80;
-  const PAD_L = 32,
+const LineChartSVG = ({ data, keys, colors, height = 180, fixedWidth }) => {
+  const svgW = fixedWidth ?? SCREEN_W - 80;
+  const PAD_L = 36,
     PAD_R = 8,
     PAD_T = 12,
     PAD_B = 50;
@@ -827,18 +846,20 @@ const LineChartSVG = ({ data, keys, colors, height = 180 }) => {
     ...data.flatMap((d) => keys.map((k) => d[k] || 0)),
     1,
   );
+
+  const yTicks = generateYTicks(maxVal);
+  const niceMax = yTicks[yTicks.length - 1];
+
   const n = data.length;
   const xOf = (i) => PAD_L + (n < 2 ? chartW / 2 : (i / (n - 1)) * chartW);
-  const yOf = (v) => PAD_T + chartH - (v / maxVal) * chartH;
-  const yTicks = 4;
+  const yOf = (v) => PAD_T + chartH - (v / niceMax) * chartH;
 
   return (
     <Svg width={svgW} height={height}>
-      {Array.from({ length: yTicks + 1 }, (_, i) => {
-        const val = Math.round((maxVal / yTicks) * (yTicks - i));
-        const y = PAD_T + (i / yTicks) * chartH;
+      {yTicks.map((val) => {
+        const y = PAD_T + chartH - (val / niceMax) * chartH;
         return (
-          <G key={`grid-${i}`}>
+          <G key={`grid-${val}`}>
             <Line
               x1={PAD_L}
               y1={y}
@@ -882,8 +903,7 @@ const LineChartSVG = ({ data, keys, colors, height = 180 }) => {
         );
       })}
       {data.map((d, i) => {
-        const label = d.name || "";
-        const words = label.split(" ");
+        const words = (d.name || "").split(" ");
         return (
           <G key={`lbl-${i}`}>
             {words.map((w, wi) => (
@@ -906,9 +926,9 @@ const LineChartSVG = ({ data, keys, colors, height = 180 }) => {
 };
 
 // ─── AREA CHART (SVG) ─────────────────────────────────────────────────────────
-const AreaChartSVG = ({ data, keys, colors, height = 180 }) => {
-  const svgW = SCREEN_W - 80;
-  const PAD_L = 32,
+const AreaChartSVG = ({ data, keys, colors, height = 180, fixedWidth }) => {
+  const svgW = fixedWidth ?? SCREEN_W - 80;
+  const PAD_L = 36,
     PAD_R = 8,
     PAD_T = 12,
     PAD_B = 50;
@@ -918,19 +938,21 @@ const AreaChartSVG = ({ data, keys, colors, height = 180 }) => {
     ...data.flatMap((d) => keys.map((k) => d[k] || 0)),
     1,
   );
+
+  const yTicks = generateYTicks(maxVal);
+  const niceMax = yTicks[yTicks.length - 1];
+
   const n = data.length;
   const xOf = (i) => PAD_L + (n < 2 ? chartW / 2 : (i / (n - 1)) * chartW);
-  const yOf = (v) => PAD_T + chartH - (v / maxVal) * chartH;
+  const yOf = (v) => PAD_T + chartH - (v / niceMax) * chartH;
   const baseY = PAD_T + chartH;
-  const yTicks = 4;
 
   return (
     <Svg width={svgW} height={height}>
-      {Array.from({ length: yTicks + 1 }, (_, i) => {
-        const val = Math.round((maxVal / yTicks) * (yTicks - i));
-        const y = PAD_T + (i / yTicks) * chartH;
+      {yTicks.map((val) => {
+        const y = PAD_T + chartH - (val / niceMax) * chartH;
         return (
-          <G key={`grid-${i}`}>
+          <G key={`grid-${val}`}>
             <Line
               x1={PAD_L}
               y1={y}
@@ -973,8 +995,7 @@ const AreaChartSVG = ({ data, keys, colors, height = 180 }) => {
         );
       })}
       {data.map((d, i) => {
-        const label = d.name || "";
-        const words = label.split(" ");
+        const words = (d.name || "").split(" ");
         return (
           <G key={`lbl-${i}`}>
             {words.map((w, wi) => (
@@ -1091,7 +1112,7 @@ const BulletBarChartSVG = ({ data, mainKey, subKey, mainColor, subColor }) => {
 // ─── BUDGET vs FINAL BAR CHART (SVG) ─────────────────────────────────────────
 const BudgetBarChartSVG = ({ data }) => {
   const svgW = SCREEN_W - 80;
-  const PAD_L = 40,
+  const PAD_L = 44,
     PAD_R = 8,
     PAD_T = 12,
     PAD_B = 50;
@@ -1101,11 +1122,14 @@ const BudgetBarChartSVG = ({ data }) => {
     ...data.flatMap((d) => [d.budget || 0, d.final || 0]),
     1,
   );
+
+  const yTicks = generateYTicks(maxVal);
+  const niceMax = yTicks[yTicks.length - 1];
+
   const n = data.length;
   const groupW = chartW / Math.max(n, 1);
   const barW = Math.max(groupW * 0.3 - 2, 4);
-  const yTicks = 4;
-  const toY = (v) => PAD_T + chartH - (v / maxVal) * chartH;
+  const toY = (v) => PAD_T + chartH - (v / niceMax) * chartH;
 
   const fmtK = (v) =>
     v >= 100000
@@ -1116,11 +1140,10 @@ const BudgetBarChartSVG = ({ data }) => {
 
   return (
     <Svg width={svgW} height={220}>
-      {Array.from({ length: yTicks + 1 }, (_, i) => {
-        const val = Math.round((maxVal / yTicks) * (yTicks - i));
-        const y = PAD_T + (i / yTicks) * chartH;
+      {yTicks.map((val) => {
+        const y = PAD_T + chartH - (val / niceMax) * chartH;
         return (
-          <G key={`grid-${i}`}>
+          <G key={`grid-${val}`}>
             <Line
               x1={PAD_L}
               y1={y}
@@ -1143,8 +1166,8 @@ const BudgetBarChartSVG = ({ data }) => {
       })}
       {data.map((d, di) => {
         const cx = PAD_L + di * groupW + groupW / 2;
-        const budH = ((d.budget || 0) / maxVal) * chartH;
-        const finH = ((d.final || 0) / maxVal) * chartH;
+        const budH = ((d.budget || 0) / niceMax) * chartH;
+        const finH = ((d.final || 0) / niceMax) * chartH;
         return (
           <G key={`bar-${di}`}>
             <Rect
@@ -1191,32 +1214,21 @@ const PYRAMID_LEVELS_FALLBACK = [
   { label: "LM - 4", color: "#3A5525", widthPct: 100 },
 ];
 
-const PYRAMID_COLORS = [
-  "#0B045A",
-  "#C35A12",
-  "#B28D00",
-  "#305898",
-  "#3A5525",
-  "#1E3A5F",
-  "#ED7D31",
-];
-
 const PyramidSVG = ({ levelCounts }) => {
-  // Build levels from real data (sorted descending → largest tier at bottom),
-  // falling back to the static demo levels if no data is available.
-  const levels = levelCounts
-    ? (() => {
-        const entries = Object.entries(levelCounts).sort((a, b) => a[1] - b[1]); // ascending → smallest first (apex)
-        const maxCount = Math.max(...entries.map(([, c]) => c), 1);
-        return entries.map(([label, count], i) => ({
-          label: `${label} - ${count}`,
-          color: PYRAMID_COLORS[i % PYRAMID_COLORS.length],
-          widthPct: Math.max((count / maxCount) * 100, 15),
-        }));
-      })()
-    : PYRAMID_LEVELS_FALLBACK;
+  if (!levelCounts || Object.keys(levelCounts).length === 0) return null;
 
-  const SEG_H = 48;
+  const levels = Object.entries(levelCounts)
+    .sort((a, b) => b[1] - a[1])
+    .reverse()
+    .map(([label, count], i) => ({
+      label,
+      count,
+      color: PYRAMID_LEVELS_FALLBACK[i % PYRAMID_LEVELS_FALLBACK.length].color,
+      widthPct:
+        PYRAMID_LEVELS_FALLBACK[i % PYRAMID_LEVELS_FALLBACK.length].widthPct,
+    }));
+
+  const SEG_H = 36;
   const SVG_W = 200;
   const CX = SVG_W / 2;
   const LABEL_W = 90;
@@ -1224,8 +1236,6 @@ const PyramidSVG = ({ levelCounts }) => {
   const totalH = levels.length * SEG_H;
   const totalW = LABEL_W + GAP + SVG_W;
   const px = LABEL_W + GAP;
-
-  if (levels.length === 0) return null;
 
   return (
     <View style={{ alignItems: "center", paddingVertical: 10 }}>
@@ -1244,7 +1254,7 @@ const PyramidSVG = ({ levelCounts }) => {
           const leftEdgeMid = (topL + botL) / 2;
 
           return (
-            <G key={l.label}>
+            <G key={`${l.label}-${i}`}>
               <Polygon
                 points={`${topL},${y} ${topL + topW},${y} ${botL + botW},${y + SEG_H} ${botL},${y + SEG_H}`}
                 fill={l.color}
@@ -1259,13 +1269,13 @@ const PyramidSVG = ({ levelCounts }) => {
                 strokeWidth={0.8}
               />
               <SvgText
-                x={LABEL_W - 6}
+                x={LABEL_W - 30}
                 y={midY + 4}
                 fontSize={11}
                 fill="#444"
                 textAnchor="end"
               >
-                {l.label}
+                {l.label} - {l.count}
               </SvgText>
             </G>
           );
@@ -1479,6 +1489,11 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
   const MONTH_W = 120;
   const CELL_W = 70;
 
+  const chartWidth = Math.max(
+    SCREEN_W - 80,
+    deptIds.length * subRows.length * 40 + 60,
+  );
+
   return (
     <ChartCard title={title}>
       {/* Bar chart */}
@@ -1516,6 +1531,7 @@ const Case2TableRN = ({ title, periods, deptIds, deptNames, subRows }) => {
             keys={barKeys}
             colors={barColors}
             height={200}
+            fixedWidth={chartWidth}
           />
         </View>
       </ScrollView>
@@ -2182,20 +2198,6 @@ const Overview = () => {
           chartFormData.append(key, value);
         }
 
-        console.log(
-          "Chart fetch — activeFilterType:",
-          activeFilterType,
-          "activeVerticals:",
-          activeVerticals,
-        );
-        for (let pair of chartFormData.entries()) {
-          console.log("Chart FORMDATA =>", pair[0], pair[1]);
-        }
-        console.log(
-          "Chart REQUEST URL =>",
-          `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
-        );
-
         const response = await axiosInstance.post(
           `${base_url}/career/chart_datas/${userData.user_id}/${selectedCompany.id}/?from_date=${startISO}&to_date=${endISO}`,
           chartFormData,
@@ -2243,10 +2245,7 @@ const Overview = () => {
           }
         }
       } catch (err) {
-        // console.error("Chart fetch failed:", err);
-        console.log("Chart Error =>", err);
-        console.log("Chart Error Response =>", err?.response?.data);
-        console.log("Chart Error Status =>", err?.response?.status);
+        console.error("Chart fetch failed:", err);
       } finally {
         setChartLoading(false);
       }
@@ -2475,9 +2474,12 @@ const Overview = () => {
     if (!filteredChartData?.chart356) return null;
     const agg = {};
     filteredChartData.chart356.forEach((d) => {
-      Object.entries(d["level counts"] || {}).forEach(([lvl, cnt]) => {
-        agg[lvl] = (agg[lvl] || 0) + cnt;
-      });
+      // ✅ Fix: removed trailing space, also handle both key variants
+      Object.entries(d.level_counts || d["level_counts "] || {}).forEach(
+        ([lvl, cnt]) => {
+          agg[lvl] = (agg[lvl] || 0) + Number(cnt || 0);
+        },
+      );
     });
     return Object.keys(agg).length > 0 ? agg : null;
   }, [filteredChartData]);
@@ -3042,11 +3044,11 @@ const Overview = () => {
               />
             </ChartCard>
 
-            {overallLevelCounts && (
-              <ChartCard title="Job Levels (Pyramid)">
+            <ChartCard title="Job Levels">
+              {overallLevelCounts && (
                 <PyramidSVG levelCounts={overallLevelCounts} />
-              </ChartCard>
-            )}
+              )}
+            </ChartCard>
 
             <ChartCard
               title="Budget vs Actual CTC by Month"
@@ -3073,11 +3075,15 @@ const Overview = () => {
                 </View>
               }
             >
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={true}>
                 <LineChartSVG
                   data={newVsReplacementData}
                   keys={["new", "rep"]}
                   colors={[C.orange, C.blue]}
+                  fixedWidth={Math.max(
+                    SCREEN_W - 80,
+                    newVsReplacementData.length * 60 + 60,
+                  )}
                 />
               </ScrollView>
               <ChartTableRN
@@ -3263,11 +3269,15 @@ const Overview = () => {
                 </View>
               }
             >
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={true}>
                 <AreaChartSVG
                   data={hireVsExitData}
                   keys={["hire", "exit"]}
                   colors={[C.blue, "#FAC6D0"]}
+                  fixedWidth={Math.max(
+                    SCREEN_W - 80,
+                    hireVsExitData.length * 60 + 60,
+                  )}
                 />
               </ScrollView>
               <ChartTableRN
@@ -3304,11 +3314,15 @@ const Overview = () => {
                 </View>
               }
             >
-              <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={true}>
                 <BarChartSVG
                   data={sourceOfHiringData}
                   keys={["consultancy", "internal", "portal", "website"]}
                   colors={[C.blue, C.orange, C.grey, C.amber]}
+                  fixedWidth={Math.max(
+                    SCREEN_W - 80,
+                    sourceOfHiringData.length * 80 + 60,
+                  )}
                 />
               </ScrollView>
               <ChartTableRN
@@ -3338,11 +3352,11 @@ const Overview = () => {
               />
             </ChartCard>
 
-            {overallLevelCounts && (
-              <ChartCard title="Job Levels (Pyramid)">
+            <ChartCard title="Job Levels">
+              {overallLevelCounts && (
                 <PyramidSVG levelCounts={overallLevelCounts} />
-              </ChartCard>
-            )}
+              )}
+            </ChartCard>
 
             <ChartCard
               title="Budget vs Actual CTC by Month"
@@ -3639,7 +3653,6 @@ const Overview = () => {
 
                   {/* ── Filter Type + Period (side by side like React) ── */}
                   <View style={styles.rowTwo}>
-                    {/* Filter Type dropdown */}
                     <View style={styles.halfCol}>
                       <Text style={styles.fieldLabel}>Filter Type</Text>
                       <TouchableOpacity
@@ -3830,7 +3843,7 @@ const Overview = () => {
                     </View>
                   )}
 
-                  {/* ── Start & End (side by side, disabled — mirrors React) ── */}
+                  {/* ── Start & End (side by side, disabled — mirrors ) ── */}
                   <View style={[styles.rowTwo, { marginTop: 16 }]}>
                     <View style={styles.halfCol}>
                       <Text style={styles.fieldLabel}>Start Date</Text>
@@ -3873,7 +3886,6 @@ const Overview = () => {
               onSelect={handleFYYearChange}
               onClose={() => setShowYearPicker(false)}
             />
-            {/* ── Footer ── */}
             <View style={styles.dateModalActions}>
               <TouchableOpacity
                 style={styles.dateCancelBtn}
@@ -3895,7 +3907,6 @@ const Overview = () => {
           </TouchableOpacity>
         </TouchableOpacity>
       </Modal>
-      {/* VERTICAL PICKER MODAL */}
       <Modal
         visible={verticalPickerVisible}
         animationType="slide"
@@ -3919,7 +3930,6 @@ const Overview = () => {
               </TouchableOpacity>
             </View>
             <ScrollView>
-              {/* All option */}
               <TouchableOpacity
                 style={[
                   styles.dropdownItem,
