@@ -204,7 +204,7 @@ const CandidateListing = () => {
             style={styles.searchInput}
             placeholderTextColor="#A0AEC0"
           />
-          <FilterIcon />
+          {/* <FilterIcon /> */}
         </View>
         <TouchableOpacity
           style={styles.addBtn}

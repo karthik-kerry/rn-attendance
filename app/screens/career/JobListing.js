@@ -171,7 +171,9 @@ const JobListing = () => {
                         fontWeight: 400,
                       }}
                     >
-                      {job?.cmp_name}{" "}
+                      {job?.cmp_name?.length > 20
+                        ? `${job.cmp_name.substring(0, 20)}...`
+                        : job?.cmp_name}
                     </Text>
                     <Text
                       style={{
