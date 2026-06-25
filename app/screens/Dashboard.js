@@ -33,7 +33,7 @@ const Dashboard = () => {
       ),
     },
     {
-      title: "Job Portal",
+      title: "Career Portal",
       description: "Connect employers and candidates with smart hiring",
       navigateTo: "careerNav",
       icon: (
@@ -95,6 +95,7 @@ const Dashboard = () => {
               borderRadius: 12,
               marginBottom: 15,
               flexDirection: "row",
+              backgroundColor: "#2563EB14",
               alignItems: "center",
               justifyContent: "space-between",
             }}
