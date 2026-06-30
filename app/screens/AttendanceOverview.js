@@ -67,8 +67,10 @@ const AttendanceOverview = () => {
               style={{
                 flexDirection: "row",
                 alignItems: "center",
-                justifyContent: "space-between",
-                width: "100%",
+                justifyContent: "center",
+                // width: "100%",
+                gap: 20,
+                flex: 1,
               }}
             >
               <Text
@@ -76,6 +78,7 @@ const AttendanceOverview = () => {
                   fontFamily: "Inter-SemiBold",
                   color: "#1b1b1b",
                   fontSize: 16,
+                  flexShrink: 1,
                 }}
               >
                 {title}
@@ -87,8 +90,6 @@ const AttendanceOverview = () => {
                   fontSize: 14,
                   paddingVertical: 8,
                   paddingHorizontal: 16,
-                  width: 78,
-                  height: 31,
                   borderWidth: 0.6,
                   borderRadius: 47,
                   borderColor: "#64748B",
