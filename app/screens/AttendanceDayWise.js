@@ -31,16 +31,10 @@ const AttendanceDayWise = () => {
     const fetchUserData = async () => {
       const storedData = await AsyncStorage.getItem("userData");
       if (storedData) {
-        const parsedData = JSON.parse(storedData);
-        if (parsedData?.token) {
-          setUserData(parsedData);
-        } else {
-          console.error("Token is missing in userData");
-        }
-      } else {
-        console.error("No userData found in AsyncStorage");
+        setUserData(JSON.parse(storedData));
       }
     };
+
     fetchUserData();
   }, []);
 
@@ -49,9 +43,7 @@ const AttendanceDayWise = () => {
       setIsLoading(true);
       try {
         const endpoint = `${base_url}/hrm/hrm_user_attendance_view/${userData?.user_id}/${userData?.branchid?.companyid}/`;
-        const headers = {
-          Authorization: `Token ${userData?.token}`,
-        };
+
         const res = await axiosInstance.get(endpoint);
         setAttendanceList(res.data);
         setIsLoading(false);
@@ -215,7 +207,7 @@ const AttendanceDayWise = () => {
               return (
                 <>
                   <AttendanceCard
-                    key={i}
+                    // key={i}
                     index={i}
                     title={formattedDate}
                     shift={attendance?.shiftname}

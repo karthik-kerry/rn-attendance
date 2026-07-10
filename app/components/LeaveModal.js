@@ -145,7 +145,7 @@ const LeaveModal = ({ visible, onClose, onSubmit }) => {
                 <TouchableOpacity
                   style={{
                     height: 44,
-                    width: width - 240,
+                    width: width - 260,
                     borderWidth: 1,
                     borderColor: "#E2E8F0",
                     borderRadius: 8,
@@ -242,7 +242,7 @@ const LeaveModal = ({ visible, onClose, onSubmit }) => {
                 <TouchableOpacity
                   style={{
                     height: 44,
-                    width: width - 240,
+                    width: width - 260,
                     borderWidth: 1,
                     borderColor: "#E2E8F0",
                     borderRadius: 8,

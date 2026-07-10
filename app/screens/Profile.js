@@ -44,9 +44,6 @@ const Profile = () => {
           username: userData?.username,
           countrycode: "IN",
         };
-        const headers = {
-          Authorization: `Token ${userData?.token}`,
-        };
         const res = await axiosInstance.post(endpoint, payload);
         setUserInfo(res.data);
         console.log(userInfo, "userInfo");
@@ -56,6 +53,8 @@ const Profile = () => {
     };
     fetchUserInfo();
   }, [userData]);
+
+  console.log(userData);
 
   const handleDashboardPress = () => {
     navigation.navigate("dashboard");
