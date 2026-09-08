@@ -78,6 +78,7 @@ axiosInstance.interceptors.request.use(
       }
 
       const accessToken = await AsyncStorage.getItem("accessToken");
+      console.log("accessToken", accessToken);
       if (accessToken) {
         config.headers = config.headers || {};
         config.headers.Authorization = `Bearer ${accessToken}`;

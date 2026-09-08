@@ -838,7 +838,7 @@ const HomeScreen = () => {
                   />
                 </Svg>
                 <Text style={{ fontFamily: "Inter-Bold", color: "#1b1b1b" }}>
-                  {shiftData?.shift_start_time}
+                  {shiftData?.user_shift?.start_time}
                 </Text>
                 <Text
                   style={{
