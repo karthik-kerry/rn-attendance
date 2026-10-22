@@ -1,2 +1,2 @@
-export const base_url = "https://api.xbmtechnologies.com"; //http://13.201.36.181";
+export const base_url = "http://14.99.175.194:7734/"; //"https://api.xbmtechnologies.com";
 // ("https://apidev.xbmtechnologies.com");
