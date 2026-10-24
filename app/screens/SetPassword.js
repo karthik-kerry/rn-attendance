@@ -13,7 +13,7 @@ import BG from "../../assets/images/bg.png";
 import { Dropdown } from "react-native-element-dropdown";
 import { base_url } from "../constant/api";
 import axiosInstance from "../utils/axiosInstance";
-import { Checkbox, TextInput } from "react-native-paper";
+import { ActivityIndicator, Checkbox, TextInput } from "react-native-paper";
 import { StatusBar } from "expo-status-bar";
 
 const SetPassword = () => {
@@ -27,6 +27,7 @@ const SetPassword = () => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [checked, setChecked] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const fetchCountries = async () => {
@@ -42,6 +43,14 @@ const SetPassword = () => {
   }, []);
 
   const handleSubmit = async () => {
+    if (!password || !confirmPassword) {
+      Alert.alert("Please fill all fields");
+      return;
+    }
+
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
     try {
       const endpoint = `${base_url}/core/user_creation/`;
       const request = {
@@ -53,15 +62,13 @@ const SetPassword = () => {
         userMobile: data.payload.phone,
         themes: "dark",
       };
-      if (!password || !confirmPassword) {
-        Alert.alert("Please fill all fields");
-        return;
-      }
       const res = await axiosInstance.post(endpoint, request);
       console.log("User creation response:", res.data);
       navigation.navigate("login");
     } catch (error) {
       console.log("Error creating user:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -199,6 +206,7 @@ const SetPassword = () => {
             </View>
             <TouchableOpacity
               onPress={handleSubmit}
+              disabled={isSubmitting}
               style={{
                 width: "100%",
                 height: 48,
@@ -208,15 +216,19 @@ const SetPassword = () => {
                 justifyContent: "center",
               }}
             >
-              <Text
-                style={{
-                  fontFamily: "Inter-Bold",
-                  color: "white",
-                  textTransform: "uppercase",
-                }}
-              >
-                Submit
-              </Text>
+              {isSubmitting ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Text
+                  style={{
+                    fontFamily: "Inter-Bold",
+                    color: "white",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Submit
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

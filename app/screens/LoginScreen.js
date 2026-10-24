@@ -29,6 +29,7 @@ const LoginScreen = () => {
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [companyList, setCompanyList] = useState([]);
 
   useEffect(() => {
@@ -113,7 +114,7 @@ const LoginScreen = () => {
       return;
     }
 
-    setIsLoading(true);
+    setIsLoggingIn(true);
 
     try {
       const endpoint = `${base_url}/core/login/`;
@@ -210,7 +211,7 @@ const LoginScreen = () => {
         `status: ${status ?? "n/a"}\nmessage: ${message}`,
       );
     } finally {
-      setIsLoading(false);
+      setIsLoggingIn(false);
     }
   };
 
@@ -404,6 +405,7 @@ const LoginScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity
               onPress={handleLogin}
+              disabled={isLoggingIn}
               style={{
                 width: "100%",
                 height: 48,
@@ -413,15 +415,19 @@ const LoginScreen = () => {
                 justifyContent: "center",
               }}
             >
-              <Text
-                style={{
-                  fontFamily: "Inter-Bold",
-                  color: "white",
-                  textTransform: "uppercase",
-                }}
-              >
-                Login
-              </Text>
+              {isLoggingIn ? (
+                <ActivityIndicator size="small" color="#FFF" />
+              ) : (
+                <Text
+                  style={{
+                    fontFamily: "Inter-Bold",
+                    color: "white",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  Login
+                </Text>
+              )}
             </TouchableOpacity>
           </View>
         </View>

@@ -32,6 +32,7 @@ import JobDetail from "./screens/career/JobDetail";
 import CandidateDetails from "./screens/career/CandidateDetails";
 import CandidateStatusScreen from "./screens/career/CandidateStatusScreen";
 import AddNewCandidateScreen from "./screens/career/AddNewCandidateScreen";
+import TmsNavigation from "./navigation/tms/TmsNavigation";
 import useSessionGuard from "./hooks/useSessionGuard";
 import { useNavigationContainerRef } from "@react-navigation/native";
 const Stack = createNativeStackNavigator();
@@ -100,6 +101,7 @@ export default function Index() {
         <Stack.Screen name="enablePinLock" component={EnablePinLock} />
         <Stack.Screen name="help" component={HelpScreen} />
         <Stack.Screen name="changePassword" component={ChangePassword} />
+        <Stack.Screen name="tmsNav" component={TmsNavigation} />
       </Stack.Navigator>
     </NavigationContainer>
   );
