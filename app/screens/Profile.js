@@ -54,8 +54,6 @@ const Profile = () => {
     fetchUserInfo();
   }, [userData]);
 
-  console.log(userData);
-
   const handleDashboardPress = () => {
     navigation.navigate("dashboard");
   };
