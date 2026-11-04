@@ -9,7 +9,8 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.kerryindev.attendance"
     },
     "android": {
       "adaptiveIcon": {
@@ -35,7 +36,9 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      ["expo-font"],
+      [
+        "expo-font"
+      ],
       [
         "expo-secure-store",
         {
